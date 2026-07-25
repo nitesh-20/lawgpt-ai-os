@@ -1,0 +1,4 @@
+version: '3.8'
+
+services:
+  # Define backend and frontend services here if needed in the future
