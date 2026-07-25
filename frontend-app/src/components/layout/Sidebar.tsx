@@ -42,7 +42,6 @@ const Sidebar = () => {
     { icon: FileEdit, label: 'Document Drafting', path: '/drafting' },
     { icon: Shield, label: 'Compliance Checker', path: '/compliance' },
     { icon: Bot, label: 'Legal Assistant', path: '/chat' },
-    { icon: Volume2, label: 'Voice Playground', path: '/voice' },
     { icon: Cpu, label: 'AI Agents', path: '/agents' },
   ];
 

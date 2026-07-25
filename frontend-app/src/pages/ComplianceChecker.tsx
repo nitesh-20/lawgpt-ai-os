@@ -13,6 +13,7 @@ import { listDocuments } from "@/services/documents";
 import type { ComplianceSnapshot } from "@/types/compliance";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 
 const ComplianceChecker = () => {
   const [snapshot, setSnapshot] = useState<ComplianceSnapshot>({
@@ -214,7 +215,10 @@ const ComplianceChecker = () => {
 
           {auditResult && (
             <div className="pt-4 border-t border-border space-y-3">
-              <span className="text-[10px] font-mono text-primary uppercase">Audit Results:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-mono text-primary uppercase">Audit Results:</span>
+                <AudioPlaybackButton text={auditResult.executive_summary || auditResult.message || "Audit parsed successfully."} />
+              </div>
               <div className="p-3.5 bg-neutral-50 border border-border rounded text-2xs space-y-2 max-h-[250px] overflow-y-auto">
                 <p className="font-semibold text-neutral-800">Status: {auditResult.status || "Completed"}</p>
                 <p className="leading-relaxed text-neutral-600">{auditResult.executive_summary || auditResult.message || "Audit parsed successfully."}</p>

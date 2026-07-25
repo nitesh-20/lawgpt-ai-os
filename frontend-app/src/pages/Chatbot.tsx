@@ -3,8 +3,6 @@ import {
   Bot, 
   Send, 
   Paperclip, 
-  Mic, 
-  MicOff, 
   Sparkles, 
   Loader2, 
   X, 
@@ -17,18 +15,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
 import { apiClient } from "@/utils/apiClient";
 import { AnimatePresence, motion } from "framer-motion";
+import { VoiceButton } from "@/components/voice/VoiceButton";
+import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 
 const Chatbot = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,7 +81,7 @@ const Chatbot = () => {
           ...prev,
           {
             id: botId,
-            content: response.response || response.message || "Audit completed successfully.",
+            content: response.response || response.message || "Request processed successfully.",
             sender: "bot",
             timestamp: new Date(),
             citations
@@ -117,106 +114,6 @@ const Chatbot = () => {
     ]);
 
     await runStream(userMessage);
-  };
-
-  const handleVoiceSubmit = async (audioBlob: Blob) => {
-    setIsStreaming(true);
-    const userMessageId = crypto.randomUUID();
-    const botId = crypto.randomUUID();
-
-    toast({
-      title: "Synthesizing Speech",
-      description: "Running transcription and query pipeline...",
-    });
-
-    try {
-      const formData = new FormData();
-      formData.append("file", audioBlob, "speech.wav");
-      formData.append("session_id", "web_voice_session");
-
-      const response = await apiClient.postMultipart("/voice/chat", formData);
-
-      if (response && response.status === "success" && response.data) {
-        const resData = response.data.data || response.data;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: userMessageId,
-            content: `🗣️ [Voice Input]: ${resData.transcript || "(Speech unparsed)"}`,
-            sender: "user",
-            timestamp: new Date()
-          },
-          {
-            id: botId,
-            content: resData.response_text || "Audio processed successfully.",
-            sender: "bot",
-            timestamp: new Date()
-          }
-        ]);
-
-        if (resData.response_audio) {
-          playAudioBase64(resData.response_audio);
-        }
-      }
-    } catch (err: any) {
-      console.error("Voice chat failed:", err);
-      toast({
-        title: "Voice Transcription Failed",
-        description: "Failed to parse audio input.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsStreaming(false);
-    }
-  };
-
-  const playAudioBase64 = (base64Data: string) => {
-    try {
-      const audioSrc = `data:audio/wav;base64,${base64Data}`;
-      const audio = new Audio(audioSrc);
-      audio.play();
-    } catch (err) {
-      console.error("Audio playback failed:", err);
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        handleVoiceSubmit(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: "Microphone Error",
-        description: "Please grant mic permissions for voice mode.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
   };
 
   const handleClearHistory = () => {
@@ -319,19 +216,24 @@ const Chatbot = () => {
                     <p className="whitespace-pre-wrap">{m.content}</p>
                   </div>
 
-                  {m.citations && m.citations.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {m.citations.map((c: any) => (
-                        <div 
-                          key={c.id}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-50 border border-border text-3xs font-mono text-primary"
-                        >
-                          <BookOpen className="h-2.5 w-2.5" />
-                          <span>{c.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {m.sender === "bot" && (
+                      <AudioPlaybackButton text={m.content} />
+                    )}
+                    {m.citations && m.citations.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {m.citations.map((c: any) => (
+                          <div 
+                            key={c.id}
+                            className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-50 border border-border text-3xs font-mono text-primary"
+                          >
+                            <BookOpen className="h-2.5 w-2.5" />
+                            <span>{c.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -395,16 +297,10 @@ const Chatbot = () => {
             disabled={isStreaming}
           />
 
-          {/* Voice recording trigger */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={isRecording ? stopRecording : startRecording}
-            className={`rounded shrink-0 ${isRecording ? 'text-red-500 bg-red-50 hover:bg-red-100 border border-red-200' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100'}`}
-          >
-            {isRecording ? <MicOff className="h-4.5 w-4.5 animate-pulse" /> : <Mic className="h-4.5 w-4.5" />}
-          </Button>
+          {/* Reusable Voice button dictation */}
+          <VoiceButton 
+            onTranscribe={(t) => setMessage((prev) => prev + (prev ? " " : "") + t)} 
+          />
 
           <Button
             type="submit"

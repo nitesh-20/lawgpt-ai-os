@@ -13,6 +13,7 @@ import type { DocClause, DocumentDetail } from "@/types/documentIntelligence";
 import { apiClient } from "@/utils/apiClient";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 
 const RISK_STYLE: Record<DocClause["risk"], string> = {
   high: "bg-red-50 border-l-2 border-red-500 text-neutral-900 hover:bg-red-100/50",
@@ -29,6 +30,8 @@ const DocumentIntelligence = () => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [translatedSummaryText, setTranslatedSummaryText] = useState<string | null>(null);
+  const [isTranslatingSummary, setIsTranslatingSummary] = useState(false);
   const { toast } = useToast();
 
   const fetchDocDetail = () => {
@@ -82,6 +85,27 @@ const DocumentIntelligence = () => {
       toast({ title: "Error", description: "Failed to translate clause.", variant: "destructive" });
     } finally {
       setIsTranslating(false);
+    }
+  };
+
+  const handleTranslateSummary = async (langCode: string) => {
+    if (!doc?.summary || isTranslatingSummary) return;
+    setIsTranslatingSummary(true);
+    try {
+      const res = await apiClient.post("/voice/translate", {
+        text: doc.summary,
+        language_code: langCode,
+        speaker: "shubh"
+      });
+      if (res.status === "success") {
+        setTranslatedSummaryText(res.data.translated_text || res.translated_text);
+        toast({ title: "Summary Translated" });
+      }
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Error", description: "Failed to translate summary.", variant: "destructive" });
+    } finally {
+      setIsTranslatingSummary(false);
     }
   };
 
@@ -253,7 +277,32 @@ const DocumentIntelligence = () => {
             </TabsList>
 
             <TabsContent value="summary" className="glass-card p-5 mt-3 space-y-4">
-              <p className="text-xs leading-relaxed text-neutral-700">{doc.summary}</p>
+              <div className="flex justify-between items-center border-b border-border pb-2">
+                <span className="text-[10px] font-mono text-neutral-400 uppercase">AI Generated Summary</span>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="text-neutral-500 hover:text-neutral-900 transition-colors" title="Translate Summary">
+                        {isTranslatingSummary ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <Languages className="h-3.5 w-3.5" />}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-white border border-border text-neutral-900">
+                      {SUPPORTED_LANGUAGES.map(lang => (
+                        <DropdownMenuItem key={lang.code} className="focus:bg-neutral-50 text-xs cursor-pointer" onClick={() => handleTranslateSummary(lang.code)}>
+                          {lang.label}
+                        </DropdownMenuItem>
+                      ))}
+                      {translatedSummaryText && (
+                        <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer text-primary" onClick={() => setTranslatedSummaryText(null)}>
+                          Revert to English
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <AudioPlaybackButton text={translatedSummaryText || doc.summary} />
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed text-neutral-700">{translatedSummaryText || doc.summary}</p>
             </TabsContent>
 
             <TabsContent value="entities" className="glass-card p-5 mt-3">

@@ -111,13 +111,6 @@ export const CommandPalette = () => {
               <span>Go to Legal Assistant (Chat)</span>
             </Command.Item>
             <Command.Item
-              onSelect={() => runCommand(() => navigate("/voice"))}
-              className="flex items-center gap-3 px-3 py-2 text-xs text-neutral-700 hover:text-primary rounded hover:bg-neutral-50 cursor-pointer transition-colors duration-150"
-            >
-              <Volume2 className="h-4 w-4" />
-              <span>Go to Voice Playground</span>
-            </Command.Item>
-            <Command.Item
               onSelect={() => runCommand(() => navigate("/agents"))}
               className="flex items-center gap-3 px-3 py-2 text-xs text-neutral-700 hover:text-primary rounded hover:bg-neutral-50 cursor-pointer transition-colors duration-150"
             >

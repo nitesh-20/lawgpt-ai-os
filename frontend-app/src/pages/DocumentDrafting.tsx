@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { VoiceButton } from "@/components/voice/VoiceButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   listDraftTemplates, 
@@ -250,7 +251,10 @@ const DocumentDrafting = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono text-neutral-500 uppercase">Custom Drafting Instructions:</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[9px] font-mono text-neutral-500 uppercase">Custom Drafting Instructions:</label>
+                  <VoiceButton onTranscribe={(t) => setUserInstructions(prev => prev + (prev ? " " : "") + t)} />
+                </div>
                 <textarea
                   value={userInstructions}
                   onChange={(e) => setUserInstructions(e.target.value)}
@@ -287,7 +291,10 @@ const DocumentDrafting = () => {
         {/* Review & Audit Panel */}
         <TabsContent value="review" className="glass-card p-6 mt-0 space-y-6">
           <div className="space-y-1.5">
-            <label className="text-[9px] font-mono text-neutral-500 uppercase">Document Text to Review:</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[9px] font-mono text-neutral-500 uppercase">Document Text to Review:</label>
+              <VoiceButton onTranscribe={(t) => setReviewText(prev => prev + (prev ? " " : "") + t)} />
+            </div>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
@@ -411,7 +418,10 @@ const DocumentDrafting = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[9px] font-mono text-neutral-500 uppercase">Refining Prompts / Instructions:</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[9px] font-mono text-neutral-500 uppercase">Refining Prompts / Instructions:</label>
+              <VoiceButton onTranscribe={(t) => setImproveInstructions(prev => prev + (prev ? " " : "") + t)} />
+            </div>
             <input
               type="text"
               value={improveInstructions}

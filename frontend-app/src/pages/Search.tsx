@@ -10,6 +10,7 @@ import {
   type ResearchResult, 
   type ResearchContentType 
 } from "@/services/research";
+import { VoiceButton } from "@/components/voice/VoiceButton";
 
 const Search = () => {
   const [query, setQuery] = useState("");
@@ -64,18 +65,36 @@ const Search = () => {
     }
   };
 
+  const executeDirectSearch = async (term: string) => {
+    if (!term.trim()) return;
+    setIsSearching(true);
+    try {
+      const searchResults = await search({
+        query: term,
+        contentType,
+        jurisdiction: jurisdiction === "all" ? undefined : jurisdiction
+      });
+      setResults(searchResults);
+      toast({
+        title: "Voice Search Completed",
+        description: `Found ${searchResults.length} relevant legal references.`,
+      });
+      loadSidePanels();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Search Failed",
+        description: "Failed to query vector database.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSelectRecent = (term: string) => {
     setQuery(term);
-    // Trigger search
-    setIsSearching(true);
-    search({
-      query: term,
-      contentType,
-      jurisdiction: jurisdiction === "all" ? undefined : jurisdiction
-    }).then((res) => {
-      setResults(res);
-      setIsSearching(false);
-    }).catch(() => setIsSearching(false));
+    executeDirectSearch(term);
   };
 
   return (
@@ -106,11 +125,19 @@ const Search = () => {
                 placeholder="Ask any legal question (e.g. 'What is the penalty for insider trading under SEBI?')..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="input-premium pl-10 w-full text-xs py-3"
+                className="input-premium pl-10 pr-28 w-full text-xs py-3"
               />
-              <Button type="submit" disabled={isSearching || !query.trim()} className="absolute right-2 top-1.5 h-7 px-3 btn-primary">
-                {isSearching ? <Loader2 className="h-3 w-3 animate-spin" /> : "Search"}
-              </Button>
+              <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
+                <VoiceButton 
+                  onTranscribe={(t) => {
+                    setQuery(t);
+                    executeDirectSearch(t);
+                  }}
+                />
+                <Button type="submit" disabled={isSearching || !query.trim()} className="h-7 px-3 btn-primary">
+                  {isSearching ? <Loader2 className="h-3 w-3 animate-spin" /> : "Search"}
+                </Button>
+              </div>
             </div>
 
             {/* Filters panel */}
