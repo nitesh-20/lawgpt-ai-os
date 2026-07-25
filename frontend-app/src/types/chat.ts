@@ -1,10 +1,21 @@
 
+export interface Citation {
+  id: string;
+  label: string;
+  source: string;
+  court?: string;
+  year?: string;
+  url?: string;
+}
+
 export interface Message {
   id: string;
   content: string;
   sender: 'user' | 'bot';
   timestamp: Date;
   documentRef?: string;
+  citations?: Citation[];
+  isStreaming?: boolean;
 }
 
 export interface Feature {
