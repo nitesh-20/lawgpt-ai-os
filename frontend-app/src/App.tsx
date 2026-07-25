@@ -13,6 +13,8 @@ import Documents from "./pages/Documents";
 import DocumentDrafting from "./pages/DocumentDrafting";
 import ComplianceChecker from "./pages/ComplianceChecker";
 import Chatbot from "./pages/Chatbot";
+import AgentDashboard from "./pages/AgentDashboard";
+import DocumentIntelligence from "./pages/DocumentIntelligence";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/layout/AppLayout";
 
@@ -32,9 +34,11 @@ const App = () => (
             <Route path="/cases/:id" element={<CaseDetails />} />
             <Route path="/search" element={<Search />} />
             <Route path="/documents" element={<Documents />} />
+            <Route path="/documents/:id" element={<DocumentIntelligence />} />
             <Route path="/document-drafting" element={<DocumentDrafting />} />
             <Route path="/compliance" element={<ComplianceChecker />} />
             <Route path="/chatbot" element={<Chatbot />} />
+            <Route path="/agents" element={<AgentDashboard />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
