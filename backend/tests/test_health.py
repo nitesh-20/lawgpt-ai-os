@@ -45,7 +45,6 @@ def test_agents_endpoint(client: TestClient):
 def test_placeholders_not_implemented(client: TestClient):
     endpoints = [
         "/api/v1/chat",
-        "/api/v1/upload",
         "/api/v1/research",
         "/api/v1/compliance"
     ]

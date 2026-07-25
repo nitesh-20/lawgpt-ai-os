@@ -2,7 +2,11 @@ import os
 from typing import Any
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, status
 from pydantic import BaseModel, Field
+from datetime import datetime
+import uuid
+from loguru import logger
 from app.agents.document_agent.analyzer import DocumentAnalyzer
+from app.database.firestore import get_firestore_client
 
 router = APIRouter()
 analyzer = DocumentAnalyzer()
@@ -269,12 +273,57 @@ async def get_document_status(document_id: str):
         )
 
 
-@router.post("/upload", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def upload_endpoint():
-    """
-    Placeholder endpoint for uploading legal document assets.
-    """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Document upload functionality is not implemented yet.",
-    )
+def get_documents_collection():
+    try:
+        db = get_firestore_client()
+        return db.collection("documents")
+    except Exception as e:
+        logger.warning(f"Firestore not available: {e}")
+        return None
+
+@router.get("/documents", status_code=status.HTTP_200_OK)
+async def list_documents():
+    """List all uploaded documents."""
+    docs_ref = get_documents_collection()
+    if not docs_ref:
+        return []
+    docs = docs_ref.get()
+    return [d.to_dict() for d in docs]
+
+@router.post("/upload", status_code=status.HTTP_201_CREATED)
+async def upload_endpoint(file: UploadFile = File(...)):
+    """Uploads, analyzes, chunks, and indexes a legal document into the vector store."""
+    try:
+        file_bytes = await file.read()
+        file_name = get_safe_filename(file)
+        doc_id = str(uuid.uuid4())
+        
+        # This function parses structural text, chunks, embeds in vector DB, and analyzes clauses
+        results = await analyzer.analyze_document(file_name, file_bytes, document_id=doc_id)
+        
+        now = datetime.utcnow().isoformat() + "Z"
+        doc_metadata = {
+            "id": doc_id,
+            "title": file_name,
+            "type": file.content_type or "Unknown",
+            "lastModified": now,
+            "size": f"{len(file_bytes) / 1024:.1f} KB",
+            "category": "uploaded",
+            "tags": ["Analysis Complete"],
+            "results": results
+        }
+        
+        docs_ref = get_documents_collection()
+        if docs_ref:
+            docs_ref.document(doc_id).set(doc_metadata)
+            
+        return {
+            "status": "success",
+            "message": f"Document '{file_name}' uploaded and processed successfully.",
+            "data": doc_metadata
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Document upload failed: {e}"
+        )

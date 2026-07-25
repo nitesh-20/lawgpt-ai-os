@@ -18,12 +18,22 @@ class ApiClient {
     return `${this.baseUrl}${cleanPath}`;
   }
 
+  private getHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+    const headers: Record<string, string> = { ...customHeaders };
+    // JWT token injection for Firebase Auth (Phase 9)
+    const token = localStorage.getItem("firebase_id_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
   async get<T = any>(path: string, customHeaders: Record<string, string> = {}): Promise<T> {
     const response = await fetch(this.getUrl(path), {
       method: "GET",
       headers: {
         "Accept": "application/json",
-        ...customHeaders,
+        ...this.getHeaders(customHeaders),
       },
     });
 
@@ -45,7 +55,7 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        ...customHeaders,
+        ...this.getHeaders(customHeaders),
       },
       body: JSON.stringify(body),
     });
@@ -67,7 +77,7 @@ class ApiClient {
       method: "POST",
       headers: {
         "Accept": "application/json",
-        ...customHeaders,
+        ...this.getHeaders(customHeaders),
       },
       body: formData,
     });

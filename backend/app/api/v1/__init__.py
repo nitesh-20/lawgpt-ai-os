@@ -10,6 +10,8 @@ from app.api.v1.research import router as research_router
 from app.api.v1.voice import router as voice_router
 from app.api.v1.knowledge import router as knowledge_router
 from app.api.v1.orchestrator import router as orchestrator_router
+from app.api.v1.cases import router as cases_router
+from app.api.v1.dashboard import router as dashboard_router
 
 api_router = APIRouter()
 
@@ -28,4 +30,5 @@ api_router.include_router(drafting_router, prefix="/drafting", tags=["Contract D
 api_router.include_router(voice_router, prefix="/voice", tags=["Voice Interface"])
 api_router.include_router(knowledge_router, tags=["Knowledge Base Ingestion"])
 api_router.include_router(orchestrator_router, tags=["Orchestrator Agent"])
-
+api_router.include_router(cases_router)
+api_router.include_router(dashboard_router)

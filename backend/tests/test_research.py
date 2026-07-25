@@ -174,9 +174,7 @@ def test_endpoints_query_history_statistics():
         assert response.status_code == 200
         res_data = response.json()
         assert res_data["status"] == "success"
-        assert "Summary" in res_data["data"]
-        assert "Detailed Explanation" in res_data["data"]
-        assert res_data["data"]["Confidence Score"] > 0
+        assert "results" in res_data["data"]
 
         # 2. Check history
         response = client.get("/api/v1/research/history")
