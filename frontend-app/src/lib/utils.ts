@@ -61,7 +61,7 @@ export function generateExampleCases(count: number = 10) {
   const cases = [];
   
   for (let i = 0; i < count; i++) {
-    const id = crypto.randomUUID();
+    const id = `case-${i + 1}`;
     const party1 = getRandomElement(["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson"]);
     const party2 = getRandomElement(["Johnson", "Smith", "Tech Corp", "Industries LLC", "MegaCorp", "Insurance Co.", "Bank", "City of Springfield", "Department of Justice"]);
     

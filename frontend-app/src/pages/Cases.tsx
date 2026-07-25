@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import StatCard from "@/components/dashboard/StatCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewCaseDialog } from "@/components/cases/NewCaseDialog";
 import { Case } from "@/types/case";
@@ -54,7 +55,7 @@ const Cases = () => {
       if (storedCases.length === 0) {
         const demoCases = [
           {
-            id: crypto.randomUUID(),
+            id: 'case-1',
             user_id: 'demo-user',
             party_name: 'Smith v. Johnson',
             case_number: 'CV-2024-1234',
@@ -69,7 +70,7 @@ const Cases = () => {
             hearings: []
           },
           {
-            id: crypto.randomUUID(),
+            id: 'case-2',
             user_id: 'demo-user',
             party_name: 'Williams v. Tech Corp',
             case_number: 'CV-2024-5678',
@@ -194,45 +195,10 @@ const Cases = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="bg-white/50 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl">{caseStatistics.total}</CardTitle>
-            <CardDescription>Total Cases</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Clipboard className="h-5 w-5 text-neutral-500" />
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white/50 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl text-green-600">{caseStatistics.active}</CardTitle>
-            <CardDescription>Active Cases</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Users className="h-5 w-5 text-green-500" />
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white/50 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl text-yellow-600">{caseStatistics.pending}</CardTitle>
-            <CardDescription>Pending Cases</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Clock className="h-5 w-5 text-yellow-500" />
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white/50 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl text-blue-600">{cases.filter(c => c.next_date).length}</CardTitle>
-            <CardDescription>Upcoming Hearings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Calendar className="h-5 w-5 text-blue-500" />
-          </CardContent>
-        </Card>
+        <StatCard title="Total Cases" value={caseStatistics.total} icon={Clipboard} />
+        <StatCard title="Active Cases" value={caseStatistics.active} icon={Users} />
+        <StatCard title="Pending Cases" value={caseStatistics.pending} icon={Clock} />
+        <StatCard title="Upcoming Hearings" value={cases.filter(c => c.next_date).length} icon={Calendar} />
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -370,9 +336,9 @@ const Cases = () => {
                         <Badge 
                           variant="outline" 
                           className={
-                            case_.status === 'active' ? 'bg-green-50 text-green-600 border-green-200' :
-                            case_.status === 'pending' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' :
-                            'bg-blue-50 text-blue-600 border-blue-200'
+                            case_.status === 'active' ? 'bg-primary/10 text-primary border-primary/20' :
+                            case_.status === 'pending' ? 'bg-accent/10 text-accent border-accent/20' :
+                            'bg-secondary text-foreground border-border'
                           }
                         >
                           {case_.status || 'active'}
