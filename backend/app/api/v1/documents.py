@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter()
 
+
 @router.post("/upload", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def upload_endpoint():
     """
@@ -9,5 +10,5 @@ async def upload_endpoint():
     """
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Document upload functionality is not implemented yet."
+        detail="Document upload functionality is not implemented yet.",
     )

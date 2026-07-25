@@ -1,12 +1,16 @@
-from typing import Any, Dict
+from typing import Any
+
 from loguru import logger
+
 from app.agents.base import BaseAgent
+
 
 class DraftingAgent(BaseAgent):
     """
     Drafting Agent drafts legally sound templates, contract updates, responses,
     or letters using contextual requirements.
     """
+
     def __init__(self) -> None:
         self._initialized = False
 
@@ -15,7 +19,7 @@ class DraftingAgent(BaseAgent):
         self._initialized = True
         logger.info("Drafting Agent initialized.")
 
-    async def execute(self, task_input: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, task_input: dict[str, Any]) -> dict[str, Any]:
         logger.info("Drafting Agent drafting documents...")
         if not self._initialized:
             raise RuntimeError("Drafting Agent is not initialized.")
@@ -23,7 +27,7 @@ class DraftingAgent(BaseAgent):
             "status": "success",
             "message": "Document drafting stub execution complete",
             "agent": "DraftingAgent",
-            "data": {}
+            "data": {},
         }
 
     async def shutdown(self) -> None:
@@ -31,8 +35,8 @@ class DraftingAgent(BaseAgent):
         self._initialized = False
         logger.info("Drafting Agent shut down.")
 
-    async def health(self) -> Dict[str, Any]:
+    async def health(self) -> dict[str, Any]:
         return {
             "status": "healthy" if self._initialized else "uninitialized",
-            "agent": "DraftingAgent"
+            "agent": "DraftingAgent",
         }

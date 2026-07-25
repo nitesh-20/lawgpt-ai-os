@@ -1,20 +1,28 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from loguru import logger
 
+from app.api.v1 import api_router
 from app.core.config import settings
+from app.core.constants import API_V1_STR
+from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.middleware import RequestLifecycleMiddleware
-from app.core.exceptions import register_exception_handlers
-from app.core.security import CORS_ORIGINS, CORS_ALLOW_METHODS, CORS_ALLOW_HEADERS, CORS_ALLOW_CREDENTIALS, TRUSTED_HOSTS
-from app.core.constants import API_V1_STR
-from app.api.v1 import api_router
+from app.core.security import (
+    CORS_ALLOW_CREDENTIALS,
+    CORS_ALLOW_HEADERS,
+    CORS_ALLOW_METHODS,
+    CORS_ORIGINS,
+    TRUSTED_HOSTS,
+)
 from app.database.firestore import initialize_firestore
 from app.database.storage import initialize_storage
-from loguru import logger
+
 
 # --- Lifespan Setup ---
 @asynccontextmanager
@@ -22,7 +30,7 @@ async def lifespan(app: FastAPI):
     # Startup Events
     setup_logging()
     logger.info(f"Starting {settings.APP_NAME} in environment: {settings.ENVIRONMENT}")
-    
+
     # Ensure all local runtime directories exist
     for dir_name in ["logs", settings.UPLOAD_FOLDER, "generated", "temp", "data"]:
         Path(dir_name).mkdir(exist_ok=True)
@@ -31,11 +39,12 @@ async def lifespan(app: FastAPI):
     # Initialize external DB & Cloud clients
     initialize_firestore()
     initialize_storage()
-    
+
     yield
 
     # Shutdown Events
     logger.info(f"Shutting down {settings.APP_NAME}...")
+
 
 # --- Application Factory ---
 def create_app() -> FastAPI:
@@ -45,20 +54,14 @@ def create_app() -> FastAPI:
         debug=settings.DEBUG,
         lifespan=lifespan,
         docs_url="/docs",
-        redoc_url="/redoc"
+        redoc_url="/redoc",
     )
 
     # 1. Trusted Host Middleware
-    app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=TRUSTED_HOSTS
-    )
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=TRUSTED_HOSTS)
 
     # 2. GZip Compression Middleware
-    app.add_middleware(
-        GZipMiddleware,
-        minimum_size=1000
-    )
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
 
     # 3. Custom Request ID, Execution Timer & Logging Middleware
     app.add_middleware(RequestLifecycleMiddleware)
@@ -79,5 +82,6 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix=API_V1_STR)
 
     return app
+
 
 app = create_app()

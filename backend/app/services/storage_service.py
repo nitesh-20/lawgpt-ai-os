@@ -1,10 +1,11 @@
-from typing import Any
 from loguru import logger
+
 
 class StorageService:
     """
     Wraps Google Cloud Storage operations for document assets.
     """
+
     def __init__(self) -> None:
         pass
 

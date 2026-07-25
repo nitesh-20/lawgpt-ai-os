@@ -19,3 +19,15 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE / Tooling Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime directories
+logs/
+uploads/
+generated/
+temp/
+data/

@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter()
 
+
 @router.post("/compliance", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def compliance_endpoint():
     """
@@ -9,5 +10,5 @@ async def compliance_endpoint():
     """
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Compliance audit functionality is not implemented yet."
+        detail="Compliance audit functionality is not implemented yet.",
     )

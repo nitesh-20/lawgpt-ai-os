@@ -1,11 +1,12 @@
 from fastapi import APIRouter
-from app.api.v1.health import router as health_router
+
 from app.api.v1.agents import router as agents_router
 from app.api.v1.chat import router as chat_router
-from app.api.v1.documents import router as docs_router
-from app.api.v1.research import router as research_router
 from app.api.v1.compliance import router as compliance_router
+from app.api.v1.documents import router as docs_router
 from app.api.v1.draft import router as draft_router
+from app.api.v1.health import router as health_router
+from app.api.v1.research import router as research_router
 from app.api.v1.voice import router as voice_router
 
 api_router = APIRouter()

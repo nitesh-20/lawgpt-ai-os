@@ -1,12 +1,16 @@
-from typing import Any, Dict
+from typing import Any
+
 from loguru import logger
+
 from app.agents.base import BaseAgent
+
 
 class DocumentAgent(BaseAgent):
     """
     Document Agent processes incoming legal documents, parses PDFs,
     and extracts metadata and structure.
     """
+
     def __init__(self) -> None:
         self._initialized = False
 
@@ -15,7 +19,7 @@ class DocumentAgent(BaseAgent):
         self._initialized = True
         logger.info("Document Agent initialized.")
 
-    async def execute(self, task_input: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, task_input: dict[str, Any]) -> dict[str, Any]:
         logger.info("Document Agent processing document...")
         if not self._initialized:
             raise RuntimeError("Document Agent is not initialized.")
@@ -23,7 +27,7 @@ class DocumentAgent(BaseAgent):
             "status": "success",
             "message": "Document parsing stub execution complete",
             "agent": "DocumentAgent",
-            "data": {}
+            "data": {},
         }
 
     async def shutdown(self) -> None:
@@ -31,8 +35,8 @@ class DocumentAgent(BaseAgent):
         self._initialized = False
         logger.info("Document Agent shut down.")
 
-    async def health(self) -> Dict[str, Any]:
+    async def health(self) -> dict[str, Any]:
         return {
             "status": "healthy" if self._initialized else "uninitialized",
-            "agent": "DocumentAgent"
+            "agent": "DocumentAgent",
         }

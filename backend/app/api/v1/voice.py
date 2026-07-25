@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter()
 
+
 @router.post("/voice", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def voice_endpoint():
     """
@@ -9,5 +10,5 @@ async def voice_endpoint():
     """
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Voice interface functionality is not implemented yet."
+        detail="Voice interface functionality is not implemented yet.",
     )

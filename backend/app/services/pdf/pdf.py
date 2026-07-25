@@ -1,14 +1,17 @@
-from typing import Any, Dict
+from typing import Any
+
 import fitz  # type: ignore[import-untyped]  # PyMuPDF
 import pdfplumber
-from pypdf import PdfReader
 from loguru import logger
+from pypdf import PdfReader
+
 
 class PDFService:
     """
     Handles file reads, structured text extraction, layout parsing,
     and metadata inspection from PDF files.
     """
+
     def __init__(self) -> None:
         pass
 
@@ -23,7 +26,7 @@ class PDFService:
         assert PdfReader is not None
         return ""
 
-    async def extract_tables(self, file_path: str) -> Dict[str, Any]:
+    async def extract_tables(self, file_path: str) -> dict[str, Any]:
         """
         Skeleton method to parse tabular records from PDF layout.
         """

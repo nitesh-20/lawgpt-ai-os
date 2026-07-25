@@ -1,8 +1,11 @@
 import logging
 import sys
 from pathlib import Path
+
 from loguru import logger
+
 from app.core.config import settings
+
 
 def setup_logging() -> None:
     # Ensure logs folder exists
@@ -73,15 +76,19 @@ def setup_logging() -> None:
                 frame = frame.f_back  # type: ignore[assignment]
                 depth += 1
 
-            logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+            logger.opt(depth=depth, exception=record.exc_info).log(
+                level, record.getMessage()
+            )
 
     # Set logger configuration for uvicorn and standard libraries
     logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-    
+
     # Force specific loggers to use our InterceptHandler
     for logger_name in ("uvicorn", "uvicorn.access", "uvicorn.error", "fastapi"):
         logging_logger = logging.getLogger(logger_name)
         logging_logger.handlers = [InterceptHandler()]
         logging_logger.propagate = False
 
-    logger.info("Logging successfully initialized. Output directed to console, logs/app.log, and logs/error.log")
+    logger.info(
+        "Logging successfully initialized. Output directed to console, logs/app.log, and logs/error.log"
+    )
