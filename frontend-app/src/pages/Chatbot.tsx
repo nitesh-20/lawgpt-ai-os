@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Scale } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
-import { streamMockResponse } from "@/utils/chatUtils";
 import ChatContainer from "@/components/chat/ChatContainer";
 import { apiClient } from "@/utils/apiClient";
 
@@ -74,33 +73,12 @@ const Chatbot = () => {
         throw new Error("Local backend returned error status");
       }
     } catch (error) {
-      console.warn("FastAPI Orchestrator Chat failed, falling back to mock stream:", error);
-      // 2. Fallback to mock stream
-      try {
-        for await (const chunk of streamMockResponse(userMessage, documents)) {
-          if (!created) {
-            setMessages((prev) => [
-              ...prev,
-              { id: botId, content: chunk.token, sender: "bot", timestamp: new Date(), isStreaming: true },
-            ]);
-            created = true;
-          } else if (!chunk.done) {
-            setMessages((prev) =>
-              prev.map((m) => (m.id === botId ? { ...m, content: m.content + chunk.token } : m))
-            );
-          }
-
-          if (chunk.done) {
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === botId ? { ...m, isStreaming: false, citations: chunk.citations } : m
-              )
-            );
-          }
-        }
-      } catch (err) {
-        toast({ title: "Error", description: "Failed to generate a response. Please try again.", variant: "destructive" });
-      }
+      console.error("FastAPI Orchestrator Chat failed:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to generate a response. Please verify FastAPI backend connections.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsStreaming(false);
     }

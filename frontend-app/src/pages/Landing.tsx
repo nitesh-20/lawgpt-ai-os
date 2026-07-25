@@ -7,7 +7,12 @@ import {
   ShieldCheck,
   BookOpenCheck,
   FileEdit,
+  Activity,
+  Cpu,
+  Layers,
+  Search,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import HeroDocumentPreview from "@/components/landing/HeroDocumentPreview";
 
 const heroDocumentPreview = {
@@ -20,6 +25,7 @@ const heroDocumentPreview = {
     { id: "c3", title: "Term and Termination", text: "This agreement shall commence on the Effective Date...", status: "pending" },
   ]
 };
+
 const NAV_LINKS = [
   { label: "Platform", href: "#platform" },
   { label: "Workflow", href: "#workflow" },
@@ -28,30 +34,30 @@ const NAV_LINKS = [
 ];
 
 const Navbar = () => (
-  <nav className="fixed w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
+  <nav className="fixed w-full bg-background/85 backdrop-blur-md border-b border-border/60 z-50">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between h-[72px]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-tr from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-primary-foreground font-serif font-semibold text-sm">L</span>
           </div>
-          <span className="text-lg font-serif font-semibold text-ink tracking-tight">LawGPT</span>
+          <span className="text-lg font-serif font-bold text-ink tracking-tight">LawGPT</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               {link.label}
             </a>
           ))}
         </div>
         <div className="flex items-center gap-4">
-          <Button asChild>
+          <Button asChild className="rounded-xl shadow-sm">
             <Link to="/dashboard">
-              Start for free
+              Enter Workspace
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -70,27 +76,28 @@ const FIRMS = [
 ];
 
 const TrustedBy = () => (
-  <div id="trust" className="border-y border-border py-10">
+  <div id="trust" className="border-y border-border py-12 bg-secondary/5">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <p className="text-center text-xs text-muted-foreground mb-6">Used by legal teams at</p>
-      <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+      <p className="text-center text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-8">Used by legal teams at</p>
+      <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
         {FIRMS.map((firm) => (
-          <div key={firm.name} className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="11" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1.25" />
+          <div key={firm.name} className="flex items-center gap-2.5 opacity-65 hover:opacity-100 transition-opacity">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1.25" className="text-muted-foreground" />
               <text
                 x="12"
-                y="16"
+                y="15.5"
                 textAnchor="middle"
-                fontSize="9"
+                fontSize="9.5"
                 fontFamily="'Source Serif 4', Georgia, serif"
                 fontWeight="600"
-                fill="hsl(var(--muted-foreground))"
+                fill="currentColor"
+                className="text-muted-foreground"
               >
                 {firm.initials}
               </text>
             </svg>
-            <span className="font-serif text-sm text-muted-foreground">{firm.name}</span>
+            <span className="font-serif text-sm font-semibold text-muted-foreground">{firm.name}</span>
           </div>
         ))}
       </div>
@@ -100,20 +107,16 @@ const TrustedBy = () => (
 
 const WORKFLOW_STEPS = [
   {
-    verb: "Ask",
-    body: "Open a case and ask what needs attention. LawGPT surfaces what changed, what's at risk, and what's due, in one briefing.",
+    verb: "Query",
+    body: "Run complex semantic checks against active Indian Penal Code (IPC) and Central Acts. Retain citations natively.",
   },
   {
     verb: "Verify",
-    body: "Every answer arrives with its sources and reasoning already visible, so checking it is faster than trusting it blindly.",
+    body: "AI logs every agent intent, latency execution log, and query parameter directly, preventing opaque response bias.",
   },
   {
-    verb: "Draft",
-    body: "Generate filings and correspondence grounded in the case record, ready for review rather than a blank page.",
-  },
-  {
-    verb: "Decide",
-    body: "You approve what moves forward. Approved work becomes part of the official record; nothing is promoted silently.",
+    verb: "Refine",
+    body: "Evaluate contract files with structural analysis. Automatically flags critical risk factors, legal limits, and out-of-scope clauses.",
   },
 ];
 
@@ -121,20 +124,26 @@ const Workflow = () => (
   <div id="workflow" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,380px)_1fr] gap-12 lg:gap-20">
       <div>
-        <h2 className="font-serif text-3xl font-semibold text-ink mb-4 text-balance">
-          Built around one question
+        <h2 className="font-serif text-3xl font-bold text-ink mb-4 leading-tight">
+          Traceable Intelligence
         </h2>
-        <p className="text-muted-foreground leading-relaxed">
-          Open a case and ask what you need to know. That single ritual replaces the morning spent
-          hunting across folders, inboxes, and calendars.
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Open a docket and audit query flows. LawGPT structures all legal documents, summaries, and agent intents into a clean vector space.
         </p>
       </div>
       <div className="divide-y divide-border border-t border-border">
-        {WORKFLOW_STEPS.map((step) => (
-          <div key={step.verb} className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2 sm:gap-8 py-6">
-            <h3 className="font-serif text-xl font-semibold text-ink">{step.verb}</h3>
-            <p className="text-muted-foreground leading-relaxed text-[15px]">{step.body}</p>
-          </div>
+        {WORKFLOW_STEPS.map((step, idx) => (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            key={step.verb} 
+            className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2 sm:gap-8 py-6"
+          >
+            <h3 className="font-serif text-xl font-bold text-ink">{step.verb}</h3>
+            <p className="text-muted-foreground leading-relaxed text-sm">{step.body}</p>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -145,100 +154,54 @@ const AGENTS = [
   {
     icon: BookOpenCheck,
     name: "Legal Research",
-    description: "Searches statutes, case law, and prior judgments for the matter at hand.",
-    tone: "bg-primary/5 border-primary/15",
+    description: "Searches statutes, case law, and prior judgments using advanced vector embedding retrieval.",
   },
   {
     icon: FileEdit,
-    name: "Drafting",
-    description: "Generates and revises document language grounded in the case record.",
-    tone: "bg-accent/5 border-accent/15",
+    name: "Contract Drafting",
+    description: "Generates custom contract outlines and drafts instantly with structural consistency checks.",
   },
   {
     icon: ShieldCheck,
-    name: "Compliance",
-    description: "Checks drafted documents against regulatory requirements before they leave your desk.",
-    tone: "bg-primary/5 border-primary/15",
+    name: "Compliance Audit",
+    description: "Checks drafted documents against regulatory frameworks including SEBI, FEMA, and custom compliance lists.",
   },
   {
     icon: Gavel,
-    name: "Risk Analysis",
-    description: "Flags uncapped liability and other high-exposure clauses for review.",
-    tone: "bg-accent/5 border-accent/15",
+    name: "Dossier Registry",
+    description: "Maintains active case timelines, client hearings, and document records in Firebase Firestore.",
   },
 ];
 
 const Agents = () => (
-  <div id="agents" className="bg-secondary/30 border-y border-border py-24">
+  <div id="agents" className="bg-secondary/20 border-y border-border py-24">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mb-12">
-        <h2 className="font-serif text-3xl font-semibold text-ink mb-4 text-balance">
-          Specialist agents, one orchestrator
+      <div className="max-w-2xl mb-16">
+        <h2 className="font-serif text-3xl font-bold text-ink mb-4">
+          Integrated Legal Frameworks
         </h2>
-        <p className="text-muted-foreground leading-relaxed">
-          A single request routes across the agents below in parallel. You see which agent did what,
-          not just a finished answer.
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Multiple sub-agents operate under a single central orchestrator. Follow intent pathways, check status execution logs, and analyze latency curves.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {AGENTS.map((agent) => (
-          <div key={agent.name} className={`rounded-lg border p-6 ${agent.tone}`}>
-            <agent.icon className="h-6 w-6 text-primary mb-4" strokeWidth={1.75} />
-            <h3 className="font-serif text-lg font-semibold text-ink mb-1.5">{agent.name}</h3>
-            <p className="text-muted-foreground text-[15px] leading-relaxed">{agent.description}</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {AGENTS.map((agent, idx) => (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            key={agent.name} 
+            className="rounded-2xl border border-border/70 p-6 bg-card/40 backdrop-blur-md shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center mb-4">
+              <agent.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
+            </div>
+            <h3 className="font-serif text-lg font-bold text-ink mb-2">{agent.name}</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">{agent.description}</p>
+          </motion.div>
         ))}
       </div>
-    </div>
-  </div>
-);
-
-const Verification = () => (
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-    <ScrollText className="h-8 w-8 text-primary mx-auto mb-6" strokeWidth={1.5} />
-    <h2 className="font-serif text-3xl md:text-4xl font-semibold text-ink mb-5 text-balance">
-      Built to be checked, not just trusted
-    </h2>
-    <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
-      Every conclusion arrives with its reasoning, sources, and open questions already visible.
-      AI accelerates the judgment. The judgment stays yours.
-    </p>
-  </div>
-);
-
-const Testimonial = () => (
-  <div className="bg-secondary/30 border-y border-border py-20">
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <p className="font-serif text-3xl text-primary/30 leading-none mb-4">&ldquo;</p>
-      <p className="font-serif text-xl text-ink leading-relaxed mb-6 text-balance">
-        The briefing view is the first thing I open on every case now. It tells me what changed
-        overnight instead of me hunting for it.
-      </p>
-      <p className="font-medium text-sm text-ink">Renata Okafor</p>
-      <p className="text-sm text-muted-foreground">General Counsel, Kessler &amp; Vane</p>
-    </div>
-  </div>
-);
-
-const CTA = () => (
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-    <h2 className="font-serif text-3xl md:text-4xl font-semibold text-ink mb-4 text-balance">
-      Bring your caseload into one record
-    </h2>
-    <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto">
-      Cases, documents, and compliance in one system, with AI built into the parts of the job
-      that eat the most time.
-    </p>
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-      <Button size="lg" asChild>
-        <Link to="/dashboard">
-          Start for free
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
-      <Button size="lg" variant="outline" asChild>
-        <Link to="/demo">Book a demo</Link>
-      </Button>
     </div>
   </div>
 );
@@ -249,36 +212,43 @@ const Landing = () => {
       <Navbar />
 
       <main>
-        <div id="platform" className="pt-24 pb-20">
+        <div id="platform" className="pt-32 pb-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16 items-center">
-              <div className="text-center lg:text-left fade-in">
-                <p className="text-xs font-medium uppercase tracking-widest text-accent mb-5">
-                  AI-assisted legal practice management
-                </p>
-                <h1 className="font-serif text-5xl md:text-6xl font-semibold text-ink leading-[1.05] mb-6 text-balance">
-                  The record of every case, drafted, checked, and searchable in one place.
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center lg:text-left"
+              >
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary/5 border border-primary/10 rounded-full mb-6">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
+                  <span className="text-2xs font-semibold uppercase tracking-wider text-primary">Enterprise Legal OS</span>
+                </div>
+                <h1 className="font-serif text-5xl md:text-6xl font-bold text-ink leading-[1.05] mb-6 text-balance tracking-tight">
+                  Integrated legal intelligence, mapped end-to-end.
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-                  LawGPT keeps cases, documents, and compliance in a single system of record, with
-                  AI assistance built into the parts of the job that eat the most time.
+                <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+                  LawGPT unites dossiers, semantic research, regulatory compliance checks, and drafting into a single authenticated system of record.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-                  <Button size="lg" className="w-full sm:w-auto" asChild>
+                  <Button size="lg" className="w-full sm:w-auto rounded-xl shadow-sm" asChild>
                     <Link to="/dashboard">
-                      Start for free
+                      Enter Workspace
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                    <Link to="/demo">Book a demo</Link>
-                  </Button>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex justify-center lg:justify-end">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.55 }}
+                className="flex justify-center lg:justify-end"
+              >
                 <HeroDocumentPreview document={heroDocumentPreview} />
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -286,59 +256,7 @@ const Landing = () => {
         <TrustedBy />
         <Workflow />
         <Agents />
-        <Verification />
-        <Testimonial />
-        <CTA />
       </main>
-
-      <footer className="bg-background border-t border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-medium text-sm text-ink mb-4">Product</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#platform" className="text-muted-foreground hover:text-foreground transition-colors">Platform</a></li>
-                <li><a href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">Workflow</a></li>
-                <li><a href="#agents" className="text-muted-foreground hover:text-foreground transition-colors">Agents</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium text-sm text-ink mb-4">Resources</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">API</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Guides</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium text-sm text-ink mb-4">Company</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Blog</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium text-sm text-ink mb-4">Legal</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Security</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-border">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground text-center">© 2026 LawGPT. All rights reserved.</p>
-              <div className="flex gap-4 text-sm">
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Twitter</a>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">LinkedIn</a>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">GitHub</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

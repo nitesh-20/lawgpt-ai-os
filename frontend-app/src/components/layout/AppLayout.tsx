@@ -59,57 +59,7 @@ const AppLayout = () => {
     };
   }, []);
 
-  // Initialize app with example data if not already present
-  useEffect(() => {
-    const initializeAppData = async () => {
-      try {
-        // Import the utility functions
-        const { generateExampleCases, generateExampleDocuments, generateExampleSearchResults } = await import("@/lib/utils");
-        
-        // Check if cases exist, if not create example data
-        const existingCases = localStorage.getItem('cases');
-        if (!existingCases || JSON.parse(existingCases).length === 0) {
-          const exampleCases = generateExampleCases(20);
-          localStorage.setItem('cases', JSON.stringify(exampleCases));
-        }
-        
-        // Check if documents exist, if not create example data
-        const existingFiles = localStorage.getItem('storedFiles');
-        if (!existingFiles || JSON.parse(existingFiles).length === 0) {
-          const exampleDocs = generateExampleDocuments(30);
-          localStorage.setItem('storedFiles', JSON.stringify(exampleDocs));
-        }
-        
-        // Add example search results
-        const existingSearchResults = localStorage.getItem('searchResults');
-        if (!existingSearchResults || JSON.parse(existingSearchResults).length === 0) {
-          const exampleSearchResults = generateExampleSearchResults(50);
-          localStorage.setItem('searchResults', JSON.stringify(exampleSearchResults));
-        }
 
-        // Add example compliance data
-        if (!localStorage.getItem('complianceChecks')) {
-          localStorage.setItem('complianceChecks', JSON.stringify([
-            { id: '1', date: new Date().toISOString(), score: 92, documentName: 'Privacy Policy v2.0', issues: 3 },
-            { id: '2', date: new Date(Date.now() - 86400000 * 7).toISOString(), score: 78, documentName: 'Terms of Service', issues: 8 },
-            { id: '3', date: new Date(Date.now() - 86400000 * 14).toISOString(), score: 96, documentName: 'GDPR Statement', issues: 1 },
-          ]));
-        }
-        
-        // Add example chat history
-        if (!localStorage.getItem('chatHistory')) {
-          localStorage.setItem('chatHistory', JSON.stringify([
-            { id: '1', question: 'What is the statute of limitations for medical malpractice in California?', answer: 'In California, the statute of limitations for medical malpractice is generally 3 years after the date of injury or 1 year after the plaintiff discovers the injury, whichever occurs first. However, there are exceptions for minors and fraud cases.', timestamp: new Date().toISOString() },
-            { id: '2', question: 'How do I file a motion for summary judgment?', answer: 'To file a motion for summary judgment, you need to prepare a notice of motion, a memorandum of points and authorities, a separate statement of undisputed material facts, supporting declarations and evidence, and a proposed order. The timing requirements vary by jurisdiction.', timestamp: new Date(Date.now() - 86400000 * 2).toISOString() },
-          ]));
-        }
-      } catch (error) {
-        console.error('Error initializing app data:', error);
-      }
-    };
-    
-    initializeAppData();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">

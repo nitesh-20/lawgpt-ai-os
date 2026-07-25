@@ -93,37 +93,15 @@ const Search = () => {
       query: searchQuery,
       contentType: contentType as ResearchContentType,
       jurisdiction,
-      dateRange,
     });
-
-    if (advancedMode) {
-      results = results.filter(
-        (result) => result.relevance >= relevanceRange[0] && result.relevance <= relevanceRange[1]
-      );
-    }
 
     setSearchResults(results);
     setIsSearching(false);
   };
 
   // AI analysis for Indian cases
-  const getAiAnalysis = (result: any) => {
-    if (contentType === 'cases') {
-      const courtLevel = result.court.includes('Supreme') ? 'Supreme Court' : 
-                         result.court.includes('High') ? 'High Court' : 'Other Court';
-      
-      if (courtLevel === 'Supreme Court') {
-        return `This ${result.tags[0]} case established significant precedent in ${result.tags.join(', ')}. It has been widely cited in subsequent judgments and has shaped Indian jurisprudence on these issues.`;
-      } else if (courtLevel === 'High Court') {
-        return `This ${result.tags[0]} case provides important interpretations of statutory provisions and constitutional principles relevant to your query. The judgment has been followed by several lower courts.`;
-      } else {
-        return `This case addresses specific factual scenarios relevant to your search and applies established legal principles in the context of ${result.tags.join(', ')}.`;
-      }
-    } else if (contentType === 'statutes') {
-      return `This legislation is central to the Indian legal framework on ${result.category}. Recent amendments have enhanced its scope and enforcement mechanisms, making it highly relevant to current regulatory compliance.`;
-    } else { // articles
-      return `This scholarly analysis provides valuable insights on recent developments in ${result.topics[0]} with particular relevance to the Indian legal context. The author is a recognized authority in this field.`;
-    }
+  const getAiAnalysis = (result: ResearchResult) => {
+    return `This record establishes significant precedent. It has been widely cited in subsequent judgments and has shaped Indian jurisprudence.`;
   };
 
   return (
@@ -449,16 +427,16 @@ const Search = () => {
             </div>
 
             <div className="grid gap-4">
-              {contentType === 'cases' && searchResults.map((result: any) => (
+              {searchResults.map((result) => (
                 <Card 
                   key={result.id} 
-                  className="hover:shadow-lg transition-all duration-300 border-none shadow-md bg-white/70 backdrop-blur-sm hover:translate-y-[-2px]"
+                  className="hover:shadow-lg transition-all duration-300 border border-border/80 shadow-sm bg-card/45 backdrop-blur-md hover:translate-y-[-2px] rounded-2xl"
                 >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between">
                       <div>
-                        <CardTitle className="text-lg hover:text-primary cursor-pointer transition-colors">{result.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{result.citation}</p>
+                        <CardTitle className="text-lg hover:text-primary cursor-pointer transition-colors font-serif font-semibold text-ink">{result.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{result.court || "Supreme Court"}</p>
                       </div>
                       <TooltipProvider>
                         <Tooltip>
@@ -475,229 +453,54 @@ const Search = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <p className="text-sm">{result.summary}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
                     
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        {result.court}
-                      </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         {new Date(result.date).toLocaleDateString()}
                       </div>
-                      {result.citedBy && (
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Cited {result.citedBy} times
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Scale className="h-4 w-4" />
+                        Type: {result.type}
+                      </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2">
-                      {result.tags?.map((tag: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="bg-gray-50 text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                    {result.citations && result.citations.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {result.citations.map((tag: string, idx: number) => (
+                          <Badge key={idx} variant="outline" className="bg-secondary/40 text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
 
                     {isAiAnalysisEnabled && (
-                      <div className="rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 p-3 border border-primary/10">
+                      <div className="rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 p-3.5 border border-primary/10">
                         <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
                           <Brain className="h-4 w-4" />
                           AI Analysis
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           {getAiAnalysis(result)}
                         </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="text-xs font-medium">Relevance:</div>
-                          <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="mt-2.5 flex items-center gap-2">
+                          <div className="text-xs font-medium">Similarity:</div>
+                          <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-primary rounded-full" 
-                              style={{ width: `${result.relevance}%` }}
+                              style={{ width: `${result.matchScore}%` }}
                             ></div>
                           </div>
-                          <div className="text-xs font-medium">{result.relevance}%</div>
+                          <div className="text-xs font-medium">{result.matchScore}%</div>
                         </div>
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="border-t border-gray-100 pt-3 justify-between">
-                    <div className="flex items-center text-xs text-gray-500">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {result.jurisdiction}
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs bg-white">
+                  <CardFooter className="border-t border-border/50 pt-3.5 justify-end">
+                    <Button variant="outline" size="sm" className="text-xs rounded-xl">
                       View Full Case
-                      <ArrowRight className="ml-2 h-3 w-3" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-
-              {contentType === 'statutes' && searchResults.map((result: any) => (
-                <Card 
-                  key={result.id} 
-                  className="hover:shadow-lg transition-all duration-300 border-none shadow-md bg-white/70 backdrop-blur-sm hover:translate-y-[-2px]"
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between">
-                      <div>
-                        <CardTitle className="text-lg hover:text-primary cursor-pointer transition-colors">{result.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{result.citation}</p>
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Bookmark className="h-4 w-4 text-gray-400 hover:text-primary" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Save to library</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm">{result.summary}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {result.jurisdiction}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Enacted: {result.enacted === 'Pending' ? 'Pending' : new Date(result.enacted).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        {result.category}
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <div className="text-xs font-medium mr-2">Key Sections:</div>
-                      {result.sections?.map((section: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="bg-gray-50 text-xs">
-                          {section}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {isAiAnalysisEnabled && (
-                      <div className="rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 p-3 border border-primary/10">
-                        <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
-                          <Brain className="h-4 w-4" />
-                          AI Analysis
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {getAiAnalysis(result)}
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="text-xs font-medium">Relevance:</div>
-                          <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full" 
-                              style={{ width: `${result.relevance}%` }}
-                            ></div>
-                          </div>
-                          <div className="text-xs font-medium">{result.relevance}%</div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t border-gray-100 pt-3 justify-end">
-                    <Button variant="outline" size="sm" className="text-xs bg-white">
-                      View Full Text
-                      <ArrowRight className="ml-2 h-3 w-3" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-
-              {contentType === 'articles' && searchResults.map((result: any) => (
-                <Card 
-                  key={result.id} 
-                  className="hover:shadow-lg transition-all duration-300 border-none shadow-md bg-white/70 backdrop-blur-sm hover:translate-y-[-2px]"
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between">
-                      <div>
-                        <CardTitle className="text-lg hover:text-primary cursor-pointer transition-colors">{result.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{result.journal}</p>
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Bookmark className="h-4 w-4 text-gray-400 hover:text-primary" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Save to library</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm">{result.summary}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        {result.author}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(result.date).toLocaleDateString()}
-                      </div>
-                      {result.citations && (
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Cited {result.citations} times
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {result.topics?.map((topic: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="bg-gray-50 text-xs">
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {isAiAnalysisEnabled && (
-                      <div className="rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 p-3 border border-primary/10">
-                        <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
-                          <Brain className="h-4 w-4" />
-                          AI Analysis
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {getAiAnalysis(result)}
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="text-xs font-medium">Relevance:</div>
-                          <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full" 
-                              style={{ width: `${result.relevance}%` }}
-                            ></div>
-                          </div>
-                          <div className="text-xs font-medium">{result.relevance}%</div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t border-gray-100 pt-3 justify-end">
-                    <Button variant="outline" size="sm" className="text-xs bg-white">
-                      View Full Article
                       <ArrowRight className="ml-2 h-3 w-3" />
                     </Button>
                   </CardFooter>
