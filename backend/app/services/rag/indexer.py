@@ -1,6 +1,6 @@
 import asyncio
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 from typing import Any
@@ -77,7 +77,7 @@ class KnowledgeIndexer:
             "documents_processed": 0,
             "chunks_generated": 0,
             "embeddings_generated": 0,
-            "start_time": datetime.utcnow().isoformat() + "Z",
+            "start_time": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
             "end_time": None,
             "processing_time_sec": 0.0,
             "failures": [],
@@ -178,7 +178,7 @@ class KnowledgeIndexer:
                         "language": meta_item["language"],
                         "source_path": meta_item["relative_path"],
                         "checksum": meta_item["checksum"],
-                        "created_at": datetime.utcnow().isoformat() + "Z"
+                        "created_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
                     }
 
                     try:
@@ -196,7 +196,7 @@ class KnowledgeIndexer:
             # Mark pipeline complete
             end_time = time.time()
             status["status"] = "completed"
-            status["end_time"] = datetime.utcnow().isoformat() + "Z"
+            status["end_time"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
             status["processing_time_sec"] = round(end_time - start_time, 2)
             self._save_status(status)
             logger.info("Ingestion Pipeline execution complete.")
@@ -204,7 +204,7 @@ class KnowledgeIndexer:
         except Exception as e:
             end_time = time.time()
             status["status"] = "failed"
-            status["end_time"] = datetime.utcnow().isoformat() + "Z"
+            status["end_time"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
             status["processing_time_sec"] = round(end_time - start_time, 2)
             status["failures"].append({"document_id": "GLOBAL_PIPELINE", "reason": str(e)})
             self._save_status(status)

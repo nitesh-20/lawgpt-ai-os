@@ -1,6 +1,6 @@
 import time
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from loguru import logger
@@ -128,7 +128,7 @@ class ResearchAgent(BaseAgent):
 
             history.append(
                 {
-                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
                     "session_id": session_id,
                     "query": query,
                     "result": output_data["data"],
