@@ -21,6 +21,9 @@ def initialize_firestore() -> Client | None:
     try:
         # Check if already initialized (prevents duplicate initialization)
         if not firebase_admin._apps:
+            if settings.FIREBASE_PROJECT_ID == "your-firebase-project-id":
+                logger.warning("Using placeholder Firebase project ID. Disabling Firestore to prevent 403 errors.")
+                return None
             if settings.GOOGLE_APPLICATION_CREDENTIALS:
                 logger.info(
                     f"Initializing Firebase using service account file: {settings.GOOGLE_APPLICATION_CREDENTIALS}"

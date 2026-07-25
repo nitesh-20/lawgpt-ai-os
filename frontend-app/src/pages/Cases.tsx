@@ -11,9 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import StatCard from "@/components/dashboard/StatCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewCaseDialog } from "@/components/cases/NewCaseDialog";
 import { Case } from "@/types/case";
 import { listCases, createCase, type CaseInput } from "@/services/cases";
@@ -34,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { motion } from "framer-motion";
 
 const Cases = () => {
   const { toast } = useToast();
@@ -49,6 +47,9 @@ const Cases = () => {
     listCases().then((storedCases) => {
       setCases(storedCases);
       setIsLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setIsLoading(false);
     });
   }, []);
 
@@ -56,7 +57,6 @@ const Cases = () => {
     try {
       const caseToAdd = await createCase(newCase);
       setCases((prevCases) => [caseToAdd, ...prevCases]);
-
       toast({
         title: "Success",
         description: "New case has been registered successfully",
@@ -74,9 +74,9 @@ const Cases = () => {
   const filteredCases = cases.filter(
     (case_) => {
       const matchesSearch = 
-        case_.party_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        case_.case_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        case_.court_name.toLowerCase().includes(searchQuery.toLowerCase());
+        (case_.party_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (case_.case_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (case_.court_name || "").toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesTab = 
         activeTab === "all" || 
@@ -88,14 +88,13 @@ const Cases = () => {
     }
   );
 
-  // Sort the filtered cases
   const sortedCases = [...filteredCases].sort((a, b) => {
     if (sortBy === "recent") {
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     } else if (sortBy === "oldest") {
       return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
     } else if (sortBy === "name") {
-      return a.party_name.localeCompare(b.party_name);
+      return (a.party_name || "").localeCompare(b.party_name || "");
     }
     return 0;
   });
@@ -107,205 +106,180 @@ const Cases = () => {
     closed: cases.filter(c => c.status === 'closed').length
   };
 
-  const handleCaseClick = (caseId: string) => {
-    navigate(`/cases/${caseId}`);
-  };
-
   if (isLoading) {
     return (
-      <div className="page-container fade-in">
-        <div className="page-header">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Scale className="h-5 w-5 text-primary-foreground" strokeWidth={1.75} />
-            </div>
-            <h1 className="page-title">Cases</h1>
-          </div>
-          <p className="page-description">Manage your legal cases and court hearings</p>
-        </div>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-6">
+        <div className="h-10 w-1/4 bg-white/[0.03] animate-pulse rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {Array(4).fill(0).map((_, i) => (
+            <div key={i} className="h-24 bg-white/[0.02] border border-white/[0.04] rounded-xl animate-pulse" />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page-container fade-in">
-      <div className="page-header">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl shadow-md">
-            <Scale className="h-6 w-6 text-primary" />
+    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
+      {/* Title */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-white/[0.06]">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Scale className="h-4.5 w-4.5 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Cases Registry</h1>
           </div>
-          <h1 className="page-title">Cases</h1>
+          <p className="text-xs text-muted-foreground/80 font-mono uppercase tracking-wider">Manage dossiers, hearing schedules, and client files</p>
         </div>
-        <p className="page-description">Manage your legal cases and court hearings</p>
+        <Button onClick={() => setShowNewCaseDialog(true)} className="btn-primary">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Register Case
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Total Cases" value={caseStatistics.total} icon={Clipboard} />
-        <StatCard title="Active Cases" value={caseStatistics.active} icon={Users} />
-        <StatCard title="Pending Cases" value={caseStatistics.pending} icon={Clock} />
-        <StatCard title="Upcoming Hearings" value={cases.filter(c => c.next_date).length} icon={Calendar} />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {[
+          { title: "Total Cases", value: caseStatistics.total, icon: Clipboard },
+          { title: "Active Matters", value: caseStatistics.active, icon: Users },
+          { title: "Pending Audits", value: caseStatistics.pending, icon: Clock },
+          { title: "Upcoming hearings", value: cases.filter(c => c.next_date).length, icon: Calendar }
+        ].map((item, idx) => (
+          <div key={idx} className="glass-card p-5 flex items-center justify-between">
+            <div>
+              <span className="text-3xs font-mono tracking-wider text-muted-foreground/80 uppercase">{item.title}</span>
+              <p className="text-2xl font-bold text-white mt-1">{item.value}</p>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center border border-white/[0.05]">
+              <item.icon className="h-4 w-4 text-primary" />
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search cases..."
+      {/* Controls Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            placeholder="Search dossiers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 w-full"
+            className="input-premium pl-10 w-full text-sm"
           />
         </div>
         
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-black/40 border-white/[0.08] text-xs">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-white/[0.08] text-white">
               <SelectGroup>
-                <SelectLabel>Sort By</SelectLabel>
-                <SelectItem value="recent">
-                  <div className="flex items-center">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Most Recent
-                  </div>
-                </SelectItem>
-                <SelectItem value="oldest">
-                  <div className="flex items-center">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Oldest First
-                  </div>
-                </SelectItem>
-                <SelectItem value="name">
-                  <div className="flex items-center">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Case Name (A-Z)
-                  </div>
-                </SelectItem>
+                <SelectLabel className="text-2xs text-muted-foreground">Order</SelectLabel>
+                <SelectItem value="recent">Most Recent</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="name">Client Name (A-Z)</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <FilterIcon className="mr-2 h-4 w-4" />
+              <Button variant="outline" className="border-white/[0.08] text-xs hover:bg-white/[0.04]">
+                <FilterIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 Filter
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuItem>Federal Cases</DropdownMenuItem>
-              <DropdownMenuItem>State Cases</DropdownMenuItem>
-              <DropdownMenuItem>Civil Cases</DropdownMenuItem>
-              <DropdownMenuItem>Criminal Cases</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="bg-card border-white/[0.08] text-white">
+              <DropdownMenuItem className="focus:bg-white/[0.04] text-xs">Civil</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-white/[0.04] text-xs">Criminal</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-white/[0.04] text-xs">Corporate</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <Button 
-            onClick={() => setShowNewCaseDialog(true)}
-            className="w-full md:w-auto"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Case
-          </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">All Cases</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="closed">Closed</TabsTrigger>
-        </TabsList>
+      {/* Navigation Tabs */}
+      <div className="space-y-4">
+        <div className="flex border-b border-white/[0.06] gap-2 pb-px">
+          {["all", "active", "pending", "closed"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2.5 text-xs font-semibold tracking-wide uppercase border-b-2 transition-all duration-200 ${
+                activeTab === tab 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-muted-foreground hover:text-white"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
-        <TabsContent value={activeTab} className="space-y-4 fade-in">
-          <div className="glass-card overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Party Name</TableHead>
-                  <TableHead>Case No.</TableHead>
-                  <TableHead className="hidden md:table-cell">Court</TableHead>
-                  <TableHead className="hidden md:table-cell">Filing Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">Next Hearing</TableHead>
+        <div className="glass-card overflow-hidden border-white/[0.06]">
+          <Table>
+            <TableHeader className="bg-white/[0.01] border-b border-white/[0.06]">
+              <TableRow className="hover:bg-transparent border-b-0">
+                <TableHead className="text-2xs font-mono text-muted-foreground uppercase py-3.5">Client Name</TableHead>
+                <TableHead className="text-2xs font-mono text-muted-foreground uppercase py-3.5">Case/Title</TableHead>
+                <TableHead className="text-2xs font-mono text-muted-foreground uppercase py-3.5 hidden md:table-cell">Jurisdiction</TableHead>
+                <TableHead className="text-2xs font-mono text-muted-foreground uppercase py-3.5">Status</TableHead>
+                <TableHead className="text-2xs font-mono text-muted-foreground uppercase py-3.5 hidden md:table-cell">Next Hearing</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedCases.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                      <Scale className="h-8 w-8 text-muted-foreground/60" strokeWidth={1.5} />
+                      <p className="text-sm font-semibold text-white">No dossiers recorded</p>
+                      <p className="text-xs text-muted-foreground/80 max-w-xs leading-relaxed">Get started by registering a new matter with the command panel or using the Register button.</p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedCases.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <Scale className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
-                        <p className="text-lg font-medium text-ink">No cases found</p>
-                        <p className="text-sm text-muted-foreground">Create your first case by clicking the "New Case" button</p>
-                      </div>
+              ) : (
+                sortedCases.map((case_) => (
+                  <TableRow
+                    key={case_.id}
+                    className="cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                    onClick={() => navigate(`/cases/${case_.id}`)}
+                  >
+                    <TableCell className="font-semibold text-xs py-4 text-white">{case_.party_name}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{case_.case_number}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">{case_.jurisdiction || 'Federal'}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant="outline" 
+                        className={
+                          case_.status === 'active' ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10 font-mono text-3xs' :
+                          case_.status === 'pending' ? 'bg-amber-500/5 text-amber-500 border-amber-500/10 font-mono text-3xs' :
+                          'bg-white/5 text-muted-foreground border-white/10 font-mono text-3xs'
+                        }
+                      >
+                        {case_.status || 'active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                      {case_.next_date ? (
+                        <div className="flex items-center gap-1.5 font-mono text-2xs">
+                          <Calendar className="h-3 w-3 text-primary" />
+                          {new Date(case_.next_date).toLocaleDateString()}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/50">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
-                ) : (
-                  sortedCases.map((case_) => (
-                    <TableRow
-                      key={case_.id}
-                      className="cursor-pointer transition-colors hover:bg-secondary/40"
-                      onClick={() => handleCaseClick(case_.id)}
-                    >
-                      <TableCell className="font-medium">{case_.party_name}</TableCell>
-                      <TableCell>{case_.case_number}</TableCell>
-                      <TableCell className="hidden md:table-cell">{case_.court_name}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {case_.filing_date ? new Date(case_.filing_date).toLocaleDateString() : 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant="outline" 
-                          className={
-                            case_.status === 'active' ? 'bg-primary/10 text-primary border-primary/20' :
-                            case_.status === 'pending' ? 'bg-accent/10 text-accent border-accent/20' :
-                            'bg-secondary text-foreground border-border'
-                          }
-                        >
-                          {case_.status || 'active'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {case_.next_date ? (
-                          <div className="flex items-center text-muted-foreground">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(case_.next_date).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">Not scheduled</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          
-          {sortedCases.length > 0 && (
-            <div className="flex justify-between items-center text-sm text-muted-foreground px-2">
-              <div>Showing {sortedCases.length} of {cases.length} cases</div>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" className="h-8 px-2">
-                  <ChevronRight className="h-4 w-4 rotate-180" />
-                  Previous
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 px-2">
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
       <NewCaseDialog 
         open={showNewCaseDialog}

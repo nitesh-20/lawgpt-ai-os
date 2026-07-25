@@ -1,31 +1,32 @@
-
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { CommandPalette } from "./CommandPalette";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Handle online/offline status
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      toast.success("You're back online!", {
-        description: "All features are now available",
+      toast.success("Connection Restored", {
+        description: "FastAPI sync is active.",
         duration: 3000,
       });
     };
     
     const handleOffline = () => {
       setIsOnline(false);
-      toast.warning("You're offline", {
-        description: "The app will continue to work with cached data",
+      toast.error("Network Interrupted", {
+        description: "Running in read-only offline mode.",
         duration: 5000,
       });
     };
@@ -39,58 +40,55 @@ const AppLayout = () => {
     };
   }, []);
 
-  // Create smooth page transitions
+  // Set up initial system load skeleton
   useEffect(() => {
-    // Create page transition effect on route change
-    setIsTransitioning(true);
     const timer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-    
-    // Reduce artificial loading time for faster transitions
-    setIsLoading(true);
-    const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 300); // Reduced from 500ms to 300ms
-    
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(loadingTimer);
-    };
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
-
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+      <CommandPalette />
+      
       {isLoading ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <div className="text-sm text-muted-foreground">Loading LawGPT…</div>
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#09090b] z-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative flex items-center justify-center">
+              <div className="w-10 h-10 border border-primary/25 border-t-primary rounded-full animate-spin" />
+              <div className="absolute w-6 h-6 bg-primary/10 rounded-full animate-pulse" />
+            </div>
+            <div className="text-2xs font-mono tracking-widest text-muted-foreground uppercase">Booting LawGPT OS</div>
           </div>
         </div>
       ) : (
-        <>
+        <div className="relative min-h-screen flex">
           <Sidebar />
-          <Header isOnline={isOnline} />
-          <main
-            className={`transition-all duration-200 ${
-              isMobile ? 'ml-0' : 'ml-64'
-            } pt-20 px-4 md:px-8`}
-          >
-            <div className={`transition-all duration-200 ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
-              <Outlet />
-            </div>
-          </main>
-
-          {!isOnline && (
-            <div className="fixed bottom-4 right-4 bg-card border border-border text-foreground px-4 py-2 rounded-md shadow-card-hover flex items-center gap-2 text-sm">
-              <div className="w-1.5 h-1.5 bg-accent rounded-full" />
-              <span>Offline mode — using cached data</span>
-            </div>
-          )}
-        </>
+          
+          <div className="flex-1 flex flex-col min-w-0">
+            <Header isOnline={isOnline} />
+            
+            <main
+              className={`flex-1 transition-all duration-300 ${
+                isMobile ? 'ml-0' : 'ml-64'
+              } pt-20 px-4 md:px-8 pb-12`}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="h-full"
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        </div>
       )}
     </div>
   );

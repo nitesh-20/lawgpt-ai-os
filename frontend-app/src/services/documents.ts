@@ -12,10 +12,12 @@ export interface DocumentSummary {
 
 export async function listDocuments(): Promise<DocumentSummary[]> {
   const response = await apiClient.get("/documents");
-  if (response && response.status === "success" && Array.isArray(response.data)) {
-    return response.data as DocumentSummary[];
-  } else if (Array.isArray(response)) {
-    return response as DocumentSummary[];
-  }
-  return [];
+  const data = (response && Array.isArray(response.data)) ? response.data : (Array.isArray(response) ? response : []);
+  return data;
+}
+
+export async function uploadDocument(file: File): Promise<any> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await apiClient.postMultipart("/upload", formData);
 }

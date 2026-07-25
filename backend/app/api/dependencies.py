@@ -5,6 +5,7 @@ from firebase_admin import auth
 import os
 from loguru import logger
 from typing import Optional
+from app.core.config import settings
 
 security = HTTPBearer(auto_error=False)
 
@@ -13,7 +14,7 @@ async def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] =
     Validates Firebase JWT token. Returns user payload if valid, otherwise raises 401.
     """
     if not credentials:
-        if os.environ.get("ENVIRONMENT") == "testing":
+        if settings.ENVIRONMENT == "testing":
             return {"uid": "test_user"}
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
