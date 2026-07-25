@@ -11,28 +11,16 @@ class ResultFormatter:
         """
         Formats the reasoner output and citations into the standard UI schema.
         """
-        # Ensure we fallback cleanly if keys are missing
-        summary = reasoner_out.get("summary", reasoner_out.get("Summary", ""))
-        detailed_explanation = reasoner_out.get(
-            "detailed_explanation", reasoner_out.get("Detailed Explanation", "")
-        )
-        applicable_law = reasoner_out.get("applicable_law", reasoner_out.get("Applicable Law", ""))
-        relevant_sections = reasoner_out.get(
-            "relevant_sections", reasoner_out.get("Relevant Sections", [])
-        )
-        related_acts = reasoner_out.get("related_acts", reasoner_out.get("Related Acts", []))
-        references = reasoner_out.get("references", reasoner_out.get("References", []))
-        confidence_score = reasoner_out.get(
-            "confidence_score", reasoner_out.get("Confidence Score", 0.0)
-        )
-
         return {
-            "Summary": summary,
-            "Detailed Explanation": detailed_explanation,
-            "Applicable Law": applicable_law,
-            "Relevant Sections": relevant_sections,
-            "Related Acts": related_acts,
-            "References": references,
-            "Confidence Score": confidence_score,
-            "citations": citations,
+            "summary": reasoner_out.get("summary", ""),
+            "key_points": reasoner_out.get("key_points", []),
+            "acts": reasoner_out.get("acts", []),
+            "sections": reasoner_out.get("sections", []),
+            "judgments": reasoner_out.get("judgments", []),
+            "compliance_notes": reasoner_out.get("compliance_notes", ""),
+            "risk_level": reasoner_out.get("risk_level", "Unknown"),
+            "confidence_score": reasoner_out.get("confidence_score", 0.0),
+            "citations": reasoner_out.get("citations", []),
+            "sources": reasoner_out.get("sources", []),
+            "related_documents": reasoner_out.get("related_documents", [])
         }

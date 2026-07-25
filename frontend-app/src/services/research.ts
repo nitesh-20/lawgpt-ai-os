@@ -2,16 +2,24 @@ import { apiClient } from "@/utils/apiClient";
 
 export type ResearchContentType = "cases" | "statutes" | "articles" | "all";
 
-export interface ResearchResult {
-  id: string;
+export interface ResearchSource {
   title: string;
-  court?: string;
-  date: string;
-  matchScore: number;
+  url: string;
+  type?: string;
+}
+
+export interface ResearchReportResponse {
   summary: string;
+  key_points: string[];
+  acts: string[];
+  sections: string[];
+  judgments: string[];
+  compliance_notes: string;
+  risk_level: string;
+  confidence_score: number;
   citations: string[];
-  type: string;
-  content?: string;
+  sources: ResearchSource[];
+  related_documents: string[];
 }
 
 export interface ResearchSearchParams {
@@ -20,7 +28,7 @@ export interface ResearchSearchParams {
   jurisdiction?: string;
 }
 
-export async function search(params: ResearchSearchParams): Promise<ResearchResult[]> {
+export async function search(params: ResearchSearchParams): Promise<ResearchReportResponse | null> {
   const response = await apiClient.post("/research/query", {
     query: params.query,
     filters: {
@@ -29,10 +37,10 @@ export async function search(params: ResearchSearchParams): Promise<ResearchResu
     }
   });
 
-  if (response && response.status === "success" && response.data?.results) {
-    return response.data.results as ResearchResult[];
+  if (response && response.status === "success" && response.data) {
+    return response.data as ResearchReportResponse;
   }
-  return [];
+  return null;
 }
 
 export async function getResearchHistory(): Promise<any[]> {
