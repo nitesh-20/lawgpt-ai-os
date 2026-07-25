@@ -31,3 +31,7 @@ uploads/
 generated/
 temp/
 data/
+
+# Firebase keys / credentials
+serviceAccountKey.json
+backend/serviceAccountKey.json

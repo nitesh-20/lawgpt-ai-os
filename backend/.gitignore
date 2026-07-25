@@ -66,6 +66,7 @@ ENV/bin/
 
 # Firebase keys / credentials
 *.json
+serviceAccountKey.json
 
 # Logs, Storage and Temp data directories
 logs/
