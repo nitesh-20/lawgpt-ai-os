@@ -54,7 +54,10 @@ class ComplianceAgent(BaseAgent):
         if not self._initialized or self.engine is None:
             raise RuntimeError("Compliance Agent is not initialized.")
 
-        query = task_input.get("query", task_input.get("message", ""))
+        raw_query = task_input.get("query")
+        if raw_query is None:
+            raw_query = task_input.get("message")
+        query = str(raw_query) if raw_query is not None else ""
         document_id = task_input.get("document_id")
         file_path = task_input.get("file_path")
         regulation_ids = task_input.get("regulation_ids")
