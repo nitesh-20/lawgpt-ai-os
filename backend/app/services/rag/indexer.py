@@ -29,7 +29,7 @@ class KnowledgeIndexer:
 
     def _init_status(self) -> None:
         if not self.status_file.exists():
-            status = {
+            status: dict[str, Any] = {
                 "status": "idle",
                 "documents_processed": 0,
                 "chunks_generated": 0,
@@ -72,7 +72,7 @@ class KnowledgeIndexer:
 
     async def _run_ingestion_pipeline(self, reindex_all: bool) -> None:
         start_time = time.time()
-        status = {
+        status: dict[str, Any] = {
             "status": "processing",
             "documents_processed": 0,
             "chunks_generated": 0,
