@@ -58,7 +58,9 @@ async def query_research(payload: ResearchQueryRequest):
         now = datetime.datetime.utcnow().isoformat()
         
         # We synthesize the Cases/Statutes format expected by frontend
-        if "Related Acts" in agent_result:
+        main_summary = agent_result.get("Detailed Explanation") or agent_result.get("Summary") or res.get("message", "")
+        
+        if agent_result.get("Related Acts"):
             for act in agent_result["Related Acts"]:
                 results_array.append({
                     "id": str(uuid.uuid4()),
@@ -66,7 +68,7 @@ async def query_research(payload: ResearchQueryRequest):
                     "court": "Supreme Court",
                     "date": now,
                     "matchScore": 95,
-                    "summary": agent_result.get("Analysis", ""),
+                    "summary": main_summary,
                     "citations": agent_result.get("Relevant Sections", []),
                     "type": "case"
                 })
@@ -78,8 +80,8 @@ async def query_research(payload: ResearchQueryRequest):
                 "court": "System",
                 "date": now,
                 "matchScore": 100,
-                "summary": res.get("message", "") or str(agent_result),
-                "citations": [],
+                "summary": main_summary or str(agent_result),
+                "citations": agent_result.get("References", []) or agent_result.get("Relevant Sections", []),
                 "type": "case"
             })
             
