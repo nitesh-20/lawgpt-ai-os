@@ -90,7 +90,7 @@ class DocumentAnalyzer:
         local_data = self._get_all_local_analyses()
         return local_data.get(doc_id)
 
-    async def update_status(self, doc_id: str, status: str, error: str = None, results: dict[str, Any] = None) -> None:
+    async def update_status(self, doc_id: str, status: str, error: str | None = None, results: dict[str, Any] | None = None) -> None:
         """
         Updates the status of a document analysis record.
         """
@@ -145,8 +145,8 @@ class DocumentAnalyzer:
         self,
         file_name: str,
         file_bytes: bytes,
-        document_id: str = None,
-        file_path: str = None
+        document_id: str | None = None,
+        file_path: str | None = None
     ) -> dict[str, Any]:
         """
         Main orchestration function: Parsing -> Chunking -> Vector Indexing -> Sub-engine extraction.

@@ -13,7 +13,7 @@ class RiskDetector:
     Uses Gemini LLM when configured, otherwise falls back to deterministic parsing.
     """
 
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         self.api_key = api_key or settings.GEMINI_API_KEY
 
     async def detect(self, text: str) -> dict[str, Any]:

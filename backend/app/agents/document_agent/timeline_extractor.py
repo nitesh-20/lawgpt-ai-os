@@ -12,7 +12,7 @@ class TimelineExtractor:
     Uses Gemini LLM when configured, otherwise falls back to deterministic regex-based parsing.
     """
 
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         self.api_key = api_key or settings.GEMINI_API_KEY
 
     async def extract(self, text: str) -> list[dict[str, str]]:

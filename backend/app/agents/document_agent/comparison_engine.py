@@ -18,7 +18,7 @@ class ComparisonEngine:
     Uses Gemini LLM when configured, otherwise falls back to deterministic sequence comparison.
     """
 
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         self.api_key = api_key or settings.GEMINI_API_KEY
 
     async def compare(self, text_1: str, text_2: str) -> dict[str, Any]:
