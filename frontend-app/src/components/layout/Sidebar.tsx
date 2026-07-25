@@ -7,9 +7,10 @@ import {
   Search, 
   FolderOpen, 
   Shield, 
-  Bot, 
+  Bot,
   FileEdit,
-  ChevronLeft, 
+  Cpu,
+  ChevronLeft,
   ChevronRight,
   X,
   LayoutGrid
@@ -42,6 +43,7 @@ const Sidebar = () => {
     { icon: FileEdit, label: 'Document Drafting', path: '/document-drafting' },
     { icon: Shield, label: 'Compliance Checker', path: '/compliance' },
     { icon: Bot, label: 'Legal Assistant', path: '/chatbot' },
+    { icon: Cpu, label: 'AI Agents', path: '/agents' },
   ];
 
   const toggleSidebar = () => {
