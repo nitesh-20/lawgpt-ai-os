@@ -25,14 +25,6 @@ class ComplianceReportRequest(BaseModel):
     report_format: str = Field(default="json", description="Export format: json, markdown")
 
 
-@router.post("", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def compliance_placeholder():
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Compliance audit functionality is now implemented. Use /check or /report."
-    )
-
-
 @router.post("/check", status_code=status.HTTP_200_OK)
 async def check_compliance(payload: ComplianceCheckRequest) -> dict[str, Any]:
     """

@@ -9,8 +9,17 @@ import {
   FileEdit,
 } from "lucide-react";
 import HeroDocumentPreview from "@/components/landing/HeroDocumentPreview";
-import { heroDocumentPreview } from "@/data/heroDocumentPreview";
 
+const heroDocumentPreview = {
+  title: "Master Services Agreement",
+  type: "Contract Draft",
+  status: "Review Pending",
+  clauses: [
+    { id: "c1", title: "Indemnification", text: "Party A shall indemnify Party B against all claims arising from...", status: "flagged" },
+    { id: "c2", title: "Confidentiality", text: "Both parties agree to maintain strict confidentiality regarding...", status: "approved" },
+    { id: "c3", title: "Term and Termination", text: "This agreement shall commence on the Effective Date...", status: "pending" },
+  ]
+};
 const NAV_LINKS = [
   { label: "Platform", href: "#platform" },
   { label: "Workflow", href: "#workflow" },

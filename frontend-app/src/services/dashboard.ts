@@ -1,73 +1,81 @@
 import { apiClient } from "@/utils/apiClient";
-import {
-  dashboardStats,
-  dashboardNotifications,
-  taskCompletion,
-  caseStatusBreakdown,
-  teamActivity,
-  type DashboardStat,
-  type DashboardNotification,
-  type TaskCompletion,
-  type CaseStatusCount,
-  type TeamMetric,
-} from "@/data/dashboardMock";
+
+export interface DashboardStat {
+  title: string;
+  value: string;
+  change: string;
+  trend: "up" | "down" | "neutral";
+  icon: string;
+}
+
+export interface DashboardNotification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  type: "alert" | "info" | "success" | "warning";
+}
+
+export interface TaskCompletion {
+  name: string;
+  completed: number;
+  pending: number;
+}
+
+export interface CaseStatusCount {
+  name: string;
+  count: number;
+  fill: string;
+}
+
+export interface TeamMetric {
+  name: string;
+  cases: number;
+  hours: number;
+}
 
 export async function getDashboardStats(): Promise<DashboardStat[]> {
-  try {
-    const response = await apiClient.get("/dashboard/stats");
-    if (response && response.status === "success" && response.data) {
-      return response.data as DashboardStat[];
-    }
-  } catch(e) {
-    console.error("Failed to fetch dashboard stats", e);
+  const response = await apiClient.get("/dashboard/stats");
+  if (response && response.status === "success" && response.data) {
+    return response.data as DashboardStat[];
   }
-  return dashboardStats;
+  if (Array.isArray(response)) return response as DashboardStat[];
+  return [];
 }
 
 export async function getDashboardNotifications(): Promise<DashboardNotification[]> {
-  try {
-    const response = await apiClient.get("/dashboard/notifications");
-    if (response && response.status === "success" && response.data) {
-      return response.data as DashboardNotification[];
-    }
-  } catch(e) {
-    console.error("Failed to fetch notifications", e);
+  const response = await apiClient.get("/dashboard/notifications");
+  if (response && response.status === "success" && response.data) {
+    return response.data as DashboardNotification[];
   }
-  return dashboardNotifications;
+  if (Array.isArray(response)) return response as DashboardNotification[];
+  return [];
 }
 
 export async function getTaskCompletion(): Promise<TaskCompletion[]> {
-  try {
-    const response = await apiClient.get("/dashboard/task-completion");
-    if (response && response.status === "success" && response.data) {
-      return response.data as TaskCompletion[];
-    }
-  } catch(e) {
-    console.error("Failed to fetch task completion", e);
+  const response = await apiClient.get("/dashboard/task-completion");
+  if (response && response.status === "success" && response.data) {
+    return response.data as TaskCompletion[];
   }
-  return taskCompletion;
+  if (Array.isArray(response)) return response as TaskCompletion[];
+  return [];
 }
 
 export async function getCaseStatusBreakdown(): Promise<CaseStatusCount[]> {
-  try {
-    const response = await apiClient.get("/dashboard/case-status");
-    if (response && response.status === "success" && response.data) {
-      return response.data as CaseStatusCount[];
-    }
-  } catch(e) {
-    console.error("Failed to fetch case status", e);
+  const response = await apiClient.get("/dashboard/case-status");
+  if (response && response.status === "success" && response.data) {
+    return response.data as CaseStatusCount[];
   }
-  return caseStatusBreakdown;
+  if (Array.isArray(response)) return response as CaseStatusCount[];
+  return [];
 }
 
 export async function getTeamActivity(): Promise<TeamMetric[]> {
-  try {
-    const response = await apiClient.get("/dashboard/team-activity");
-    if (response && response.status === "success" && response.data) {
-      return response.data as TeamMetric[];
-    }
-  } catch(e) {
-    console.error("Failed to fetch team activity", e);
+  const response = await apiClient.get("/dashboard/team-activity");
+  if (response && response.status === "success" && response.data) {
+    return response.data as TeamMetric[];
   }
-  return teamActivity;
+  if (Array.isArray(response)) return response as TeamMetric[];
+  return [];
 }

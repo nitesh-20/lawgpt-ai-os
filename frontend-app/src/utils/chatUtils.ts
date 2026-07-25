@@ -1,5 +1,5 @@
 import { Citation, UploadedDocument } from '@/types/chat';
-import { getMockAnswer } from '@/data/chatMocks';
+import { apiClient } from '@/utils/apiClient';
 
 export interface StreamChunk {
   token: string;
@@ -7,20 +7,27 @@ export interface StreamChunk {
   citations?: Citation[];
 }
 
-// Simulates a token-by-token SSE stream from mock data. Swap this generator's
-// body for a real fetch()-based reader against the chat-assistant API; callers
-// only depend on the async-iterable StreamChunk shape, not the source.
 export async function* streamMockResponse(
   userMessage: string,
   documents: UploadedDocument[] = []
 ): AsyncGenerator<StreamChunk> {
-  const { response, citations } = getMockAnswer(userMessage);
+  let responseText = "Failed to connect to backend.";
+  let citations: Citation[] = [];
+  
+  try {
+    const response = await apiClient.post("/chat", { message: userMessage });
+    if (response && response.response) {
+      responseText = response.response;
+    }
+  } catch (error) {
+    console.error("Chat API error:", error);
+  }
 
   const prefix = documents.length > 0
-    ? `Referencing ${documents.length} uploaded document(s). `
+    ? `[Referencing ${documents.length} uploaded document(s)]\n\n`
     : '';
 
-  const fullText = prefix + response;
+  const fullText = prefix + responseText;
   const words = fullText.split(' ');
 
   for (let i = 0; i < words.length; i++) {
