@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Any
 
 from loguru import logger
+from app.services.rag.vector_store import get_vector_store
+from app.services.embeddings.embeddings import EmbeddingService
 
 
 class RAGService:
@@ -16,6 +18,8 @@ class RAGService:
         self.metadata_path = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/document_metadata.json")
         self.placeholder_ids: set[str] = set()
         self._load_placeholder_registry()
+        self.vector_store = get_vector_store()
+        self.embedding_service = EmbeddingService()
 
     def _load_placeholder_registry(self) -> None:
         try:
@@ -69,5 +73,19 @@ class RAGService:
         Filtered to guarantee no placeholder records are ever returned.
         """
         logger.info(f"Retrieving context for query: {query}")
-        return []
+        try:
+            # Generate embedding for query
+            embedding = await self.embedding_service.get_embedding(query)
+            # Query the vector store
+            chunks = await self.vector_store.search_chunks(
+                query_text=query, query_embedding=embedding, limit=limit * 2
+            )
+            # Filter out chunks from placeholder documents
+            active_chunks = [
+                c for c in chunks if not self.is_placeholder_document(c.get("document_id", ""))
+            ]
+            return active_chunks[:limit]
+        except Exception as e:
+            logger.error(f"Error retrieving context in RAGService: {e}")
+            return []
 

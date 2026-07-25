@@ -1,5 +1,6 @@
 import os
 import json
+import math
 from pathlib import Path
 from typing import Any
 from loguru import logger
@@ -17,6 +18,15 @@ class BaseVectorStore:
         raise NotImplementedError
 
     async def delete_chunks_by_document(self, doc_id: str) -> None:
+        raise NotImplementedError
+
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         raise NotImplementedError
 
 
@@ -106,6 +116,89 @@ class FirestoreVectorStore(BaseVectorStore):
             with open(self.local_fallback, "w") as f:
                 json.dump(data, f, indent=2)
 
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        logger.info(f"Searching chunks for query: '{query_text}' with filters: {filters}")
+        client = self._get_client()
+        candidates: list[dict[str, Any]] = []
+
+        if client is not None:
+            try:
+                ref = client.collection(self.collection_name)
+                if filters and "document_id" in filters:
+                    docs = ref.where("document_id", "==", filters["document_id"]).stream()
+                else:
+                    docs = ref.stream()
+                for d in docs:
+                    data = d.to_dict()
+                    if data is not None:
+                        candidates.append(data)
+            except Exception as e:
+                logger.warning(f"Firestore search fetch failed: {e}. Falling back to local storage.")
+                client = None
+
+        if client is None:
+            if self.local_fallback.exists():
+                try:
+                    with open(self.local_fallback, "r") as f:
+                        candidates = json.load(f)
+                except Exception as e:
+                    logger.error(f"Failed to read local fallback vector store: {e}")
+                    candidates = []
+
+        # Perform filtering in Python
+        filtered_candidates = []
+        for c in candidates:
+            keep = True
+            if filters:
+                for k, v in filters.items():
+                    if c.get(k) != v:
+                        keep = False
+                        break
+            if keep:
+                filtered_candidates.append(c)
+
+        # Compute scores (hybrid: semantic cosine similarity + keyword overlap)
+        scored_candidates = []
+        query_words = set(query_text.lower().split()) if query_text else set()
+
+        for c in filtered_candidates:
+            # 1. Semantic score
+            emb = c.get("embedding")
+            semantic_score = 0.0
+            if emb and query_embedding:
+                dot_product = sum(a * b for a, b in zip(query_embedding, emb))
+                norm1 = math.sqrt(sum(a * a for a in query_embedding))
+                norm2 = math.sqrt(sum(b * b for b in emb))
+                if norm1 > 0.0 and norm2 > 0.0:
+                    semantic_score = dot_product / (norm1 * norm2)
+
+            # 2. Keyword score
+            text = c.get("text", "").lower()
+            keyword_score = 0.0
+            if query_words:
+                text_words = set(text.split())
+                overlap = len(query_words.intersection(text_words))
+                keyword_score = overlap / max(len(query_words), 1)
+
+            # Hybrid score
+            if all(v == 0.0 for v in query_embedding) or not emb or all(v == 0.0 for v in emb):
+                score = keyword_score
+            else:
+                score = 0.7 * semantic_score + 0.3 * keyword_score
+
+            c_with_score = dict(c)
+            c_with_score["score"] = score
+            scored_candidates.append(c_with_score)
+
+        scored_candidates.sort(key=lambda x: x.get("score", 0.0), reverse=True)
+        return scored_candidates[:limit]
+
 
 class FAISSVectorStore(BaseVectorStore):
     """
@@ -119,6 +212,15 @@ class FAISSVectorStore(BaseVectorStore):
 
     async def delete_chunks_by_document(self, doc_id: str) -> None:
         logger.info(f"FAISS: Deleted chunks for {doc_id}")
+
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        return []
 
 
 class ChromaVectorStore(BaseVectorStore):
@@ -134,6 +236,15 @@ class ChromaVectorStore(BaseVectorStore):
     async def delete_chunks_by_document(self, doc_id: str) -> None:
         logger.info(f"Chroma: Deleted chunks for {doc_id}")
 
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        return []
+
 
 class PineconeVectorStore(BaseVectorStore):
     """
@@ -148,6 +259,15 @@ class PineconeVectorStore(BaseVectorStore):
     async def delete_chunks_by_document(self, doc_id: str) -> None:
         logger.info(f"Pinecone: Deleted chunks for {doc_id}")
 
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        return []
+
 
 class WeaviateVectorStore(BaseVectorStore):
     """
@@ -161,6 +281,15 @@ class WeaviateVectorStore(BaseVectorStore):
 
     async def delete_chunks_by_document(self, doc_id: str) -> None:
         logger.info(f"Weaviate: Deleted chunks for {doc_id}")
+
+    async def search_chunks(
+        self,
+        query_text: str,
+        query_embedding: list[float],
+        limit: int = 5,
+        filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        return []
 
 
 def get_vector_store(provider_name: str | None = None) -> BaseVectorStore:

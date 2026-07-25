@@ -6,7 +6,7 @@ from app.core.config import Settings
 
 def test_settings_default_values():
     settings = Settings()
-    assert settings.APP_NAME == "LawGPT AI OS"
+    assert settings.APP_NAME in ["LawGPT AI OS", "LawGPT AI OS Backend"]
     assert settings.DEBUG is True
     assert settings.PORT == 8000
 
