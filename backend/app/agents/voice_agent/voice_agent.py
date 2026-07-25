@@ -13,7 +13,10 @@ from app.agents.voice_agent.translation import TranslationService
 from app.agents.voice_agent.session import VoiceSessionManager
 from app.agents.voice_agent.processor import AudioProcessor
 
-
+from app.services.sarvam.speech import SpeechToTextManager
+from app.services.sarvam.tts import TextToSpeechManager
+from app.services.sarvam.translate import TranslationManager
+from app.services.sarvam.config import SarvamConfig
 class VoiceAgent(BaseAgent):
     """
     Voice Agent coordinates Speech-to-Text transcription, language translation,
@@ -139,10 +142,21 @@ class VoiceAgent(BaseAgent):
         
         # 2. Speech recognition (STT)
         stt_start = time.time()
-        stt_res = await self.recognizer.transcribe(
-            audio_bytes=audio_bytes,
-            language_code=language_code or "en-IN"
-        )
+        
+        # Try Sarvam STT first if enabled
+        stt_res = None
+        if SarvamConfig.is_enabled():
+            stt_res = await SpeechToTextManager.transcribe(audio_bytes, language_code=language_code or "hi-IN")
+            if stt_res.get("status") == "error":
+                stt_res = None
+                
+        # Fallback to existing logic
+        if not stt_res:
+            stt_res = await self.recognizer.transcribe(
+                audio_bytes=audio_bytes,
+                language_code=language_code or "en-IN"
+            )
+            
         stt_latency = round(time.time() - stt_start, 3)
 
         transcript = stt_res["transcript"]
@@ -155,12 +169,21 @@ class VoiceAgent(BaseAgent):
         query_text_en = transcript
         if not detected_lang.startswith("en"):
             trans_start = time.time()
-            trans_res = await self.translation_service.translate(
-                text=transcript,
-                source_language_code=detected_lang,
-                target_language_code="en-IN"
-            )
-            query_text_en = trans_res["translated_text"]
+            trans_res = None
+            
+            if SarvamConfig.is_enabled():
+                trans_res = await TranslationManager.translate(transcript, detected_lang, "en-IN")
+                if trans_res.get("status") == "error":
+                    trans_res = None
+                    
+            if not trans_res:
+                trans_res = await self.translation_service.translate(
+                    text=transcript,
+                    source_language_code=detected_lang,
+                    target_language_code="en-IN"
+                )
+                
+            query_text_en = trans_res.get("translated_text", transcript)
             translate_in_latency = round(time.time() - trans_start, 3)
 
         # Update Session history (User message)
@@ -195,23 +218,40 @@ class VoiceAgent(BaseAgent):
         response_text_native = response_text_en
         if not detected_lang.startswith("en"):
             trans_start = time.time()
-            trans_res = await self.translation_service.translate(
-                text=response_text_en,
-                source_language_code="en-IN",
-                target_language_code=detected_lang
-            )
-            response_text_native = trans_res["translated_text"]
+            trans_res = None
+            
+            if SarvamConfig.is_enabled():
+                trans_res = await TranslationManager.translate(response_text_en, "en-IN", detected_lang)
+                if trans_res.get("status") == "error":
+                    trans_res = None
+                    
+            if not trans_res:
+                trans_res = await self.translation_service.translate(
+                    text=response_text_en,
+                    source_language_code="en-IN",
+                    target_language_code=detected_lang
+                )
+                
+            response_text_native = trans_res.get("translated_text", response_text_en)
             translate_out_latency = round(time.time() - trans_start, 3)
 
         # 7. Text to Speech Synthesis (TTS)
         tts_start = time.time()
-        tts_res = await self.synthesizer.synthesize(
-            text=response_text_native,
-            target_language_code=detected_lang
-        )
+        audio_b64 = ""
+        
+        if SarvamConfig.is_enabled():
+            tts_res = await TextToSpeechManager.synthesize(response_text_native, speaker="meera", language_code=detected_lang)
+            if tts_res.get("status") == "success" and tts_res.get("audio_base64"):
+                audio_b64 = tts_res["audio_base64"]
+                
+        if not audio_b64:
+            tts_res = await self.synthesizer.synthesize(
+                text=response_text_native,
+                target_language_code=detected_lang
+            )
+            audio_b64 = tts_res.get("audio", "")
+            
         tts_latency = round(time.time() - tts_start, 3)
-
-        audio_b64 = tts_res["audio"]
 
         # Update Session history (Assistant message)
         await self.session_manager.add_history(session_id, "assistant", response_text_native, audio_b64)

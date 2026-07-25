@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -33,8 +35,10 @@ class Settings(BaseSettings):
     GOOGLE_APPLICATION_CREDENTIALS: str | None = Field(default=None)
 
     # Sarvam AI API Settings
+    SARVAM_ENABLED: bool = Field(default=True)
     SARVAM_API_KEY: str | None = Field(default=None)
     SARVAM_BASE_URL: str = Field(default="https://api.sarvam.ai")
+    SARVAM_TIMEOUT: float = Field(default=30.0)
 
     # Gemini API Settings
     GEMINI_API_KEY: str | None = Field(default=None)
@@ -73,6 +77,22 @@ class Settings(BaseSettings):
         env = values.get("ENVIRONMENT", "development")
         if env in ["staging", "production"] and not v:
             raise ValueError(f"FIREBASE_PROJECT_ID is required in {env} environment")
+        return v
+
+    @field_validator("GOOGLE_APPLICATION_CREDENTIALS")
+    @classmethod
+    def validate_google_credentials(cls, v: str | None) -> str | None:
+        # Ignore common placeholders
+        if v in ["path/to/firebase-service-account.json", "firebase-service-account.json"]:
+            v = None
+        
+        # If no explicit valid path was provided, use fallback logic
+        if not v:
+            # Safely build path to serviceAccountKey.json at the backend root level
+            base_dir = Path(__file__).parent.parent.parent
+            fallback_path = base_dir / "serviceAccountKey.json"
+            if fallback_path.exists():
+                return str(fallback_path)
         return v
 
 

@@ -158,7 +158,7 @@ const Chatbot = () => {
 
       if (response && response.status === "success" && response.data) {
         const resData = response.data.data || response.data;
-        
+
         setMessages((prev) => [
           ...prev,
           {

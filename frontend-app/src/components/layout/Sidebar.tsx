@@ -40,9 +40,9 @@ const Sidebar = () => {
     { icon: FileText, label: 'Cases', path: '/cases' },
     { icon: Search, label: 'Legal Search', path: '/search' },
     { icon: FolderOpen, label: 'Documents', path: '/documents' },
-    { icon: FileEdit, label: 'Document Drafting', path: '/document-drafting' },
+    { icon: FileEdit, label: 'Document Drafting', path: '/drafting' },
     { icon: Shield, label: 'Compliance Checker', path: '/compliance' },
-    { icon: Bot, label: 'Legal Assistant', path: '/chatbot' },
+    { icon: Bot, label: 'Legal Assistant', path: '/chat' },
     { icon: Cpu, label: 'AI Agents', path: '/agents' },
   ];
 

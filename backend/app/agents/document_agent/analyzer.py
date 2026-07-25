@@ -25,6 +25,10 @@ from app.agents.document_agent.obligation_extractor import ObligationExtractor
 from app.agents.document_agent.timeline_extractor import TimelineExtractor
 from app.agents.document_agent.comparison_engine import ComparisonEngine
 
+from app.services.sarvam.document import DocumentIntelligenceManager
+from app.services.sarvam.config import SarvamConfig
+
+
 
 class DocumentAnalyzer:
     """
@@ -163,8 +167,17 @@ class DocumentAnalyzer:
             # 1. Parsing step based on extension
             ext = file_name.split(".")[-1].lower()
             if ext == "pdf":
-                if file_path and os.path.exists(file_path):
-                    text = await self.pdf_service.extract_text(file_path)
+                # Try Sarvam Document Intelligence first
+                if SarvamConfig.is_enabled():
+                    doc_res = await DocumentIntelligenceManager.extract_document(file_bytes, file_name)
+                    if doc_res.get("status") == "success" and doc_res.get("content"):
+                        text = doc_res["content"]
+                        logger.info("Successfully extracted text using Sarvam Document Intelligence.")
+                
+                # Fallback to local PDF extraction
+                if not text:
+                    if file_path and os.path.exists(file_path):
+                        text = await self.pdf_service.extract_text(file_path)
                 else:
                     # Save to temp file to parse via pdf_service fallback hierarchy
                     temp_dir = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/temp")

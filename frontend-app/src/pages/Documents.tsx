@@ -29,7 +29,7 @@ const Documents = () => {
   const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const initialDocuments: Document[] = [
     {
       id: "1",
@@ -115,7 +115,7 @@ const Documents = () => {
 
   const filteredDocs = documentsList.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         doc.type.toLowerCase().includes(searchQuery.toLowerCase());
+      doc.type.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "all" || doc.category === activeTab;
     return matchesSearch && matchesTab;
   });
@@ -149,15 +149,15 @@ const Documents = () => {
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            className="hidden" 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
             accept=".pdf,.docx,.doc,.txt"
           />
-          <Button 
-            onClick={handleUploadClick} 
+          <Button
+            onClick={handleUploadClick}
             className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white"
           >
             <FileUp className="mr-2 h-4 w-4" />

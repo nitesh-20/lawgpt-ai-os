@@ -3,7 +3,6 @@ from app.services.firestore_service import FirestoreService
 from app.services.gemini.gemini import GeminiService
 from app.services.pdf.pdf import PDFService
 from app.services.rag.rag import RAGService
-from app.services.sarvam.sarvam import SarvamService
 from app.services.storage_service import StorageService
 from app.services.stt.stt import STTService
 from app.services.tts.tts import TTSService
@@ -15,7 +14,6 @@ __all__ = [
     "PDFService",
     "RAGService",
     "STTService",
-    "SarvamService",
     "StorageService",
     "TTSService",
 ]

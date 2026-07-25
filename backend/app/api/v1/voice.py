@@ -138,6 +138,31 @@ async def synthesize_voice(payload: VoiceSynthesizeRequest):
         )
 
 
+@router.post("/translate", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+async def translate_text_endpoint(payload: VoiceSynthesizeRequest):
+    """
+    Translation API. Translates string statement to target language.
+    Note: Reusing VoiceSynthesizeRequest for convenience (text, language_code).
+    """
+    try:
+        from app.services.sarvam.translate import TranslationManager
+        from app.services.sarvam.config import SarvamConfig
+        
+        target_lang = payload.language_code
+        text = payload.text
+        
+        if not SarvamConfig.is_enabled():
+            return {"status": "success", "translated_text": text, "message": "Sarvam disabled."}
+            
+        res = await TranslationManager.translate(text, "en-IN", target_lang)
+        if res.get("status") == "error":
+            raise HTTPException(status_code=400, detail="Translation failed")
+            
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/session/{session_id}", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
 async def get_session_history(session_id: str):
     """
