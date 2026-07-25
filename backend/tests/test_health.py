@@ -48,7 +48,6 @@ def test_placeholders_not_implemented(client: TestClient):
         "/api/v1/upload",
         "/api/v1/research",
         "/api/v1/compliance",
-        "/api/v1/draft",
         "/api/v1/voice"
     ]
     for endpoint in endpoints:
