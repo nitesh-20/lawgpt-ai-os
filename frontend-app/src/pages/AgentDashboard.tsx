@@ -1,34 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bot, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { agents as agentsSeed, mockExecutionRun } from "@/data/agentsMock";
-import type { Agent, AgentStatus, ExecutionStep } from "@/types/agents";
+import { listAgents, runAgentExecution } from "@/services/agents";
+import type { Agent, AgentStatus, ExecutionRun, ExecutionStep } from "@/types/agents";
 import AgentCard from "@/components/agents/AgentCard";
 import ExecutionTimeline from "@/components/agents/ExecutionTimeline";
 
 const STEP_DELAY_MS = 550;
 
 const AgentDashboard = () => {
-  const [query, setQuery] = useState(mockExecutionRun.query);
-  const [agents, setAgents] = useState<Agent[]>(agentsSeed);
-  const [steps, setSteps] = useState<ExecutionStep[]>(
-    mockExecutionRun.steps.map((s) => ({ ...s, status: "idle" as AgentStatus }))
-  );
+  const [query, setQuery] = useState("");
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [steps, setSteps] = useState<ExecutionStep[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    listAgents().then(setAgents);
+  }, []);
 
   const setAgentStatus = (key: string, status: AgentStatus) => {
     setAgents((prev) => prev.map((a) => (a.key === key ? { ...a, status } : a)));
   };
 
   const runExecution = async () => {
-    if (isRunning) return;
+    if (isRunning || !query.trim()) return;
     setIsRunning(true);
-    setSteps(mockExecutionRun.steps.map((s) => ({ ...s, status: "idle" })));
+
+    const run: ExecutionRun = await runAgentExecution(query);
+    setSteps(run.steps.map((s) => ({ ...s, status: "idle" as AgentStatus })));
     setAgents((prev) => prev.map((a) => ({ ...a, status: "idle" })));
 
-    for (let i = 0; i < mockExecutionRun.steps.length; i++) {
-      const step = mockExecutionRun.steps[i];
+    for (let i = 0; i < run.steps.length; i++) {
+      const step = run.steps[i];
 
       setSteps((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: "running" } : s)));
       setAgentStatus(step.agentKey, "running");

@@ -1,43 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, FileText, Users, Scale, Clock, Sparkles, Languages, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Users, Scale, Clock, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { apiClient } from "@/utils/apiClient";
 import { Badge } from "@/components/ui/badge";
-import type { DocClause } from "@/types/documentIntelligence";
-
-const mockDocumentDetail = {
-  id: "doc-123",
-  title: "Service Level Agreement (SLA).pdf",
-  type: "Agreement",
-  summary: "This SLA defines the required uptime and support standards.",
-  clauses: [
-    {
-      id: "c1",
-      label: "Liability Limitation",
-      text: "The provider's total liability shall not exceed the fees paid in the trailing 12 months.",
-      risk: "high" as const,
-      note: "Standard limitation, but poses a risk if catastrophic data loss occurs."
-    },
-    {
-      id: "c2",
-      label: "Uptime Guarantee",
-      text: "Provider guarantees 99.9% uptime during standard business hours.",
-      risk: "low" as const,
-      note: "Standard SLA compliance metric."
-    }
-  ],
-  aiNotes: [{ id: "n1", note: "Review data loss provisions carefully." }],
-  entities: [{ id: "e1", name: "Provider", value: "Acme Corp", type: "Party" }],
-  relatedJudgments: [],
-  timeline: [{ id: "t1", date: "2023-10-01", label: "Effective Date" }]
-};
+import { getDocumentDetail } from "@/services/documentIntelligence";
+import type { DocClause, DocumentDetail } from "@/types/documentIntelligence";
 
 const RISK_STYLE: Record<DocClause["risk"], string> = {
   high: "bg-destructive/10 border-b-2 border-destructive text-ink",
@@ -47,56 +14,20 @@ const RISK_STYLE: Record<DocClause["risk"], string> = {
 
 const DocumentIntelligence = () => {
   const { id } = useParams();
-  // In production this fetches DocumentDetail by `id` from the document-intelligence API;
-  // the mock is used here so the page renders standalone with no backend dependency.
-  const doc = mockDocumentDetail;
-  const [selectedClauseId, setSelectedClauseId] = useState<string>(doc.clauses[0]?.id ?? "");
+  const [doc, setDoc] = useState<DocumentDetail | null>(null);
+  const [selectedClauseId, setSelectedClauseId] = useState<string>("");
+
+  useEffect(() => {
+    if (!id) return;
+    getDocumentDetail(id).then((d) => {
+      setDoc(d);
+      setSelectedClauseId(d.clauses[0]?.id ?? "");
+    });
+  }, [id]);
+
+  if (!doc) return null;
+
   const selectedClause = doc.clauses.find((c) => c.id === selectedClauseId);
-  
-  const [translatedClauseText, setTranslatedClauseText] = useState<string | null>(null);
-  const [translatedClauseNote, setTranslatedClauseNote] = useState<string | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
-
-  const SUPPORTED_LANGUAGES = [
-    { code: "hi-IN", label: "Hindi" },
-    { code: "ta-IN", label: "Tamil" },
-    { code: "te-IN", label: "Telugu" },
-    { code: "bn-IN", label: "Bengali" }
-  ];
-
-  const handleTranslateClause = async (langCode: string) => {
-    if (!selectedClause || isTranslating) return;
-    setIsTranslating(true);
-    try {
-      const resText = await apiClient.post("/voice/translate", {
-        text: selectedClause.text,
-        language_code: langCode,
-        speaker: "shubh"
-      });
-      const resNote = await apiClient.post("/voice/translate", {
-        text: selectedClause.note,
-        language_code: langCode,
-        speaker: "shubh"
-      });
-      
-      if (resText.status === "success") {
-        setTranslatedClauseText(resText.data.translated_text);
-      }
-      if (resNote.status === "success") {
-        setTranslatedClauseNote(resNote.data.translated_text);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  const handleClauseClick = (id: string) => {
-    setSelectedClauseId(id);
-    setTranslatedClauseText(null);
-    setTranslatedClauseNote(null);
-  };
 
   return (
     <div className="page-container fade-in">
@@ -130,9 +61,10 @@ const DocumentIntelligence = () => {
               <button
                 key={clause.id}
                 type="button"
-                onClick={() => handleClauseClick(clause.id)}
-                className={`block w-full text-left rounded-sm px-1 -mx-1 transition-colors ${RISK_STYLE[clause.risk]} ${selectedClauseId === clause.id ? "ring-2 ring-primary/40" : ""
-                  }`}
+                onClick={() => setSelectedClauseId(clause.id)}
+                className={`block w-full text-left rounded-sm px-1 -mx-1 transition-colors ${RISK_STYLE[clause.risk]} ${
+                  selectedClauseId === clause.id ? "ring-2 ring-primary/40" : ""
+                }`}
               >
                 <p className="font-mono text-xs font-medium text-accent mb-1">{clause.label}</p>
                 <p className="text-[15px] leading-relaxed">{clause.text}</p>
@@ -154,43 +86,8 @@ const DocumentIntelligence = () => {
                 >
                   {selectedClause.risk} risk
                 </Badge>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="text-muted-foreground hover:text-foreground transition-colors ml-2" title="Translate Clause">
-                      {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {SUPPORTED_LANGUAGES.map(lang => (
-                      <DropdownMenuItem key={lang.code} onClick={() => handleTranslateClause(lang.code)}>
-                        {lang.label}
-                      </DropdownMenuItem>
-                    ))}
-                    {(translatedClauseText || translatedClauseNote) && (
-                      <DropdownMenuItem onClick={() => {
-                        setTranslatedClauseText(null);
-                        setTranslatedClauseNote(null);
-                      }}>
-                        Revert to English
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
               </div>
-              <p className="text-[14px] text-foreground leading-relaxed mb-3">
-                {translatedClauseNote || selectedClause.note}
-              </p>
-              
-              {(translatedClauseText || translatedClauseNote) && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">Original Text:</p>
-                  <p className="text-[13px] text-muted-foreground italic bg-muted/50 p-3 rounded-md">
-                    {selectedClause.text}
-                  </p>
-                </div>
-              )}
+              <p className="text-[14px] text-foreground leading-relaxed">{selectedClause.note}</p>
             </div>
           )}
 

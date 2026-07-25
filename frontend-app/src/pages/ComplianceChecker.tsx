@@ -1,13 +1,31 @@
+import { useEffect, useState } from "react";
 import { Shield, TriangleAlert, ShieldCheck, Lightbulb } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import StatCard from "@/components/dashboard/StatCard";
-import { complianceSnapshot } from "@/data/complianceMock";
+import { getComplianceSnapshot } from "@/services/compliance";
+import type { ComplianceSnapshot } from "@/types/compliance";
+
+const EMPTY_SNAPSHOT: ComplianceSnapshot = {
+  complianceScore: 0,
+  riskScore: 0,
+  documentsReviewed: 0,
+  lastScan: "",
+  categoryScores: [],
+  violations: [],
+  recommendations: [],
+};
 
 const ComplianceChecker = () => {
+  const [snapshot, setSnapshot] = useState<ComplianceSnapshot>(EMPTY_SNAPSHOT);
+
+  useEffect(() => {
+    getComplianceSnapshot().then(setSnapshot);
+  }, []);
+
   const { complianceScore, riskScore, documentsReviewed, lastScan, categoryScores, violations, recommendations } =
-    complianceSnapshot;
+    snapshot;
 
   return (
     <div className="page-container fade-in">

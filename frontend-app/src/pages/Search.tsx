@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { apiClient } from '@/utils/apiClient';
 import { Search as SearchIcon, Filter, SlidersHorizontal, Clock, ArrowRight, BookOpen, Building2, Gavel, Scale, FileText, User, MapPin, Calendar, BarChart4, MessagesSquare, Bookmark, Minus, Plus, X, ChevronDown, ChevronUp, Brain } from "lucide-react";
 import {
   Select,
@@ -25,223 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
-
-// Sample Indian case results data
-const SAMPLE_CASES = [
-  {
-    id: "case-1",
-    title: "K.S. Puttaswamy v. Union of India",
-    citation: "(2017) 10 SCC 1",
-    court: "Supreme Court of India",
-    date: "2017-08-24",
-    summary: "Landmark judgment establishing the right to privacy as a fundamental right under the Indian Constitution. The Court held that privacy is intrinsic to freedom and liberty protected under Article 21.",
-    relevance: 98,
-    jurisdiction: "India",
-    tags: ["Constitutional Law", "Right to Privacy", "Fundamental Rights"],
-    citedBy: 245
-  },
-  {
-    id: "case-2",
-    title: "Shreya Singhal v. Union of India",
-    citation: "(2015) 5 SCC 1",
-    court: "Supreme Court of India",
-    date: "2015-03-24",
-    summary: "Significant case concerning free speech on the internet. The Supreme Court struck down Section 66A of the Information Technology Act as unconstitutional and violative of Article 19(1)(a) of the Constitution.",
-    relevance: 92,
-    jurisdiction: "India",
-    tags: ["Information Technology", "Free Speech", "Constitutional Law"],
-    citedBy: 178
-  },
-  {
-    id: "case-3",
-    title: "Navtej Singh Johar v. Union of India",
-    citation: "(2018) 10 SCC 1",
-    court: "Supreme Court of India",
-    date: "2018-09-06",
-    summary: "Historic judgment that decriminalized consensual sexual conduct between adults of the same sex by reading down Section 377 of the Indian Penal Code as unconstitutional to the extent it criminalized such conduct.",
-    relevance: 90,
-    jurisdiction: "India",
-    tags: ["Constitutional Law", "LGBTQ+ Rights", "Criminal Law"],
-    citedBy: 156
-  },
-  {
-    id: "case-4",
-    title: "Vishaka v. State of Rajasthan",
-    citation: "AIR 1997 SC 3011",
-    court: "Supreme Court of India",
-    date: "1997-08-13",
-    summary: "Groundbreaking case that established guidelines for prevention of sexual harassment at the workplace, later codified into the Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013.",
-    relevance: 87,
-    jurisdiction: "India",
-    tags: ["Labour Law", "Women's Rights", "Sexual Harassment"],
-    citedBy: 203
-  },
-  {
-    id: "case-5",
-    title: "M.C. Mehta v. Union of India",
-    citation: "1987 SCR (1) 819",
-    court: "Supreme Court of India",
-    date: "1986-12-20",
-    summary: "Landmark environmental law case that established the principle of absolute liability for industries engaged in hazardous activities. Led to the development of environmental jurisprudence in India.",
-    relevance: 85,
-    jurisdiction: "India",
-    tags: ["Environmental Law", "Absolute Liability", "Public Interest Litigation"],
-    citedBy: 189
-  },
-  {
-    id: "case-6",
-    title: "State of West Bengal v. Anwar Ali Sarkar",
-    citation: "AIR 1952 SC 75",
-    court: "Supreme Court of India",
-    date: "1952-05-11",
-    summary: "Important case on the principle of equality before law. The Supreme Court struck down the West Bengal Special Courts Act, 1950 as violative of Article 14 of the Constitution.",
-    relevance: 82,
-    jurisdiction: "India",
-    tags: ["Constitutional Law", "Equality", "Article 14"],
-    citedBy: 137
-  },
-  {
-    id: "case-7",
-    title: "NALSA v. Union of India",
-    citation: "(2014) 5 SCC 438",
-    court: "Supreme Court of India",
-    date: "2014-04-15",
-    summary: "Progressive judgment recognizing transgender persons as a 'third gender' and affirming their fundamental rights under the Constitution of India.",
-    relevance: 84,
-    jurisdiction: "India",
-    tags: ["Constitutional Law", "Transgender Rights", "Gender Identity"],
-    citedBy: 128
-  }
-];
-
-// Sample Indian statute results data
-const SAMPLE_STATUTES = [
-  {
-    id: "stat-1",
-    title: "Information Technology Act, 2000",
-    citation: "Act No. 21 of 2000",
-    jurisdiction: "India",
-    enacted: "2000-06-09",
-    summary: "Comprehensive legislation providing legal recognition for electronic transactions, digital signatures, and addressing cybercrimes. Amended in 2008 to strengthen provisions related to data protection and cybersecurity.",
-    relevance: 96,
-    category: "Cyber Law",
-    sections: ["Definitions", "Digital Signatures", "Electronic Records", "Cybercrimes", "Penalties"]
-  },
-  {
-    id: "stat-2",
-    title: "Personal Data Protection Bill",
-    citation: "Bill No. 373 of 2019",
-    jurisdiction: "India",
-    enacted: "Pending",
-    summary: "Proposed legislation aimed at providing a legal framework for the protection of personal data in India. Establishes a Data Protection Authority and codifies consent requirements for data processing.",
-    relevance: 94,
-    category: "Data Privacy",
-    sections: ["Consent", "Rights of Data Principal", "Data Fiduciary Obligations", "Penalties", "Exemptions"]
-  },
-  {
-    id: "stat-3",
-    title: "Companies Act, 2013",
-    citation: "Act No. 18 of 2013",
-    jurisdiction: "India",
-    enacted: "2013-08-29",
-    summary: "Modernized legislation governing the incorporation, regulation and dissolution of companies in India. Includes provisions for corporate social responsibility, class action suits, and enhanced disclosure requirements.",
-    relevance: 88,
-    category: "Corporate Law",
-    sections: ["Incorporation", "Directors", "Financial Statements", "Corporate Governance", "Winding Up"]
-  },
-  {
-    id: "stat-4",
-    title: "Consumer Protection Act, 2019",
-    citation: "Act No. 35 of 2019",
-    jurisdiction: "India",
-    enacted: "2019-08-09",
-    summary: "Updated legislation replacing the Consumer Protection Act, 1986. Introduces provisions for e-commerce, product liability, and establishes the Central Consumer Protection Authority for enforcing consumer rights.",
-    relevance: 86,
-    category: "Consumer Law",
-    sections: ["Consumer Rights", "E-commerce", "Product Liability", "Consumer Disputes", "Penalties"]
-  },
-  {
-    id: "stat-5",
-    title: "Constitution of India",
-    citation: "Adopted on 26 November 1949",
-    jurisdiction: "India",
-    enacted: "1950-01-26",
-    summary: "The supreme law of India that establishes the framework defining fundamental political principles, establishes the structure, procedures, powers and duties of government institutions, and sets out fundamental rights.",
-    relevance: 98,
-    category: "Constitutional Law",
-    sections: ["Fundamental Rights", "Directive Principles", "Fundamental Duties", "Union Government", "State Government"]
-  },
-  {
-    id: "stat-6",
-    title: "Indian Penal Code, 1860",
-    citation: "Act No. 45 of 1860",
-    jurisdiction: "India",
-    enacted: "1860-10-06",
-    summary: "Primary criminal code of India that covers all substantive aspects of criminal law. Defines offenses and prescribes punishments for various crimes.",
-    relevance: 92,
-    category: "Criminal Law",
-    sections: ["General Explanations", "Offences Against the State", "Offences Against the Human Body", "Offences Against Property", "Criminal Conspiracy"]
-  }
-];
-
-// Sample Indian legal article data
-const SAMPLE_ARTICLES = [
-  {
-    id: "art-1",
-    title: "The Evolution of Data Privacy Law in India: From IT Act to the PDP Bill",
-    author: "Dr. Swati Sharma, LL.D.",
-    journal: "Indian Journal of Law and Technology",
-    date: "2023-11-15",
-    summary: "Comprehensive analysis of the development of data privacy jurisprudence in India, from the Information Technology Act amendments to the proposed Personal Data Protection framework and its implications for businesses.",
-    relevance: 95,
-    topics: ["Data Privacy", "Information Technology", "Constitutional Law"],
-    citations: 42
-  },
-  {
-    id: "art-2",
-    title: "Judicial Review and the Basic Structure Doctrine: Kesavananda Bharati's Enduring Legacy",
-    author: "Prof. Rajesh Mehta, Ph.D.",
-    journal: "Supreme Court Cases Journal",
-    date: "2023-08-22",
-    summary: "Exploration of the evolution and application of the Basic Structure Doctrine in Indian constitutional jurisprudence since the landmark Kesavananda Bharati judgment of 1973.",
-    relevance: 93,
-    topics: ["Constitutional Law", "Judicial Review", "Basic Structure Doctrine"],
-    citations: 38
-  },
-  {
-    id: "art-3",
-    title: "Environmental Jurisprudence in India: The Role of Public Interest Litigation",
-    author: "Arundhati Sen, LL.M.",
-    journal: "Indian Law Review",
-    date: "2023-09-10",
-    summary: "Analysis of how Public Interest Litigation has shaped environmental protection in India through landmark judgments of the Supreme Court and National Green Tribunal.",
-    relevance: 90,
-    topics: ["Environmental Law", "Public Interest Litigation", "Sustainable Development"],
-    citations: 31
-  },
-  {
-    id: "art-4",
-    title: "The GST Regime in India: Constitutional Challenges and Judicial Interpretations",
-    author: "Dr. Vikram Agarwal, J.D.",
-    journal: "National Tax Journal of India",
-    date: "2023-07-30",
-    summary: "Critical examination of the constitutional framework of the Goods and Services Tax in India and key judicial decisions interpreting its implementation and scope.",
-    relevance: 88,
-    topics: ["Tax Law", "Constitutional Law", "GST"],
-    citations: 27
-  },
-  {
-    id: "art-5",
-    title: "Digital Justice Delivery in India: E-Courts Project and Beyond",
-    author: "Justice (Retd.) Pradeep Kumar Mishra",
-    journal: "Journal of the Indian Law Institute",
-    date: "2023-10-05",
-    summary: "Comprehensive review of the digitization of court processes in India, challenges in implementation, and recommendations for enhancing access to justice through technology.",
-    relevance: 87,
-    topics: ["Judicial Administration", "Legal Technology", "Access to Justice"],
-    citations: 25
-  }
-];
+import { search as researchSearch, type ResearchResult, type ResearchContentType } from "@/services/research";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -249,15 +32,13 @@ const Search = () => {
   const [courtType, setCourtType] = useState('');
   const [dateRange, setDateRange] = useState('');
   const [contentType, setContentType] = useState('cases');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<ResearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [relevanceRange, setRelevanceRange] = useState([70, 100]);
   const [dateRangeYears, setDateRangeYears] = useState([1950, 2024]);
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [searchConfidence, setSearchConfidence] = useState(0);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [isAiAnalysisEnabled, setIsAiAnalysisEnabled] = useState(true);
-  const [aiSummary, setAiSummary] = useState<any>(null);
 
   // Jurisdictions filter options for India
   const jurisdictions = [
@@ -302,126 +83,26 @@ const Search = () => {
     }
   }, []);
 
-  const triggerLocalFallback = () => {
-    let results;
-    switch (contentType) {
-      case 'statutes':
-        results = SAMPLE_STATUTES;
-        break;
-      case 'articles':
-        results = SAMPLE_ARTICLES;
-        break;
-      case 'cases':
-      default:
-        results = SAMPLE_CASES;
-        break;
-    }
-    
-    if (jurisdiction) {
-      results = results.filter((result: any) => 
-        result.jurisdiction?.toLowerCase().includes(jurisdiction.toLowerCase()) ||
-        (result.court && result.court.toLowerCase().includes(jurisdiction.toLowerCase()))
-      );
-    }
-
-    if (dateRange) {
-      const currentYear = new Date().getFullYear();
-      let yearCutoff = 0;
-      
-      switch (dateRange) {
-        case 'last-year':
-          yearCutoff = currentYear - 1;
-          break;
-        case 'last-5-years':
-          yearCutoff = currentYear - 5;
-          break;
-        case 'last-10-years':
-          yearCutoff = currentYear - 10;
-          break;
-        case 'post-independence':
-          yearCutoff = 1950;
-          break;
-      }
-      
-      if (yearCutoff > 0) {
-        results = results.filter((result: any) => {
-          const resultYear = new Date(result.date || result.enacted).getFullYear();
-          return resultYear >= yearCutoff;
-        });
-      }
-    }
-
-    setSearchResults(results);
-  };
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     setSearchResults([]);
-    setSearchConfidence(0);
-    setAiSummary(null);
-    
-    const confidenceInterval = setInterval(() => {
-      setSearchConfidence(prev => {
-        if (prev >= 90) {
-          clearInterval(confidenceInterval);
-          return 90;
-        }
-        return prev + 10;
-      });
-    }, 80);
 
-    try {
-      const response = await apiClient.post("/research/query", {
-        query: searchQuery,
-        filters: {
-          category: contentType === "all" ? undefined : contentType,
-          jurisdiction: jurisdiction || undefined,
-        }
-      });
+    let results = await researchSearch({
+      contentType: contentType as ResearchContentType,
+      jurisdiction,
+      dateRange,
+    });
 
-      clearInterval(confidenceInterval);
-      setSearchConfidence(100);
-
-      if (response && response.status === "success" && response.data) {
-        const data = response.data;
-        
-        setAiSummary({
-          summary: data.summary,
-          detailed_explanation: data.detailed_explanation,
-          applicable_law: data.applicable_law,
-          relevant_sections: data.relevant_sections,
-          related_acts: data.related_acts
-        });
-
-        if (data.citations && data.citations.length > 0) {
-          const mappedResults = data.citations.map((cit: any) => ({
-            id: cit.citation_id,
-            title: cit.document_name || cit.document_id,
-            citation: cit.citation_id,
-            court: `Section: ${cit.section}`,
-            date: new Date().toISOString().split("T")[0],
-            summary: cit.text,
-            relevance: Math.round((cit.authority_score || 0.9) * 100),
-            jurisdiction: jurisdiction || "India",
-            tags: [cit.document_id, `Sec ${cit.section}`].filter(Boolean),
-            citedBy: 12
-          }));
-          setContentType('cases'); // force display mapped results under the cases layout
-          setSearchResults(mappedResults);
-        } else {
-          triggerLocalFallback();
-        }
-      } else {
-        triggerLocalFallback();
-      }
-    } catch (error) {
-      console.error("Backend search failed. Triggering local fallback.", error);
-      triggerLocalFallback();
-    } finally {
-      setIsSearching(false);
+    if (advancedMode) {
+      results = results.filter(
+        (result) => result.relevance >= relevanceRange[0] && result.relevance <= relevanceRange[1]
+      );
     }
+
+    setSearchResults(results);
+    setIsSearching(false);
   };
 
   // AI analysis for Indian cases
@@ -737,16 +418,8 @@ const Search = () => {
 
         {isSearching && (
           <div className="space-y-4 animate-fade-in">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">
-                Analyzing results with neural network...
-              </div>
-              <div className="text-sm font-medium">
-                <span className="text-primary">{searchConfidence}%</span> confidence
-              </div>
-            </div>
-            <Progress value={searchConfidence} className="h-1 bg-gray-100" indicatorClassName="bg-primary" />
-            
+            <div className="text-sm text-muted-foreground">Searching...</div>
+
             <div className="space-y-3">
               {[1, 2, 3, 4].map((_, index) => (
                 <div key={index} className="bg-white/50 backdrop-blur-sm rounded-lg p-5 animate-pulse border border-gray-100 shadow-sm">
@@ -765,44 +438,6 @@ const Search = () => {
 
         {!isSearching && searchResults.length > 0 && (
           <div className="space-y-4 animate-fade-in">
-            {aiSummary && (
-              <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20 shadow-lg mb-6">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2 font-serif text-primary">
-                    <Brain className="h-5 w-5 text-accent" />
-                    Counsel's AI Synthesis Brief
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Generated summary of legal analysis and authority citations for "{searchQuery}"
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-sm font-medium text-ink bg-white/70 p-4 rounded-lg border border-border">
-                    <p className="font-semibold mb-2">Executive Summary:</p>
-                    {aiSummary.summary}
-                  </div>
-                  <div className="text-sm text-gray-700 leading-relaxed bg-white/40 p-4 rounded-lg border border-border">
-                    <p className="font-semibold mb-2">Detailed Legal Explanation:</p>
-                    <div className="whitespace-pre-line">{aiSummary.detailed_explanation}</div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
-                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Applicable Law</p>
-                      <p className="font-semibold text-sm mt-1">{aiSummary.applicable_law || "N/A"}</p>
-                    </div>
-                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
-                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Relevant Sections</p>
-                      <p className="font-semibold text-sm mt-1">{(aiSummary.relevant_sections || []).join(", ") || "None"}</p>
-                    </div>
-                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
-                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Related Acts</p>
-                      <p className="font-semibold text-sm mt-1">{(aiSummary.related_acts || []).join(", ") || "None"}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             <div className="flex justify-between items-center">
               <div className="text-lg font-medium">
                 Results for "{searchQuery}"
