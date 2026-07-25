@@ -28,6 +28,7 @@ import {
 import { listDocuments } from "@/services/documents";
 import { getResearchHistory } from "@/services/research";
 import { getComplianceSnapshot } from "@/services/compliance";
+import { Badge } from "@/components/ui/badge";
 
 const DashboardIndex = () => {
   const [stats, setStats] = useState<DashboardStat[]>([]);
