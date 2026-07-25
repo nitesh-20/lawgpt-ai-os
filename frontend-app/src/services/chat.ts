@@ -1,21 +1,35 @@
-/**
- * Chat / orchestrator data access. Backed by mock data until the real endpoints below exist.
- * See /MISSING_BACKEND.md for the full contract.
- *
- * GET  /chat/suggested-prompts -> string[]
- * POST /chat/stream            -> Server-Sent-Events stream of { token, done, citations? }
- */
-import { suggestedPrompts } from "@/data/chatMocks";
-import { streamMockResponse, type StreamChunk } from "@/utils/chatUtils";
+import { apiClient } from "@/utils/apiClient";
 import type { UploadedDocument } from "@/types/chat";
+import type { StreamChunk } from "@/utils/chatUtils";
+import { suggestedPrompts } from "@/data/chatMocks";
 
 export async function getSuggestedPrompts(): Promise<string[]> {
   return suggestedPrompts;
 }
 
-export function streamChatResponse(
+export async function* streamChatResponse(
   userMessage: string,
   documents: UploadedDocument[] = []
 ): AsyncGenerator<StreamChunk> {
-  return streamMockResponse(userMessage, documents);
+  try {
+    const response = await apiClient.post("/orchestrator/chat", {
+      message: userMessage,
+      session_id: "default_session"
+    });
+
+    const finalResponse = response.data?.response || response.response || JSON.stringify(response);
+    const citations = response.data?.citations || response.citations || [];
+
+    // Simulate stream for frontend UX
+    const words = finalResponse.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      yield { token: (i === 0 ? '' : ' ') + words[i], done: false };
+    }
+    
+    yield { token: '', done: true, citations };
+  } catch (error) {
+    console.error("Chat API error:", error);
+    yield { token: "Error connecting to the LawGPT Orchestrator API.", done: true };
+  }
 }

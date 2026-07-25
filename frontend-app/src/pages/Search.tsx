@@ -90,6 +90,7 @@ const Search = () => {
     setSearchResults([]);
 
     let results = await researchSearch({
+      query: searchQuery,
       contentType: contentType as ResearchContentType,
       jurisdiction,
       dateRange,

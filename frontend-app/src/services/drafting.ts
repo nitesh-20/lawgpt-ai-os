@@ -1,13 +1,4 @@
-/**
- * Document drafting data access. Backed by mock generation until the real
- * endpoint below exists. See /MISSING_BACKEND.md for the full contract.
- *
- * Previously this called supabase.functions.invoke('generate-document', ...),
- * but no such edge function exists (Supabase schema has zero deployed functions).
- * That call failed at runtime; this replaces it with an honest mock.
- *
- * POST /drafting/generate (body: { documentType, details, jurisdiction }) -> { document: string }
- */
+import { apiClient } from "@/utils/apiClient";
 
 export interface GenerateDocumentInput {
   documentType: string;
@@ -15,33 +6,25 @@ export interface GenerateDocumentInput {
   jurisdiction: string;
 }
 
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  contract: "Contract Agreement",
-  employment_contract: "Employment Contract",
-  nda: "Non-Disclosure Agreement",
-  letter: "Legal Letter",
-  motion: "Court Motion",
-  brief: "Legal Brief",
-  memo: "Legal Memorandum",
-  pleading: "Legal Pleading",
-  affidavit: "Affidavit",
-  settlement: "Settlement Agreement",
-  power_of_attorney: "Power of Attorney",
-  will: "Last Will and Testament",
-};
-
 export async function generateDocument(input: GenerateDocumentInput): Promise<{ document: string }> {
-  const label = DOCUMENT_TYPE_LABELS[input.documentType] ?? input.documentType;
-  const document = [
-    `${label.toUpperCase()}`,
-    `Jurisdiction: ${input.jurisdiction}`,
-    "",
-    "This is a mock draft generated from the details below. Connect the drafting API to",
-    "produce a live, jurisdiction-checked document.",
-    "",
-    "Requested details:",
-    input.details,
-  ].join("\n");
+  try {
+    const response = await apiClient.post("/drafting/generate", {
+      doc_type: input.documentType === "contract" ? "general_contract" :
+                input.documentType === "employment_contract" ? "employment_agreement" :
+                input.documentType === "letter" ? "legal_notice" :
+                input.documentType,
+      user_instructions: input.details,
+      variables: {
+        jurisdiction: input.jurisdiction
+      }
+    });
 
-  return { document };
+    if (response && response.status === "success" && response.data) {
+      return { document: response.data.generated_draft };
+    }
+    throw new Error("Invalid response from drafting API");
+  } catch (error) {
+    console.error("Failed to generate document:", error);
+    throw error;
+  }
 }

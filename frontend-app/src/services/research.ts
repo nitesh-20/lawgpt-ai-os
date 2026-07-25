@@ -1,9 +1,4 @@
-/**
- * Legal research data access. Backed by mock data until the real endpoint below exists.
- * See /MISSING_BACKEND.md for the full contract.
- *
- * GET /research/search?query=&jurisdiction=&dateRange=&contentType= -> CaseResult[] | StatuteResult[] | ArticleResult[]
- */
+import { apiClient } from "@/utils/apiClient";
 import {
   sampleCases,
   sampleStatutes,
@@ -17,28 +12,32 @@ export type ResearchContentType = "cases" | "statutes" | "articles";
 export type ResearchResult = CaseResult | StatuteResult | ArticleResult;
 
 export interface ResearchSearchParams {
+  query: string;
   contentType: ResearchContentType;
   jurisdiction?: string;
   dateRange?: string;
 }
 
-function yearCutoffFor(dateRange?: string): number {
-  const currentYear = new Date().getFullYear();
-  switch (dateRange) {
-    case "last-year":
-      return currentYear - 1;
-    case "last-5-years":
-      return currentYear - 5;
-    case "last-10-years":
-      return currentYear - 10;
-    case "post-independence":
-      return 1950;
-    default:
-      return 0;
-  }
-}
-
 export async function search(params: ResearchSearchParams): Promise<ResearchResult[]> {
+  try {
+    const response = await apiClient.post("/research/query", {
+      query: params.query,
+      filters: {
+        category: params.contentType === "all" ? undefined : params.contentType,
+        jurisdiction: params.jurisdiction || undefined,
+      }
+    });
+
+    if (response && response.status === "success" && response.data?.results) {
+      // Assuming backend returns standard mapped array of results, we cast it
+      // In a strict prod environment, we'd map fields explicitly
+      return response.data.results as ResearchResult[];
+    }
+  } catch (error) {
+    console.error("Research API failed, falling back to local dataset:", error);
+  }
+
+  // Graceful fallback to static dataset if backend is unreachable or vector store empty
   let results: ResearchResult[];
   switch (params.contentType) {
     case "statutes":
@@ -60,7 +59,13 @@ export async function search(params: ResearchSearchParams): Promise<ResearchResu
     );
   }
 
-  const yearCutoff = yearCutoffFor(params.dateRange);
+  const currentYear = new Date().getFullYear();
+  let yearCutoff = 0;
+  if (params.dateRange === "last-year") yearCutoff = currentYear - 1;
+  else if (params.dateRange === "last-5-years") yearCutoff = currentYear - 5;
+  else if (params.dateRange === "last-10-years") yearCutoff = currentYear - 10;
+  else if (params.dateRange === "post-independence") yearCutoff = 1950;
+
   if (yearCutoff > 0) {
     results = results.filter((r: any) => {
       const resultYear = new Date(r.date || r.enacted).getFullYear();
