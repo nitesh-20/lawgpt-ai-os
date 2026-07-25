@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/utils/apiClient";
 import DocumentPreview from "./DocumentPreview";
 
 const DocumentGenerator = () => {
@@ -35,24 +35,23 @@ const DocumentGenerator = () => {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-document', {
-        body: {
-          documentType,
-          details,
-          jurisdiction
+      const response = await apiClient.post("/drafting/generate", {
+        doc_type: documentType === "contract" ? "general_contract" :
+                  documentType === "employment_contract" ? "employment_agreement" :
+                  documentType === "letter" ? "legal_notice" :
+                  documentType,
+        user_instructions: details,
+        variables: {
+          jurisdiction: jurisdiction
         }
       });
 
-      if (error) {
-        throw error;
+      if (response && response.status === "success" && response.data) {
+        const document = response.data.generated_draft;
+        setGeneratedContent(document);
+      } else {
+        throw new Error("Invalid response format received from drafting backend");
       }
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const document = data.document;
-      setGeneratedContent(document);
 
       // Save the generated document
       const newDocument = {

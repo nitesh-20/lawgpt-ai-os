@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Mic, Paperclip, Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,21 +9,77 @@ interface ChatInputProps {
   setMessage: (message: string) => void;
   handleSend: (e: React.FormEvent) => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onVoiceSubmit?: (audioBlob: Blob) => void;
   disabled?: boolean;
 }
 
-const ChatInput = ({ message, setMessage, handleSend, handleFileUpload, disabled }: ChatInputProps) => {
+const ChatInput = ({
+  message,
+  setMessage,
+  handleSend,
+  handleFileUpload,
+  onVoiceSubmit,
+  disabled
+}: ChatInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
+  
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
+        if (onVoiceSubmit) {
+          onVoiceSubmit(audioBlob);
+        }
+        
+        // Clean up tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      toast({ title: "Listening…", description: "Speak clearly. Click the red button to send." });
+    } catch (err) {
+      console.error("Microphone access failed:", err);
+      toast({
+        title: "Microphone Access Failed",
+        description: "Could not access microphone. Please check permissions.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handleVoiceToggle = () => {
-    setIsRecording((prev) => {
-      const next = !prev;
-      if (next) {
-        toast({ title: "Listening…", description: "Voice input is a mock preview in this build." });
-      }
-      return next;
-    });
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
   };
 
   return (
@@ -44,9 +100,9 @@ const ChatInput = ({ message, setMessage, handleSend, handleFileUpload, disabled
 
         <Button
           type="button"
-          variant={isRecording ? "default" : "outline"}
+          variant={isRecording ? "destructive" : "outline"}
           size="icon"
-          className="shrink-0"
+          className={`shrink-0 ${isRecording ? "animate-pulse" : ""}`}
           onClick={handleVoiceToggle}
           aria-label={isRecording ? "Stop recording" : "Start voice input"}
         >

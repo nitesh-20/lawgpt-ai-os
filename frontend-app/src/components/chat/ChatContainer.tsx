@@ -13,6 +13,7 @@ interface ChatContainerProps {
   setMessage: (message: string) => void;
   handleSend: (e: React.FormEvent) => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onVoiceSubmit?: (audioBlob: Blob) => void;
   onSelectPrompt: (prompt: string) => void;
   onRegenerate: () => void;
   isStreaming: boolean;
@@ -26,6 +27,7 @@ const ChatContainer = ({
   setMessage,
   handleSend,
   handleFileUpload,
+  onVoiceSubmit,
   onSelectPrompt,
   onRegenerate,
   isStreaming,
@@ -94,6 +96,7 @@ const ChatContainer = ({
         setMessage={setMessage}
         handleSend={handleSend}
         handleFileUpload={handleFileUpload}
+        onVoiceSubmit={onVoiceSubmit}
         disabled={isStreaming}
       />
     </div>

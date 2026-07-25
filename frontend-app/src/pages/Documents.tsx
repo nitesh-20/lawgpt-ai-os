@@ -1,9 +1,9 @@
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileUp, Search, Filter, SortDesc, FileText, Folder, Calendar, Tag } from "lucide-react";
+import { apiClient } from "@/utils/apiClient";
 import {
   Card,
   CardContent,
@@ -28,8 +28,9 @@ const Documents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const documents: Document[] = [
+  const initialDocuments: Document[] = [
     {
       id: "1",
       title: "Contract Agreement v2.1",
@@ -59,14 +60,60 @@ const Documents = () => {
     }
   ];
 
-  const handleUpload = () => {
-    toast({
-      title: "Upload Document",
-      description: "Select files to upload...",
-    });
+  const [documentsList, setDocumentsList] = useState<Document[]>(initialDocuments);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const filteredDocs = documents.filter(doc => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    toast({
+      title: "Analyzing Document",
+      description: `Uploading and parsing "${file.name}"...`,
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.postMultipart("/document/analyze", formData);
+
+      if (response && response.status === "success") {
+        const newDoc: Document = {
+          id: response.document_id || crypto.randomUUID(),
+          title: file.name,
+          type: file.type || "PDF Document",
+          lastModified: new Date().toISOString().split("T")[0],
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          category: "contracts",
+          tags: ["Uploaded", "Analyzed"]
+        };
+
+        setDocumentsList(prev => [newDoc, ...prev]);
+
+        toast({
+          title: "Document Analyzed Successfully",
+          description: `"${file.name}" has been uploaded, parsed, and indexed in the vector store.`,
+        });
+      } else {
+        throw new Error("Analysis failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Upload Failed",
+        description: err.message || "Failed to analyze document.",
+        variant: "destructive"
+      });
+    } finally {
+      if (event.target) event.target.value = "";
+    }
+  };
+
+  const filteredDocs = documentsList.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          doc.type.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "all" || doc.category === activeTab;
@@ -102,11 +149,17 @@ const Documents = () => {
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button variant="outline">
-            <SortDesc className="mr-2 h-4 w-4" />
-            Sort
-          </Button>
-          <Button onClick={handleUpload}>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept=".pdf,.docx,.doc,.txt"
+          />
+          <Button 
+            onClick={handleUploadClick} 
+            className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white"
+          >
             <FileUp className="mr-2 h-4 w-4" />
             Upload
           </Button>

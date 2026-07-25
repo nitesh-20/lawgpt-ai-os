@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { apiClient } from '@/utils/apiClient';
 import { Search as SearchIcon, Filter, SlidersHorizontal, Clock, ArrowRight, BookOpen, Building2, Gavel, Scale, FileText, User, MapPin, Calendar, BarChart4, MessagesSquare, Bookmark, Minus, Plus, X, ChevronDown, ChevronUp, Brain } from "lucide-react";
 import {
   Select,
@@ -256,6 +257,7 @@ const Search = () => {
   const [searchConfidence, setSearchConfidence] = useState(0);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [isAiAnalysisEnabled, setIsAiAnalysisEnabled] = useState(true);
+  const [aiSummary, setAiSummary] = useState<any>(null);
 
   // Jurisdictions filter options for India
   const jurisdictions = [
@@ -300,88 +302,126 @@ const Search = () => {
     }
   }, []);
 
-  const handleSearch = () => {
+  const triggerLocalFallback = () => {
+    let results;
+    switch (contentType) {
+      case 'statutes':
+        results = SAMPLE_STATUTES;
+        break;
+      case 'articles':
+        results = SAMPLE_ARTICLES;
+        break;
+      case 'cases':
+      default:
+        results = SAMPLE_CASES;
+        break;
+    }
+    
+    if (jurisdiction) {
+      results = results.filter((result: any) => 
+        result.jurisdiction?.toLowerCase().includes(jurisdiction.toLowerCase()) ||
+        (result.court && result.court.toLowerCase().includes(jurisdiction.toLowerCase()))
+      );
+    }
+
+    if (dateRange) {
+      const currentYear = new Date().getFullYear();
+      let yearCutoff = 0;
+      
+      switch (dateRange) {
+        case 'last-year':
+          yearCutoff = currentYear - 1;
+          break;
+        case 'last-5-years':
+          yearCutoff = currentYear - 5;
+          break;
+        case 'last-10-years':
+          yearCutoff = currentYear - 10;
+          break;
+        case 'post-independence':
+          yearCutoff = 1950;
+          break;
+      }
+      
+      if (yearCutoff > 0) {
+        results = results.filter((result: any) => {
+          const resultYear = new Date(result.date || result.enacted).getFullYear();
+          return resultYear >= yearCutoff;
+        });
+      }
+    }
+
+    setSearchResults(results);
+  };
+
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     setSearchResults([]);
     setSearchConfidence(0);
+    setAiSummary(null);
     
-    // Simulate search progress
     const confidenceInterval = setInterval(() => {
       setSearchConfidence(prev => {
-        if (prev >= 100) {
+        if (prev >= 90) {
           clearInterval(confidenceInterval);
-          return 100;
+          return 90;
         }
         return prev + 10;
       });
-    }, 100);
+    }, 80);
 
-    // Simulate a search request with delay
-    setTimeout(() => {
-      let results;
-      switch (contentType) {
-        case 'statutes':
-          results = SAMPLE_STATUTES;
-          break;
-        case 'articles':
-          results = SAMPLE_ARTICLES;
-          break;
-        case 'cases':
-        default:
-          results = SAMPLE_CASES;
-          break;
-      }
-      
-      // Filter by jurisdiction if selected
-      if (jurisdiction) {
-        results = results.filter((result: any) => 
-          result.jurisdiction?.toLowerCase().includes(jurisdiction.toLowerCase()) ||
-          (result.court && result.court.toLowerCase().includes(jurisdiction.toLowerCase()))
-        );
-      }
-
-      // Filter by date range if selected
-      if (dateRange) {
-        const currentYear = new Date().getFullYear();
-        let yearCutoff;
-        
-        switch (dateRange) {
-          case 'last-year':
-            yearCutoff = currentYear - 1;
-            break;
-          case 'last-5-years':
-            yearCutoff = currentYear - 5;
-            break;
-          case 'last-10-years':
-            yearCutoff = currentYear - 10;
-            break;
-          case 'post-independence':
-            yearCutoff = 1950;
-            break;
-          default:
-            yearCutoff = 0;
+    try {
+      const response = await apiClient.post("/research/query", {
+        query: searchQuery,
+        filters: {
+          category: contentType === "all" ? undefined : contentType,
+          jurisdiction: jurisdiction || undefined,
         }
+      });
+
+      clearInterval(confidenceInterval);
+      setSearchConfidence(100);
+
+      if (response && response.status === "success" && response.data) {
+        const data = response.data;
         
-        if (yearCutoff > 0) {
-          results = results.filter((result: any) => {
-            const resultYear = new Date(result.date || result.enacted).getFullYear();
-            return resultYear >= yearCutoff;
-          });
+        setAiSummary({
+          summary: data.summary,
+          detailed_explanation: data.detailed_explanation,
+          applicable_law: data.applicable_law,
+          relevant_sections: data.relevant_sections,
+          related_acts: data.related_acts
+        });
+
+        if (data.citations && data.citations.length > 0) {
+          const mappedResults = data.citations.map((cit: any) => ({
+            id: cit.citation_id,
+            title: cit.document_name || cit.document_id,
+            citation: cit.citation_id,
+            court: `Section: ${cit.section}`,
+            date: new Date().toISOString().split("T")[0],
+            summary: cit.text,
+            relevance: Math.round((cit.authority_score || 0.9) * 100),
+            jurisdiction: jurisdiction || "India",
+            tags: [cit.document_id, `Sec ${cit.section}`].filter(Boolean),
+            citedBy: 12
+          }));
+          setContentType('cases'); // force display mapped results under the cases layout
+          setSearchResults(mappedResults);
+        } else {
+          triggerLocalFallback();
         }
+      } else {
+        triggerLocalFallback();
       }
-
-      // Filter by relevance range if in advanced mode
-      if (advancedMode) {
-        results = results.filter((result: any) => 
-          result.relevance >= relevanceRange[0] && result.relevance <= relevanceRange[1]
-        );
-      }
-
-      setSearchResults(results);
+    } catch (error) {
+      console.error("Backend search failed. Triggering local fallback.", error);
+      triggerLocalFallback();
+    } finally {
       setIsSearching(false);
-    }, 1200);
+    }
   };
 
   // AI analysis for Indian cases
@@ -725,6 +765,44 @@ const Search = () => {
 
         {!isSearching && searchResults.length > 0 && (
           <div className="space-y-4 animate-fade-in">
+            {aiSummary && (
+              <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20 shadow-lg mb-6">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2 font-serif text-primary">
+                    <Brain className="h-5 w-5 text-accent" />
+                    Counsel's AI Synthesis Brief
+                  </CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Generated summary of legal analysis and authority citations for "{searchQuery}"
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-sm font-medium text-ink bg-white/70 p-4 rounded-lg border border-border">
+                    <p className="font-semibold mb-2">Executive Summary:</p>
+                    {aiSummary.summary}
+                  </div>
+                  <div className="text-sm text-gray-700 leading-relaxed bg-white/40 p-4 rounded-lg border border-border">
+                    <p className="font-semibold mb-2">Detailed Legal Explanation:</p>
+                    <div className="whitespace-pre-line">{aiSummary.detailed_explanation}</div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
+                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Applicable Law</p>
+                      <p className="font-semibold text-sm mt-1">{aiSummary.applicable_law || "N/A"}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
+                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Relevant Sections</p>
+                      <p className="font-semibold text-sm mt-1">{(aiSummary.relevant_sections || []).join(", ") || "None"}</p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-md border border-border text-center">
+                      <p className="text-xs text-muted-foreground uppercase font-mono tracking-wider font-semibold">Related Acts</p>
+                      <p className="font-semibold text-sm mt-1">{(aiSummary.related_acts || []).join(", ") || "None"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="flex justify-between items-center">
               <div className="text-lg font-medium">
                 Results for "{searchQuery}"

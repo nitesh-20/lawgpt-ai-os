@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
 import { streamMockResponse } from "@/utils/chatUtils";
 import ChatContainer from "@/components/chat/ChatContainer";
+import { apiClient } from "@/utils/apiClient";
 
 const Chatbot = () => {
   const [message, setMessage] = useState("");
@@ -41,30 +42,65 @@ const Chatbot = () => {
     const botId = crypto.randomUUID();
     let created = false;
 
-    try {
-      for await (const chunk of streamMockResponse(userMessage, documents)) {
-        if (!created) {
-          setMessages((prev) => [
-            ...prev,
-            { id: botId, content: chunk.token, sender: "bot", timestamp: new Date(), isStreaming: true },
-          ]);
-          created = true;
-        } else if (!chunk.done) {
-          setMessages((prev) =>
-            prev.map((m) => (m.id === botId ? { ...m, content: m.content + chunk.token } : m))
-          );
-        }
+    const documentContext = documents.length > 0
+      ? documents.map(doc => `Document "${doc.name}":\n${doc.content}`).join('\n\n')
+      : '';
 
-        if (chunk.done) {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === botId ? { ...m, isStreaming: false, citations: chunk.citations } : m
-            )
-          );
-        }
+    try {
+      // 1. Try local FastAPI Orchestrator
+      const response = await apiClient.post("/orchestrator/chat", {
+        message: userMessage + (documentContext ? `\n\nContext:\n${documentContext}` : ""),
+        session_id: "default_session"
+      });
+
+      if (response && response.status === "success") {
+        const citations = (response.citations || []).map((cit: any, idx: number) => ({
+          id: cit.citation_id || `cit-${idx}`,
+          label: cit.document_name || cit.document_id || "Citation",
+          source: cit.text || "Authority source reference"
+        }));
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: botId,
+            content: response.response || response.message || "Audit completed successfully.",
+            sender: "bot",
+            timestamp: new Date(),
+            citations
+          }
+        ]);
+      } else {
+        throw new Error("Local backend returned error status");
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to generate a response. Please try again.", variant: "destructive" });
+      console.warn("FastAPI Orchestrator Chat failed, falling back to mock stream:", error);
+      // 2. Fallback to mock stream
+      try {
+        for await (const chunk of streamMockResponse(userMessage, documents)) {
+          if (!created) {
+            setMessages((prev) => [
+              ...prev,
+              { id: botId, content: chunk.token, sender: "bot", timestamp: new Date(), isStreaming: true },
+            ]);
+            created = true;
+          } else if (!chunk.done) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === botId ? { ...m, content: m.content + chunk.token } : m))
+            );
+          }
+
+          if (chunk.done) {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === botId ? { ...m, isStreaming: false, citations: chunk.citations } : m
+              )
+            );
+          }
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to generate a response. Please try again.", variant: "destructive" });
+      }
     } finally {
       setIsStreaming(false);
     }
@@ -103,6 +139,75 @@ const Chatbot = () => {
     await runStream(lastUser.content);
   };
 
+  const handleVoiceSubmit = async (audioBlob: Blob) => {
+    setIsStreaming(true);
+    const userMessageId = crypto.randomUUID();
+    const botId = crypto.randomUUID();
+
+    toast({
+      title: "Processing Speech",
+      description: "Transcribing and querying orchestrator...",
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("file", audioBlob, "speech.wav");
+      formData.append("session_id", "web_voice_session");
+
+      const response = await apiClient.postMultipart("/voice/chat", formData);
+
+      if (response && response.status === "success" && response.data) {
+        const resData = response.data.data || response.data;
+        
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: userMessageId,
+            content: `🗣️ [Voice Query]: ${resData.transcript || "(Indecipherable speech)"}`,
+            sender: "user",
+            timestamp: new Date()
+          },
+          {
+            id: botId,
+            content: resData.response_text || "Audio processed successfully.",
+            sender: "bot",
+            timestamp: new Date()
+          }
+        ]);
+
+        if (resData.response_audio) {
+          playAudioBase64(resData.response_audio);
+        }
+
+        toast({
+          title: "Speech Processed",
+          description: `Transcribed: "${resData.transcript}"`,
+        });
+      } else {
+        throw new Error("Invalid voice chat response format");
+      }
+    } catch (err: any) {
+      console.error("Voice chat failed:", err);
+      toast({
+        title: "Voice Chat Failed",
+        description: err.message || "Failed to process audio response.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
+  const playAudioBase64 = (base64Data: string) => {
+    try {
+      const audioSrc = `data:audio/wav;base64,${base64Data}`;
+      const audio = new Audio(audioSrc);
+      audio.play();
+    } catch (err) {
+      console.error("Audio playback failed:", err);
+    }
+  };
+
   return (
     <div className="page-container fade-in">
       <div className="page-header">
@@ -125,6 +230,7 @@ const Chatbot = () => {
         setMessage={setMessage}
         handleSend={handleSend}
         handleFileUpload={handleFileUpload}
+        onVoiceSubmit={handleVoiceSubmit}
         onSelectPrompt={handleSelectPrompt}
         onRegenerate={handleRegenerate}
         isStreaming={isStreaming}
