@@ -22,14 +22,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Hearing } from "@/types/case";
+import { Case, Hearing } from "@/types/case";
+import { getCase, addHearing, deleteCase } from "@/services/cases";
 
 const CaseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [caseData, setCaseData] = useState<any>(null);
+  const [caseData, setCaseData] = useState<Case | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [newHearing, setNewHearing] = useState<Partial<Hearing>>({
@@ -40,22 +41,19 @@ const CaseDetails = () => {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const storedCases = JSON.parse(localStorage.getItem('cases') || '[]');
-      const currentCase = storedCases.find((c: any) => c.id === id);
+    if (!id) return;
+    getCase(id).then((currentCase) => {
       if (currentCase) {
         setCaseData(currentCase);
         setIsLoading(false);
       } else {
         navigate('/cases');
       }
-    }, 500);
-
-    return () => clearTimeout(timer);
+    });
   }, [id, navigate]);
 
-  const handleAddHearing = () => {
-    if (!newHearing.date || !newHearing.summary || !newHearing.stage) {
+  const handleAddHearing = async () => {
+    if (!id || !newHearing.date || !newHearing.summary || !newHearing.stage) {
       toast({
         title: "Error",
         description: "Please fill all hearing details",
@@ -64,27 +62,13 @@ const CaseDetails = () => {
       return;
     }
 
-    const hearingToAdd: Hearing = {
-      id: crypto.randomUUID(),
-      case_id: id || '',
+    const updatedCase = await addHearing(id, {
       date: newHearing.date || '',
       summary: newHearing.summary || '',
       stage: newHearing.stage || '',
       amount: newHearing.amount || 0,
-      created_at: new Date().toISOString()
-    };
+    });
 
-    const updatedCase = {
-      ...caseData,
-      hearings: [...(caseData.hearings || []), hearingToAdd],
-    };
-
-    const storedCases = JSON.parse(localStorage.getItem('cases') || '[]');
-    const updatedCases = storedCases.map((c: any) => 
-      c.id === id ? updatedCase : c
-    );
-
-    localStorage.setItem('cases', JSON.stringify(updatedCases));
     setCaseData(updatedCase);
     setNewHearing({
       date: '',
@@ -92,17 +76,16 @@ const CaseDetails = () => {
       stage: '',
       amount: 0
     });
-    
+
     toast({
       title: "Success",
       description: "Hearing details added successfully",
     });
   };
 
-  const handleDeleteCase = () => {
-    const storedCases = JSON.parse(localStorage.getItem('cases') || '[]');
-    const updatedCases = storedCases.filter((c: any) => c.id !== id);
-    localStorage.setItem('cases', JSON.stringify(updatedCases));
+  const handleDeleteCase = async () => {
+    if (!id) return;
+    await deleteCase(id);
     toast({
       title: "Success",
       description: "Case deleted successfully",
@@ -173,16 +156,16 @@ const CaseDetails = () => {
             </Button>
           </div>
 
-          <div className="futuristic-card p-6 animate-scale-in overflow-visible">
+          <div className="futuristic-card p-6 overflow-visible">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div className="space-y-2">
-                <Badge className="mb-2 bg-gradient-to-r from-primary to-accent border-none text-white">
+                <Badge className="mb-2">
                   {caseData.case_type || 'Civil'}
                 </Badge>
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="font-serif text-2xl md:text-3xl font-semibold text-ink">
                   {caseData.party_name}
                 </h1>
-                <div className="flex items-center gap-2 text-neutral-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Scale className="h-4 w-4" />
                   <span className="text-sm">Case Number: {caseData.case_number}</span>
                 </div>
@@ -196,37 +179,17 @@ const CaseDetails = () => {
                   }`}></div>
                   <span className="font-medium capitalize text-ink">{caseData.status || 'Active'}</span>
                 </div>
-                <span className="text-xs text-neutral-500 mt-1">Updated: {formatDate(caseData.updated_at)}</span>
+                <span className="text-xs text-muted-foreground mt-1">Updated: {formatDate(caseData.updated_at)}</span>
               </div>
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
-            <TabsList className="bg-white/70 backdrop-blur-md w-full justify-start overflow-x-auto border border-white/60 p-1 rounded-xl shadow-md">
-              <TabsTrigger 
-                value="overview" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-              >
-                Overview
-              </TabsTrigger>
-              <TabsTrigger 
-                value="hearings"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-              >
-                Hearings
-              </TabsTrigger>
-              <TabsTrigger 
-                value="timeline"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-              >
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger 
-                value="financials"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-              >
-                Financials
-              </TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full justify-start overflow-x-auto">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="hearings">Hearings</TabsTrigger>
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="financials">Financials</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-6 animate-fade-in">
@@ -237,56 +200,56 @@ const CaseDetails = () => {
                     
                     <div className="grid grid-cols-2 gap-6">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <Gavel className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Court</p>
+                          <p className="text-sm text-muted-foreground">Court</p>
                           <p className="font-medium">{caseData.court_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <Building className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Jurisdiction</p>
+                          <p className="text-sm text-muted-foreground">Jurisdiction</p>
                           <p className="font-medium">{caseData.jurisdiction || 'Federal'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <CalendarDays className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Filing Date</p>
+                          <p className="text-sm text-muted-foreground">Filing Date</p>
                           <p className="font-medium">{formatDate(caseData.filing_date)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <Clock className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Stage</p>
+                          <p className="text-sm text-muted-foreground">Stage</p>
                           <p className="font-medium">{caseData.stage || 'Pre-trial'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <CalendarDays className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Previous Date</p>
+                          <p className="text-sm text-muted-foreground">Previous Date</p>
                           <p className="font-medium">{formatDate(caseData.previous_date)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20">
+                        <div className="p-2 rounded-full bg-muted">
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-neutral-500">Next Date</p>
+                          <p className="text-sm text-muted-foreground">Next Date</p>
                           <p className="font-medium">{formatDate(caseData.next_date)}</p>
                         </div>
                       </div>
@@ -308,7 +271,7 @@ const CaseDetails = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="font-medium">{hearing.stage}</h3>
-                              <p className="text-sm text-neutral-600 mt-1">{hearing.summary}</p>
+                              <p className="text-sm text-muted-foreground mt-1">{hearing.summary}</p>
                             </div>
                             <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
                               {formatDate(hearing.date)}
@@ -318,8 +281,8 @@ const CaseDetails = () => {
                       ))}
                       
                       {(caseData.hearings || []).length === 0 && (
-                        <div className="text-center py-8 text-neutral-500">
-                          <Clock className="h-8 w-8 mx-auto mb-2 text-neutral-400" />
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p>No hearing records found</p>
                           <Button 
                             variant="outline" 
@@ -339,7 +302,7 @@ const CaseDetails = () => {
                   <div className="futuristic-card p-6">
                     <h2 className="text-xl font-semibold mb-4 futuristic-text">Case Summary</h2>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg">
                         <div className="flex items-center gap-2">
                           <CalendarDays className="h-4 w-4 text-primary" />
                           <span className="text-sm font-medium">Hearings</span>
@@ -347,7 +310,7 @@ const CaseDetails = () => {
                         <span className="font-bold">{(caseData.hearings || []).length}</span>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-primary" />
                           <span className="text-sm font-medium">Parties</span>
@@ -355,7 +318,7 @@ const CaseDetails = () => {
                         <span className="font-bold">2</span>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-primary" />
                           <span className="text-sm font-medium">Documents</span>
@@ -363,7 +326,7 @@ const CaseDetails = () => {
                         <span className="font-bold">7</span>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg">
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-primary" />
                           <span className="text-sm font-medium">Total Value</span>
@@ -405,7 +368,7 @@ const CaseDetails = () => {
                   
                   <div className="futuristic-card p-6">
                     <h2 className="text-xl font-semibold mb-4 futuristic-text">Related Cases</h2>
-                    <div className="text-center py-4 text-neutral-500">
+                    <div className="text-center py-4 text-muted-foreground">
                       <p>No related cases found</p>
                     </div>
                   </div>
@@ -419,8 +382,8 @@ const CaseDetails = () => {
                   <h2 className="text-xl font-semibold mb-4 futuristic-text">Hearing Records</h2>
                   
                   {(caseData.hearings || []).length === 0 ? (
-                    <div className="text-center py-12 text-neutral-500">
-                      <Clock className="h-12 w-12 mx-auto mb-3 text-neutral-400" />
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Clock className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p className="text-lg">No hearing records found</p>
                       <p className="text-sm">Add your first hearing using the form</p>
                     </div>
@@ -440,32 +403,32 @@ const CaseDetails = () => {
                       type="date"
                       value={newHearing.date}
                       onChange={(e) => setNewHearing({ ...newHearing, date: e.target.value })}
-                      className="w-full bg-white/70"
+                      className="w-full"
                     />
                     <Input
                       type="text"
                       value={newHearing.stage}
                       onChange={(e) => setNewHearing({ ...newHearing, stage: e.target.value })}
                       placeholder="Stage"
-                      className="w-full bg-white/70"
+                      className="w-full"
                     />
                     <Input
                       type="number"
                       value={newHearing.amount}
                       onChange={(e) => setNewHearing({ ...newHearing, amount: Number(e.target.value) })}
                       placeholder="Amount"
-                      className="w-full bg-white/70"
+                      className="w-full"
                     />
                     <Input
                       type="text"
                       value={newHearing.summary}
                       onChange={(e) => setNewHearing({ ...newHearing, summary: e.target.value })}
                       placeholder="Summary"
-                      className="w-full bg-white/70"
+                      className="w-full"
                     />
-                    <Button 
+                    <Button
                       onClick={handleAddHearing}
-                      className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white transition-all"
+                      className="w-full"
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Add Hearing
@@ -522,7 +485,7 @@ const CaseDetails = () => {
       </main>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="neo-glass border-white/30">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -534,7 +497,7 @@ const CaseDetails = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteCase}
-              className="bg-gradient-to-r from-destructive to-red-400 text-white hover:opacity-90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

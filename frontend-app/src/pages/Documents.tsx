@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,51 +13,17 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Document {
-  id: string;
-  title: string;
-  type: string;
-  lastModified: string;
-  size: string;
-  category: string;
-  tags?: string[];
-}
+import { listDocuments, type DocumentSummary } from "@/services/documents";
 
 const Documents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const { toast } = useToast();
-  
-  const documents: Document[] = [
-    {
-      id: "1",
-      title: "Contract Agreement v2.1",
-      type: "Legal Contract",
-      lastModified: "2024-02-19",
-      size: "1.2 MB",
-      category: "contracts",
-      tags: ["Contract", "Agreement", "Client"]
-    },
-    {
-      id: "2",
-      title: "NDA Template",
-      type: "Template",
-      lastModified: "2024-02-18",
-      size: "524 KB",
-      category: "templates",
-      tags: ["NDA", "Confidentiality", "Template"]
-    },
-    {
-      id: "3",
-      title: "Client Meeting Notes",
-      type: "Notes",
-      lastModified: "2024-02-17",
-      size: "256 KB",
-      category: "notes",
-      tags: ["Notes", "Meeting", "Client"]
-    }
-  ];
+
+  useEffect(() => {
+    listDocuments().then(setDocuments);
+  }, []);
 
   const handleUpload = () => {
     toast({

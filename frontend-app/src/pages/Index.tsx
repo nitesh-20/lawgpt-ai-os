@@ -8,13 +8,22 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import {
-  dashboardStats,
-  dashboardNotifications,
-  taskCompletion,
-  caseStatusBreakdown,
-  teamActivity,
-  type CaseStatusKey,
+  getDashboardStats,
+  getDashboardNotifications,
+  getTaskCompletion,
+  getCaseStatusBreakdown,
+  getTeamActivity,
+} from '@/services/dashboard';
+import { listCases } from '@/services/cases';
+import type {
+  DashboardStat,
+  DashboardNotification,
+  TaskCompletion,
+  CaseStatusCount,
+  TeamMetric,
+  CaseStatusKey,
 } from '@/data/dashboardMock';
+import type { Case } from '@/types/case';
 
 const STAT_ICONS = [Scale, Briefcase, Clock, Calendar];
 
@@ -33,15 +42,33 @@ const NOTIFICATION_ICON = {
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
+  const [tasks, setTasks] = useState<TaskCompletion[]>([]);
+  const [caseStatus, setCaseStatus] = useState<CaseStatusCount[]>([]);
+  const [team, setTeam] = useState<TeamMetric[]>([]);
+  const [recentCases, setRecentCases] = useState<Case[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 400);
-    return () => clearTimeout(timer);
+    Promise.all([
+      getDashboardStats(),
+      getDashboardNotifications(),
+      getTaskCompletion(),
+      getCaseStatusBreakdown(),
+      getTeamActivity(),
+      listCases(),
+    ]).then(([s, n, t, cs, ta, cases]) => {
+      setStats(s);
+      setNotifications(n);
+      setTasks(t);
+      setCaseStatus(cs);
+      setTeam(ta);
+      setRecentCases(cases.slice(0, 3));
+      setIsLoading(false);
+    });
   }, []);
-
-  const recentCases = [...JSON.parse(localStorage.getItem('cases') || '[]')].slice(0, 3);
 
   const handleNotificationClick = () => {
     toast({
@@ -70,7 +97,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          {dashboardStats.map((stat, index) => (
+          {stats.map((stat, index) => (
             <StatCard key={stat.title} title={stat.title} value={stat.value} icon={STAT_ICONS[index]} trend={stat.trend} />
           ))}
         </div>
@@ -98,7 +125,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="mt-2 space-y-4">
-              {taskCompletion.map((task) => (
+              {tasks.map((task) => (
                 <div key={task.category} className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">{task.category}</span>
@@ -130,7 +157,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {dashboardNotifications.map((notification) => {
+              {notifications.map((notification) => {
                 const { Icon, className } = NOTIFICATION_ICON[notification.status];
                 return (
                   <div
@@ -207,7 +234,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="mt-4 space-y-4">
-              {caseStatusBreakdown.map((status) => (
+              {caseStatus.map((status) => (
                 <div key={status.key} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${STATUS_DOT[status.key]}`} />
@@ -220,11 +247,11 @@ const Dashboard = () => {
                 </div>
               ))}
               <div className="h-[150px] w-full flex items-end justify-around mt-6 px-4">
-                {caseStatusBreakdown.map((status) => (
+                {caseStatus.map((status) => (
                   <div key={status.key} className="flex flex-col items-center gap-2">
                     <div
                       className={`w-12 ${STATUS_DOT[status.key]} rounded-t-md`}
-                      style={{ height: `${(status.count / Math.max(...caseStatusBreakdown.map(d => d.count))) * 100}px` }}
+                      style={{ height: `${(status.count / Math.max(...caseStatus.map(d => d.count))) * 100}px` }}
                     />
                     <span className="text-xs text-muted-foreground">{status.status}</span>
                   </div>
@@ -246,7 +273,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4">
-              {teamActivity.map((metric) => (
+              {team.map((metric) => (
                 <div key={metric.label} className="p-4 rounded-md border border-border">
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">{metric.label}</h3>
                   <div className="flex items-center justify-between">

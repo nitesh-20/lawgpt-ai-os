@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, FileText, Users, Scale, Clock, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { mockDocumentDetail } from "@/data/documentIntelligenceMock";
-import type { DocClause } from "@/types/documentIntelligence";
+import { getDocumentDetail } from "@/services/documentIntelligence";
+import type { DocClause, DocumentDetail } from "@/types/documentIntelligence";
 
 const RISK_STYLE: Record<DocClause["risk"], string> = {
   high: "bg-destructive/10 border-b-2 border-destructive text-ink",
@@ -14,10 +14,19 @@ const RISK_STYLE: Record<DocClause["risk"], string> = {
 
 const DocumentIntelligence = () => {
   const { id } = useParams();
-  // In production this fetches DocumentDetail by `id` from the document-intelligence API;
-  // the mock is used here so the page renders standalone with no backend dependency.
-  const doc = mockDocumentDetail;
-  const [selectedClauseId, setSelectedClauseId] = useState<string>(doc.clauses[0]?.id ?? "");
+  const [doc, setDoc] = useState<DocumentDetail | null>(null);
+  const [selectedClauseId, setSelectedClauseId] = useState<string>("");
+
+  useEffect(() => {
+    if (!id) return;
+    getDocumentDetail(id).then((d) => {
+      setDoc(d);
+      setSelectedClauseId(d.clauses[0]?.id ?? "");
+    });
+  }, [id]);
+
+  if (!doc) return null;
+
   const selectedClause = doc.clauses.find((c) => c.id === selectedClauseId);
 
   return (

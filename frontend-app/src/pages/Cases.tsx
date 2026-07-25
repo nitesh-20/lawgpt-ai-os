@@ -16,6 +16,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewCaseDialog } from "@/components/cases/NewCaseDialog";
 import { Case } from "@/types/case";
+import { listCases, createCase, type CaseInput } from "@/services/cases";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -45,69 +46,16 @@ const Cases = () => {
   const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
-    // Load cases from localStorage with delay to simulate API
-    setTimeout(() => {
-      const storedCases = JSON.parse(localStorage.getItem('cases') || '[]');
+    listCases().then((storedCases) => {
       setCases(storedCases);
       setIsLoading(false);
-      
-      // Create demo cases if none exist
-      if (storedCases.length === 0) {
-        const demoCases = [
-          {
-            id: 'case-1',
-            user_id: 'demo-user',
-            party_name: 'Smith v. Johnson',
-            case_number: 'CV-2024-1234',
-            court_name: 'Superior Court',
-            jurisdiction: 'Federal',
-            case_type: 'Civil',
-            filing_date: new Date().toISOString(),
-            status: 'active',
-            next_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            hearings: []
-          },
-          {
-            id: 'case-2',
-            user_id: 'demo-user',
-            party_name: 'Williams v. Tech Corp',
-            case_number: 'CV-2024-5678',
-            court_name: 'District Court',
-            jurisdiction: 'State',
-            case_type: 'Employment',
-            filing_date: new Date().toISOString(),
-            status: 'pending',
-            next_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            hearings: []
-          }
-        ];
-        
-        localStorage.setItem('cases', JSON.stringify(demoCases));
-        setCases(demoCases);
-      }
-    }, 1000);
+    });
   }, []);
 
-  const handleAddCase = async (newCase: Omit<Case, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'hearings'>) => {
+  const handleAddCase = async (newCase: CaseInput) => {
     try {
-      const caseToAdd = {
-        ...newCase,
-        id: crypto.randomUUID(),
-        user_id: 'demo-user',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        hearings: []
-      };
-
-      setCases(prevCases => [caseToAdd, ...prevCases]);
-      
-      // Save to localStorage
-      const updatedCases = [caseToAdd, ...cases];
-      localStorage.setItem('cases', JSON.stringify(updatedCases));
+      const caseToAdd = await createCase(newCase);
+      setCases((prevCases) => [caseToAdd, ...prevCases]);
 
       toast({
         title: "Success",
@@ -168,8 +116,8 @@ const Cases = () => {
       <div className="page-container fade-in">
         <div className="page-header">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl shadow-md">
-              <Scale className="h-6 w-6 text-primary" />
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <Scale className="h-5 w-5 text-primary-foreground" strokeWidth={1.75} />
             </div>
             <h1 className="page-title">Cases</h1>
           </div>
@@ -208,13 +156,13 @@ const Cases = () => {
             placeholder="Search cases..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 w-full bg-white/80 backdrop-blur-sm"
+            className="pl-9 w-full"
           />
         </div>
         
         <div className="flex gap-2 items-center">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px] bg-white">
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +192,7 @@ const Cases = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-white">
+              <Button variant="outline">
                 <FilterIcon className="mr-2 h-4 w-4" />
                 Filter
               </Button>
@@ -259,7 +207,7 @@ const Cases = () => {
           
           <Button 
             onClick={() => setShowNewCaseDialog(true)}
-            className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white transition-all"
+            className="w-full md:w-auto"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             New Case
@@ -268,62 +216,42 @@ const Cases = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-white/50 p-1 rounded-lg border border-white/60 shadow-md">
-          <TabsTrigger 
-            value="all"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-          >
-            All Cases
-          </TabsTrigger>
-          <TabsTrigger 
-            value="active"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-          >
-            Active
-          </TabsTrigger>
-          <TabsTrigger 
-            value="pending"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-          >
-            Pending
-          </TabsTrigger>
-          <TabsTrigger 
-            value="closed"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/20 data-[state=active]:to-accent/20 data-[state=active]:text-primary"
-          >
-            Closed
-          </TabsTrigger>
+        <TabsList>
+          <TabsTrigger value="all">All Cases</TabsTrigger>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="closed">Closed</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="space-y-4 animate-fade-in">
-          <div className="glass-card rounded-xl overflow-hidden shadow-xl border border-white/60">
+        <TabsContent value={activeTab} className="space-y-4 fade-in">
+          <div className="glass-card overflow-hidden">
             <Table>
-              <TableHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+              <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-semibold text-neutral-700">Party Name</TableHead>
-                  <TableHead className="font-semibold text-neutral-700">Case No.</TableHead>
-                  <TableHead className="font-semibold text-neutral-700 hidden md:table-cell">Court</TableHead>
-                  <TableHead className="font-semibold text-neutral-700 hidden md:table-cell">Filing Date</TableHead>
-                  <TableHead className="font-semibold text-neutral-700">Status</TableHead>
-                  <TableHead className="font-semibold text-neutral-700 hidden md:table-cell">Next Hearing</TableHead>
+                  <TableHead>Party Name</TableHead>
+                  <TableHead>Case No.</TableHead>
+                  <TableHead className="hidden md:table-cell">Court</TableHead>
+                  <TableHead className="hidden md:table-cell">Filing Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Next Hearing</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedCases.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-neutral-600">
+                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                       <div className="flex flex-col items-center justify-center space-y-3">
-                        <Scale className="h-10 w-10 text-neutral-400" />
-                        <p className="text-lg font-medium">No cases found</p>
-                        <p className="text-sm text-neutral-500">Create your first case by clicking the "New Case" button</p>
+                        <Scale className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
+                        <p className="text-lg font-medium text-ink">No cases found</p>
+                        <p className="text-sm text-muted-foreground">Create your first case by clicking the "New Case" button</p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   sortedCases.map((case_) => (
-                    <TableRow 
+                    <TableRow
                       key={case_.id}
-                      className="cursor-pointer transition-colors hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5"
+                      className="cursor-pointer transition-colors hover:bg-secondary/40"
                       onClick={() => handleCaseClick(case_.id)}
                     >
                       <TableCell className="font-medium">{case_.party_name}</TableCell>
@@ -346,12 +274,12 @@ const Cases = () => {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {case_.next_date ? (
-                          <div className="flex items-center text-neutral-600">
+                          <div className="flex items-center text-muted-foreground">
                             <Calendar className="h-3 w-3 mr-1" />
                             {new Date(case_.next_date).toLocaleDateString()}
                           </div>
                         ) : (
-                          <span className="text-neutral-400">Not scheduled</span>
+                          <span className="text-muted-foreground">Not scheduled</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -362,7 +290,7 @@ const Cases = () => {
           </div>
           
           {sortedCases.length > 0 && (
-            <div className="flex justify-between items-center text-sm text-neutral-500 px-2">
+            <div className="flex justify-between items-center text-sm text-muted-foreground px-2">
               <div>Showing {sortedCases.length} of {cases.length} cases</div>
               <div className="flex items-center gap-1">
                 <Button variant="ghost" size="sm" className="h-8 px-2">

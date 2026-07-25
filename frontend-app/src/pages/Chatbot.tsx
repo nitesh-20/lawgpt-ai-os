@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Scale } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
-import { streamMockResponse } from "@/utils/chatUtils";
+import { streamChatResponse } from "@/services/chat";
 import ChatContainer from "@/components/chat/ChatContainer";
 
 const Chatbot = () => {
@@ -42,7 +42,7 @@ const Chatbot = () => {
     let created = false;
 
     try {
-      for await (const chunk of streamMockResponse(userMessage, documents)) {
+      for await (const chunk of streamChatResponse(userMessage, documents)) {
         if (!created) {
           setMessages((prev) => [
             ...prev,

@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { generateDocument } from "@/services/drafting";
 import DocumentPreview from "./DocumentPreview";
 
 const DocumentGenerator = () => {
@@ -35,23 +35,7 @@ const DocumentGenerator = () => {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-document', {
-        body: {
-          documentType,
-          details,
-          jurisdiction
-        }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const document = data.document;
+      const { document } = await generateDocument({ documentType, details, jurisdiction });
       setGeneratedContent(document);
 
       // Save the generated document
