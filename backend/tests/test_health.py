@@ -47,8 +47,7 @@ def test_placeholders_not_implemented(client: TestClient):
         "/api/v1/chat",
         "/api/v1/upload",
         "/api/v1/research",
-        "/api/v1/compliance",
-        "/api/v1/voice"
+        "/api/v1/compliance"
     ]
     for endpoint in endpoints:
         response = client.post(endpoint)

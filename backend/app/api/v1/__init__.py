@@ -25,7 +25,7 @@ api_router.include_router(docs_router, tags=["Document Operations"])
 api_router.include_router(research_router, tags=["Legal Research"])
 api_router.include_router(compliance_router, tags=["Regulatory Compliance"])
 api_router.include_router(drafting_router, prefix="/drafting", tags=["Contract Drafting"])
-api_router.include_router(voice_router, tags=["Voice Interface"])
+api_router.include_router(voice_router, prefix="/voice", tags=["Voice Interface"])
 api_router.include_router(knowledge_router, tags=["Knowledge Base Ingestion"])
 api_router.include_router(orchestrator_router, tags=["Orchestrator Agent"])
 
