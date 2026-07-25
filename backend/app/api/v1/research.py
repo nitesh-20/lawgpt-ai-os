@@ -50,7 +50,7 @@ async def query_research(payload: ResearchQueryRequest):
             )
             
         # Map agent output to frontend's ResearchResult[] schema
-        agent_result = res.get("result", {})
+        agent_result = res.get("data", {})
         results_array = []
         
         import uuid

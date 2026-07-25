@@ -31,7 +31,7 @@ class GeminiEmbeddingProvider(BaseEmbeddingProvider):
         if not self.api_key:
             return [0.0] * 768
             
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={self.api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "content": {
@@ -59,13 +59,13 @@ class GeminiEmbeddingProvider(BaseEmbeddingProvider):
         batch_size = 100
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key={self.api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:batchEmbedContents?key={self.api_key}"
             headers = {"Content-Type": "application/json"}
             
             requests = []
             for t in batch:
                 requests.append({
-                    "model": "models/text-embedding-004",
+                    "model": "models/gemini-embedding-2",
                     "content": {
                         "parts": [{"text": t}]
                     }

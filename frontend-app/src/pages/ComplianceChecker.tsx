@@ -3,12 +3,11 @@ import { Shield, TriangleAlert, ShieldCheck, Lightbulb, History, Download, Play,
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  getComplianceSnapshot, 
-  checkCompliance, 
-  generateComplianceReport, 
-  getComplianceHistory 
+import {
+  getComplianceSnapshot,
+  checkCompliance,
+  generateComplianceReport,
+  getComplianceHistory
 } from "@/services/compliance";
 import { listDocuments } from "@/services/documents";
 import type { ComplianceSnapshot } from "@/types/compliance";
@@ -74,7 +73,7 @@ const ComplianceChecker = () => {
         document_id: auditDocId || undefined,
         regulation_ids: regList.length ? regList : undefined
       });
-      
+
       setAuditResult(res.data || res);
       toast({ title: "Compliance Audit Completed", description: "Vulnerabilities and regulations evaluated." });
       fetchComplianceData();
@@ -167,7 +166,7 @@ const ComplianceChecker = () => {
           <div className="space-y-4 text-xs">
             <div className="space-y-1.5">
               <label className="text-[9px] font-mono text-neutral-500 uppercase">Operational workflow query to audit:</label>
-              <textarea 
+              <textarea
                 value={auditQuery}
                 onChange={(e) => setAuditQuery(e.target.value)}
                 placeholder="e.g. Verify if sharing employee identifiers violates the personal privacy norms under the DPDP Act..."
@@ -178,7 +177,7 @@ const ComplianceChecker = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-mono text-neutral-500 uppercase">Audit Target File:</label>
-                <select 
+                <select
                   value={auditDocId}
                   onChange={(e) => setAuditDocId(e.target.value)}
                   className="w-full input-premium text-xs"
@@ -190,8 +189,8 @@ const ComplianceChecker = () => {
 
               <div className="space-y-1.5">
                 <label className="text-[9px] font-mono text-neutral-500 uppercase">Regulation IDs (Comma Separated):</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={auditRegs}
                   onChange={(e) => setAuditRegs(e.target.value)}
                   placeholder="e.g. sebi_regulations, dpdp"
@@ -223,7 +222,7 @@ const ComplianceChecker = () => {
               <div className="p-3.5 bg-neutral-50 border border-border rounded text-2xs space-y-2 max-h-[250px] overflow-y-auto">
                 <p className="font-semibold text-neutral-800">Status: {auditResult.status || "Completed"}</p>
                 <p className="leading-relaxed text-neutral-600">{auditResult.executive_summary || auditResult.message || "Audit parsed successfully."}</p>
-                
+
                 {auditResult.compliance_gaps && auditResult.compliance_gaps.map((gap: any, idx: number) => (
                   <div key={idx} className="p-2.5 bg-red-50 border border-red-100 rounded text-red-900 mt-2">
                     <p className="font-semibold">{gap.rule_id || "Gap detected"}:</p>

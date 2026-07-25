@@ -182,9 +182,14 @@ class FirestoreVectorStore(BaseVectorStore):
             text = c.get("text", "").lower()
             keyword_score = 0.0
             if query_words:
-                text_words = set(text.split())
-                overlap = len(query_words.intersection(text_words))
-                keyword_score = overlap / max(len(query_words), 1)
+                stop_words = {"what", "are", "the", "rules", "for", "is", "a", "an", "of", "and", "in", "to", "how", "why"}
+                meaningful_query_words = query_words - stop_words
+                if meaningful_query_words:
+                    text_words = set(text.split())
+                    overlap = len(meaningful_query_words.intersection(text_words))
+                    keyword_score = overlap / len(meaningful_query_words)
+                else:
+                    keyword_score = 0.0
 
             # Hybrid score
             if all(v == 0.0 for v in query_embedding) or not emb or all(v == 0.0 for v in emb):

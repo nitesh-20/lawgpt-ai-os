@@ -2,24 +2,16 @@ import { apiClient } from "@/utils/apiClient";
 
 export type ResearchContentType = "cases" | "statutes" | "articles" | "all";
 
-export interface ResearchSource {
+export interface ResearchResult {
+  id: string;
   title: string;
-  url: string;
-  type?: string;
-}
-
-export interface ResearchReportResponse {
+  court?: string;
+  date: string;
+  matchScore: number;
   summary: string;
-  key_points: string[];
-  acts: string[];
-  sections: string[];
-  judgments: string[];
-  compliance_notes: string;
-  risk_level: string;
-  confidence_score: number;
   citations: string[];
-  sources: ResearchSource[];
-  related_documents: string[];
+  type: string;
+  content?: string;
 }
 
 export interface ResearchSearchParams {
@@ -28,7 +20,7 @@ export interface ResearchSearchParams {
   jurisdiction?: string;
 }
 
-export async function search(params: ResearchSearchParams): Promise<ResearchReportResponse | null> {
+export async function search(params: ResearchSearchParams): Promise<ResearchResult[]> {
   const response = await apiClient.post("/research/query", {
     query: params.query,
     filters: {
@@ -38,9 +30,23 @@ export async function search(params: ResearchSearchParams): Promise<ResearchRepo
   });
 
   if (response && response.status === "success" && response.data) {
-    return response.data as ResearchReportResponse;
+    if (response.data.results) {
+      return response.data.results as ResearchResult[];
+    }
+    
+    // Fallback: Map the structured AI report into a single result for the UI
+    const report = response.data;
+    return [{
+      id: `report-${Date.now()}`,
+      title: "AI Legal Research Report",
+      date: new Date().toISOString().split('T')[0],
+      matchScore: Math.round((report.confidence_score || 0.85) * 100),
+      summary: `${report.executive_summary ? report.executive_summary + '\n\n' : ''}${report.answer || ''}`,
+      citations: report.citations || [],
+      type: "AI Report"
+    }];
   }
-  return null;
+  return [];
 }
 
 export async function getResearchHistory(): Promise<any[]> {

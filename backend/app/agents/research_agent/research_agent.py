@@ -99,12 +99,12 @@ class ResearchAgent(BaseAgent):
 
         output_data = {
             "status": "success",
-            "message": formatted["Summary"],
+            "message": formatted.get("executive_summary", ""),
             "agent": "ResearchAgent",
             "data": formatted,
             "metrics": {
                 "execution_time_sec": duration,
-                "confidence_score": formatted["Confidence Score"],
+                "confidence_score": formatted.get("confidence_score", 0.0),
                 "chunks_retrieved": len(retrieved_chunks),
                 "citations_count": len(citations),
             },

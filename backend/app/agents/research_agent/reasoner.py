@@ -43,12 +43,15 @@ class LegalReasoner:
         if api_key:
             try:
                 # Call Gemini API via httpx directly to avoid google-generativeai package dependency
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
                 headers = {"Content-Type": "application/json"}
                 
                 system_instruction = (
                     "You are a Senior Legal Research Counsel. Answer the legal question based ONLY on the provided context. "
-                    "Do not fabricate facts or citations. If the provided context is insufficient, state your uncertainty clearly. "
+                    "Do not fabricate facts or citations. "
+                    "CRITICAL: If the provided context chunks do not contain any information relevant to the user's query, "
+                    "do NOT attempt to answer. Instead, set 'executive_summary' to 'No relevant legal context found in the database.', "
+                    "and 'answer' to 'I searched the current legal database but could not locate any documents matching your query. Please try searching for a different term or upload relevant documents.' "
                     "Return your answer in a strict JSON format with the following keys: 'answer' (Direct answer), "
                     "'executive_summary' (Executive summary of findings), 'key_points' (array of important clauses or key findings), "
                     "'acts' (array of applicable acts), 'sections' (array of relevant sections), "
@@ -96,6 +99,22 @@ class LegalReasoner:
         Synthesizes a response locally using retrieved chunks to prevent hallucination.
         """
         logger.info("Running local fallback reasoning engine...")
+        # Calculate average score for confidence
+        avg_score = sum(c.get("score", 0.5) for c in ranked_chunks) / max(len(ranked_chunks), 1)
+
+        # If the search score is too low, we likely fetched irrelevant documents (hybrid score below 0.82 typically means no direct match)
+        if avg_score < 0.82:
+            return {
+                "answer": "I searched the current legal database but could not locate any documents directly matching your query. The system currently only contains the Companies Act and BNS. Please upload documents related to Data Privacy to get accurate answers.",
+                "executive_summary": "No relevant legal context found in the database.",
+                "key_points": [],
+                "acts": [],
+                "sections": [],
+                "recommendations": [],
+                "citations": [],
+                "related_documents": [],
+                "confidence_score": 0.0
+            }
 
         # Extract acts and sections
         related_acts = list({c.get("document_name", "") for c in citations if c.get("document_name")})
@@ -130,9 +149,6 @@ class LegalReasoner:
 
         # Collect references
         references = [cit.get("citation_text", "") for cit in citations]
-
-        # Calculate average score for confidence
-        avg_score = sum(c.get("score", 0.5) for c in ranked_chunks) / len(ranked_chunks)
 
         return {
             "answer": detailed_explanation,
