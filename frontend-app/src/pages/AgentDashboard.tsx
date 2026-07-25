@@ -156,7 +156,13 @@ const AgentDashboard = () => {
               <div className="p-4 bg-neutral-50 border border-border rounded text-2xs space-y-2 mt-4">
                 <p className="font-semibold text-neutral-800 font-mono text-[9px] uppercase text-primary">Generated Topology Map:</p>
                 <p><span className="font-semibold">Parallelizable Steps:</span> {planTopology.parallelizable ? "YES" : "NO"}</p>
-                <p><span className="font-semibold">Intents Classified:</span> {Array.isArray(planTopology.intents_detected) ? planTopology.intents_detected.join(", ") : planTopology.intents_detected || "General query"}</p>
+                <p><span className="font-semibold">Intents Classified:</span> {
+                  Array.isArray(planTopology.intents_detected) 
+                    ? planTopology.intents_detected.join(", ") 
+                    : (typeof planTopology.intents_detected === 'object' && planTopology.intents_detected !== null 
+                        ? Object.keys(planTopology.intents_detected).join(", ") 
+                        : planTopology.intents_detected || "General query")
+                }</p>
               </div>
             )}
 
