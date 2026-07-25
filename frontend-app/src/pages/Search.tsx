@@ -408,11 +408,11 @@ const Search = () => {
     <div className="min-h-screen p-4 md:p-8 fade-in">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-            AVENIX.PRO Indian Legal Intelligence
+          <h1 className="font-serif text-3xl md:text-5xl font-semibold text-ink tracking-tight text-balance">
+            LawGPT
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            AI-powered legal research across Indian cases, statutes, and legal scholarship with neural network analysis.
+            AI-powered legal research across Indian cases, statutes, regulations, judgments, and legal scholarship.
           </p>
         </div>
 

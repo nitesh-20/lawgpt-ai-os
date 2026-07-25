@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, LineChart, Users, Shield } from "lucide-react";
+import HeroDocumentPreview from "@/components/landing/HeroDocumentPreview";
+import { heroDocumentPreview } from "@/data/heroDocumentPreview";
 
 const Navbar = () => (
   <nav className="fixed w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
@@ -35,16 +37,18 @@ const Stats = () => (
   <div className="border-t border-border">
     <div className="grid grid-cols-1 md:grid-cols-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {[
-        { number: "32", label: "hours saved per month per team" },
-        { number: "44%", label: "cost reduction on routine tasks" },
-        { number: "+2.4", label: "NPS improvement" },
-        { number: "100k+", label: "clauses reviewed to date" },
+        { number: "32", label: "hours saved per month per team", standout: false },
+        { number: "44%", label: "cost reduction on routine tasks", standout: false },
+        { number: "+2.4", label: "NPS improvement", standout: false },
+        { number: "100k+", label: "clauses reviewed to date", standout: true },
       ].map((stat, i) => (
         <div
           key={i}
           className={`py-12 px-6 ${i !== 0 ? "md:border-l border-border" : ""}`}
         >
-          <div className="text-4xl font-mono font-medium text-ink mb-2">{stat.number}</div>
+          <div className={`text-4xl font-mono font-medium mb-2 ${stat.standout ? "text-accent" : "text-ink"}`}>
+            {stat.number}
+          </div>
           <p className="text-sm text-muted-foreground">{stat.label}</p>
         </div>
       ))}
@@ -55,8 +59,7 @@ const Stats = () => (
 const Testimonials = () => (
   <div className="bg-secondary/40 border-y border-border py-20">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <p className="text-xs font-medium uppercase tracking-widest text-accent mb-3 text-center">Client counsel</p>
-      <h2 className="font-serif text-3xl font-semibold text-center mb-12 text-ink">Trusted by legal teams worldwide</h2>
+      <h2 className="font-serif text-3xl font-semibold text-center mb-12 text-ink text-balance">Trusted by legal teams worldwide</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
           {
@@ -91,8 +94,7 @@ const Testimonials = () => (
 
 const Features = () => (
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <p className="text-xs font-medium uppercase tracking-widest text-accent mb-3 text-center">What LawGPT does</p>
-    <h2 className="font-serif text-3xl font-semibold text-center mb-12 text-ink">Built for how legal teams already work</h2>
+    <h2 className="font-serif text-3xl font-semibold text-center mb-12 text-ink text-balance">Built for how legal teams already work</h2>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
       {[
         {
@@ -129,26 +131,34 @@ const Landing = () => {
       <main>
         {/* Hero Section */}
         <div className="pt-40 pb-24">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-xs font-medium uppercase tracking-widest text-accent mb-5">
-              AI-assisted legal practice management
-            </p>
-            <h1 className="font-serif text-5xl md:text-6xl font-semibold text-ink leading-[1.05] mb-6 text-balance">
-              The record of every case, drafted, checked, and searchable in one place.
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
-              LawGPT keeps cases, documents, and compliance in a single system of record, with AI assistance built into the parts of the job that eat the most time.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" className="w-full sm:w-auto" asChild>
-                <Link to="/dashboard">
-                  Start for free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                <Link to="/demo">Book a demo</Link>
-              </Button>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16 items-center">
+              <div className="text-center lg:text-left fade-in">
+                <p className="text-xs font-medium uppercase tracking-widest text-accent mb-5">
+                  AI-assisted legal practice management
+                </p>
+                <h1 className="font-serif text-5xl md:text-6xl font-semibold text-ink leading-[1.05] mb-6 text-balance">
+                  The record of every case, drafted, checked, and searchable in one place.
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
+                  LawGPT keeps cases, documents, and compliance in a single system of record, with AI assistance built into the parts of the job that eat the most time.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+                  <Button size="lg" className="w-full sm:w-auto" asChild>
+                    <Link to="/dashboard">
+                      Start for free
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                    <Link to="/demo">Book a demo</Link>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-center lg:justify-end">
+                <HeroDocumentPreview document={heroDocumentPreview} />
+              </div>
             </div>
           </div>
         </div>
