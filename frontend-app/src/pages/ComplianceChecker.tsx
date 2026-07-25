@@ -3,6 +3,7 @@ import { Shield, TriangleAlert, ShieldCheck, Lightbulb, History, Download, Play,
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   getComplianceSnapshot, 
   checkCompliance, 
