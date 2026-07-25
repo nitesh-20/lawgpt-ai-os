@@ -1,10 +1,16 @@
 import json
 import re
 from typing import Any
+
 import httpx
 from loguru import logger
+
+from app.agents.compliance_agent.base_plugin import (
+    BaseRegulationPlugin,
+    ComplianceCheckResult,
+    ComplianceCheckRule,
+)
 from app.core.config import settings
-from app.agents.compliance_agent.base_plugin import BaseRegulationPlugin, ComplianceCheckRule, ComplianceCheckResult
 
 
 async def evaluate_rules_hybrid(
@@ -12,7 +18,7 @@ async def evaluate_rules_hybrid(
     regulation_name: str,
     rules: list[ComplianceCheckRule],
     text: str,
-    context: dict[str, Any] = None
+    context: dict[str, Any] | None = None
 ) -> list[ComplianceCheckResult]:
     """
     Evaluates a set of compliance check rules against text using Gemini LLM if API key is present.
@@ -98,7 +104,7 @@ async def evaluate_rules_hybrid(
                     return results_list
                 else:
                     logger.warning(f"Gemini API returned status {resp.status_code}. Falling back to rule-based evaluation.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Error calling Gemini API for compliance audit: {e}. Falling back to rule-based evaluation.")
 
     # Fallback to local rule-based matching
@@ -423,7 +429,7 @@ class DPDPActPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -462,7 +468,7 @@ class ITActPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -487,7 +493,7 @@ class BNSPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -512,7 +518,7 @@ class BNSSPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -537,7 +543,7 @@ class BSAPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -569,7 +575,7 @@ class ConsumerProtectionPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -601,7 +607,7 @@ class CompaniesActPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -633,7 +639,7 @@ class LabourLawsPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -665,7 +671,7 @@ class GSTPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -697,7 +703,7 @@ class RBIGuidelinesPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -729,7 +735,7 @@ class SEBIRegulationsPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 
@@ -761,7 +767,7 @@ class CERTInPlugin(BaseRegulationPlugin):
             )
         ]
 
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         return await evaluate_rules_hybrid(self.regulation_id, self.regulation_name, self.rules, text, context)
 
 

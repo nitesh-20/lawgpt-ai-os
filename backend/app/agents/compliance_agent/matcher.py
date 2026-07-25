@@ -1,8 +1,9 @@
-import re
-from typing import Any
+from typing import Any, ClassVar
+
 from loguru import logger
-from app.services.rag.rag import RAGService
+
 from app.agents.compliance_agent.plugins import BUILTIN_PLUGINS
+from app.services.rag.rag import RAGService
 
 
 class RegulationMatcher:
@@ -10,7 +11,7 @@ class RegulationMatcher:
     Matches input text, queries, or metadata against supported regulations
     using keyword matching, regex rules, and semantic search over the indexed corpus.
     """
-    REGULATION_KEYWORDS = {
+    REGULATION_KEYWORDS: ClassVar[dict[str, list[str]]] = {
         "dpdp": [
             "dpdp", "personal data protection", "data principal", "data fiduciary", 
             "consent notice", "right to erasure", "parental consent", "privacy bill"
@@ -61,10 +62,10 @@ class RegulationMatcher:
         ]
     }
 
-    def __init__(self, rag_service: RAGService = None) -> None:
+    def __init__(self, rag_service: RAGService | None = None) -> None:
         self.rag_service = rag_service or RAGService()
 
-    async def match_regulations(self, text: str, query: str = "", metadata: dict[str, Any] = None) -> list[str]:
+    async def match_regulations(self, text: str, query: str = "", metadata: dict[str, Any] | None = None) -> list[str]:
         """
         Detects which regulations apply based on text, query, and semantic RAG lookups.
         """
@@ -102,7 +103,7 @@ class RegulationMatcher:
                         if plugin.regulation_id in doc_id or doc_id in plugin.regulation_id:
                             logger.info(f"Matched regulation {plugin.regulation_id} via RAG hit: '{doc_id}'")
                             matched_ids.add(plugin.regulation_id)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error during semantic regulation matching: {e}")
 
         # Ensure we always return at least one regulation if none matched (fallback to generic search or default acts)

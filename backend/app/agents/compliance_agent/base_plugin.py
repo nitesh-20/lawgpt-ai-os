@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -29,23 +30,19 @@ class BaseRegulationPlugin(ABC):
     @abstractmethod
     def regulation_id(self) -> str:
         """Unique ID of the regulation, e.g., 'dpdp_2023'"""
-        pass
 
     @property
     @abstractmethod
     def regulation_name(self) -> str:
         """Human-readable name of the regulation, e.g., 'DPDP Act 2023'"""
-        pass
 
     @property
     @abstractmethod
     def rules(self) -> list[ComplianceCheckRule]:
         """List of all checks carried out by this plugin"""
-        pass
 
     @abstractmethod
-    async def evaluate(self, text: str, context: dict[str, Any] = None) -> list[ComplianceCheckResult]:
+    async def evaluate(self, text: str, context: dict[str, Any] | None = None) -> list[ComplianceCheckResult]:
         """
         Evaluate the provided text/document against the plugin rules.
         """
-        pass

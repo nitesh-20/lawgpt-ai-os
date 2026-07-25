@@ -1,5 +1,7 @@
 from typing import Any
+
 from loguru import logger
+
 from app.agents.compliance_agent.base_plugin import ComplianceCheckResult
 from app.agents.compliance_agent.plugins import BUILTIN_PLUGINS
 
@@ -10,7 +12,7 @@ class GapAnalyzer:
     Identifies missing clauses, disclosures, consent issues, or security safeguards.
     """
     async def analyze_gaps(
-        self, text: str, matched_regulation_ids: list[str], context: dict[str, Any] = None
+        self, text: str, matched_regulation_ids: list[str], context: dict[str, Any] | None = None
     ) -> dict[str, list[ComplianceCheckResult]]:
         """
         Executes audit rules for each matched regulation and divides results into passed and failed checks.
@@ -31,7 +33,7 @@ class GapAnalyzer:
                         passed_checks.append(res)
                     else:
                         failed_checks.append(res)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error running plugin {plugin.regulation_id} evaluation: {e}")
                 # Fallback: mark all plugin rules as failed with error details
                 for rule in plugin.rules:

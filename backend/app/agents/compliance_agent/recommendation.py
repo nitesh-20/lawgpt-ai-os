@@ -1,4 +1,5 @@
-from typing import Any
+from typing import Any, ClassVar
+
 from app.agents.compliance_agent.base_plugin import ComplianceCheckResult
 
 
@@ -7,7 +8,7 @@ class RecommendationEngine:
     Translates failed compliance checks and gaps into actionable corrective actions,
     attaching legal references and severity-based prioritization.
     """
-    RECOMMENDATION_DATABASE = {
+    RECOMMENDATION_DATABASE: ClassVar[dict[str, dict[str, str]]] = {
         "DPDP_CONSENT_NOTICE": {
             "action": "Draft and display a clear, plain-language consent notice detailing categories of personal data collected, specific purposes of processing, and instructions on how users can withdraw consent.",
             "reference": "Section 6 of the Digital Personal Data Protection (DPDP) Act, 2023"

@@ -1,13 +1,15 @@
 import os
 from typing import Any
+
 from loguru import logger
-from app.services.rag.rag import RAGService
-from app.agents.document_agent.analyzer import DocumentAnalyzer
-from app.agents.compliance_agent.matcher import RegulationMatcher
+
 from app.agents.compliance_agent.analyzer import GapAnalyzer, PolicyMapper
-from app.agents.compliance_agent.scorer import RiskScorer
-from app.agents.compliance_agent.recommendation import RecommendationEngine
 from app.agents.compliance_agent.generator import ComplianceReportGenerator
+from app.agents.compliance_agent.matcher import RegulationMatcher
+from app.agents.compliance_agent.recommendation import RecommendationEngine
+from app.agents.compliance_agent.scorer import RiskScorer
+from app.agents.document_agent.analyzer import DocumentAnalyzer
+from app.services.rag.rag import RAGService
 
 
 class ComplianceEngine:
@@ -15,7 +17,7 @@ class ComplianceEngine:
     Main compliance orchestration engine. Reuses existing parsing/indexing services,
     coordinates matching, evaluations, risk calculations, and reports.
     """
-    def __init__(self, rag_service: RAGService = None) -> None:
+    def __init__(self, rag_service: RAGService | None = None) -> None:
         self.rag_service = rag_service or RAGService()
         self.analyzer = DocumentAnalyzer()
         self.matcher = RegulationMatcher(self.rag_service)
@@ -29,9 +31,9 @@ class ComplianceEngine:
         self,
         text: str = "",
         query: str = "",
-        document_id: str = None,
-        file_path: str = None,
-        regulation_ids: list[str] = None
+        document_id: str | None = None,
+        file_path: str | None = None,
+        regulation_ids: list[str] | None = None
     ) -> dict[str, Any]:
         """
         Executes the linear compliance audit flow.
@@ -62,7 +64,7 @@ class ComplianceEngine:
             
             logger.info(f"Auditing file from path: {file_path}. Processing via DocumentAnalyzer to reuse parsing logic.")
             # Read file bytes
-            with open(file_path, "rb") as f:
+            with open(file_path, "rb") as f:  # noqa: ASYNC230
                 file_bytes = f.read()
             file_name = os.path.basename(file_path)
             

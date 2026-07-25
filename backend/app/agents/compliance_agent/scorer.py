@@ -1,7 +1,9 @@
-from typing import Any
+from typing import Any, ClassVar
+
 from loguru import logger
-from app.core.config import settings
+
 from app.agents.compliance_agent.base_plugin import ComplianceCheckResult
+from app.core.config import settings
 
 
 class RiskScorer:
@@ -9,7 +11,7 @@ class RiskScorer:
     Computes overall compliance scores (0-100), maps risk levels (Critical, High, Medium, Low)
     based on weights and overrides, and generates confidence metrics.
     """
-    SEVERITY_WEIGHTS = {
+    SEVERITY_WEIGHTS: ClassVar[dict[str, float]] = {
         "critical": 4.0,
         "high": 2.0,
         "medium": 1.0,

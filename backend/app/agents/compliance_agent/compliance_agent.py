@@ -1,13 +1,14 @@
-import time
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
 from loguru import logger
 
 from app.agents.base import BaseAgent
-from app.database.firestore import get_firestore_client
 from app.agents.compliance_agent.engine import ComplianceEngine
+from app.database.firestore import get_firestore_client
 
 
 class ComplianceAgent(BaseAgent):
@@ -18,7 +19,7 @@ class ComplianceAgent(BaseAgent):
 
     def __init__(self) -> None:
         self._initialized = False
-        self.engine = None
+        self.engine: ComplianceEngine | None = None
         self.history_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/compliance_history.json")
         self.collection_name = "compliance_history"
 
@@ -50,7 +51,7 @@ class ComplianceAgent(BaseAgent):
 
     async def execute(self, task_input: dict[str, Any]) -> dict[str, Any]:
         logger.info(f"Compliance Agent executing audit. Input: {task_input}")
-        if not self._initialized:
+        if not self._initialized or self.engine is None:
             raise RuntimeError("Compliance Agent is not initialized.")
 
         query = task_input.get("query", task_input.get("message", ""))
@@ -62,7 +63,7 @@ class ComplianceAgent(BaseAgent):
         if isinstance(regulation_ids, str):
             try:
                 regulation_ids = json.loads(regulation_ids)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 regulation_ids = [r.strip() for r in regulation_ids.split(",") if r.strip()]
 
         start_time = time.time()
@@ -98,7 +99,7 @@ class ComplianceAgent(BaseAgent):
 
             return output_data
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.exception("Compliance audit execution failed.")
             return {
                 "status": "error",
@@ -121,7 +122,7 @@ class ComplianceAgent(BaseAgent):
         client = None
         try:
             client = get_firestore_client()
-        except Exception:
+        except Exception:  # noqa: BLE001
             client = None
 
         if client is not None:
@@ -129,7 +130,7 @@ class ComplianceAgent(BaseAgent):
                 client.collection(self.collection_name).add(audit_record)
                 logger.info("Compliance audit record saved to Firestore.")
                 return
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning(f"Firestore compliance history write failed: {e}. Falling back to local.")
 
         # 2. Local JSON Fallback
@@ -138,17 +139,17 @@ class ComplianceAgent(BaseAgent):
             history = []
             if self.history_file.exists():
                 try:
-                    with open(self.history_file, "r") as f:
+                    with open(self.history_file, "r") as f:  # noqa: ASYNC230
                         history = json.load(f)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     history = []
 
             history.append(audit_record)
 
-            with open(self.history_file, "w") as f:
+            with open(self.history_file, "w") as f:  # noqa: ASYNC230
                 json.dump(history, f, indent=2)
             logger.info("Compliance audit record saved to local JSON store.")
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             logger.error(f"Failed to write compliance local history fallback: {ex}")
 
     async def shutdown(self) -> None:
