@@ -1,0 +1,252 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Editorial legal-tech palette: warm paper, deep forest-green accent, brass highlight.
+       Deliberately avoids blue/purple "AI startup" defaults. */
+    --background: 40 23% 97%;
+    --foreground: 226 19% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 226 19% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 19% 10%;
+    --primary: 158 42% 21%;
+    --primary-foreground: 40 30% 98%;
+    --secondary: 40 20% 92%;
+    --secondary-foreground: 226 19% 10%;
+    --muted: 40 16% 94%;
+    --muted-foreground: 228 8% 42%;
+    --accent: 38 45% 41%;
+    --accent-foreground: 40 30% 98%;
+    --destructive: 6 72% 46%;
+    --destructive-foreground: 40 30% 98%;
+    --border: 40 14% 88%;
+    --input: 40 14% 88%;
+    --ring: 158 42% 21%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border selection:bg-primary/15;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif text-ink tracking-tight;
+  }
+
+  h1 {
+    @apply text-3xl font-semibold;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+
+  h3 {
+    @apply text-xl font-semibold;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Page scaffolding */
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+
+  .page-header {
+    @apply mb-8 pb-6 border-b border-border;
+  }
+
+  .page-title {
+    @apply font-serif text-3xl font-semibold text-ink mb-1.5;
+  }
+
+  .page-description {
+    @apply text-muted-foreground text-[15px];
+  }
+
+  .card-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5;
+  }
+
+  /* Flat, bordered surfaces — replaces the old glass/gradient look everywhere
+     these classes are used, so every page inherits the redesign automatically. */
+  .glass-card,
+  .futuristic-card,
+  .neo-glass {
+    @apply bg-card border border-border shadow-card hover:shadow-card-hover transition-shadow duration-200 rounded-lg;
+  }
+
+  .futuristic-card::before,
+  .futuristic-card::after {
+    content: none;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+
+  .input-with-icon {
+    @apply pl-10 pr-4 py-2 rounded-md border border-input bg-card focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition-all duration-200;
+  }
+
+  .button-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 py-2 rounded-md transition-colors duration-200;
+  }
+
+  .button-secondary {
+    @apply bg-card hover:bg-muted text-foreground font-medium px-4 py-2 rounded-md border border-border transition-colors duration-200;
+  }
+
+  /* Text accents — solid brand ink, no gradient fill. Class names kept so
+     existing pages don't need edits. */
+  .gradient-text,
+  .futuristic-text {
+    @apply text-primary font-semibold;
+  }
+
+  .futuristic-border,
+  .neon-border,
+  .neon-accent-border {
+    @apply border border-border;
+  }
+
+  .panel-grid {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-5;
+  }
+
+  .stat-panel {
+    @apply glass-card p-6;
+  }
+
+  .shimmer,
+  .loading-shimmer {
+    @apply relative overflow-hidden bg-muted;
+  }
+
+  .floating-element {
+    /* motion retired in favor of a static, deliberate layout */
+  }
+}
+
+/* Entrance animation, used sparingly on page mount */
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-in {
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+.glass-morphism {
+  @apply bg-card/90 backdrop-blur-md border border-border shadow-card;
+}
+
+.smooth-transition {
+  @apply transition-all duration-200 ease-out;
+}
+
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms, transform 250ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 250ms, transform 250ms;
+}
+
+.pulse-border {
+  position: relative;
+}
+
+.pulse-border::after {
+  content: none;
+}
+
+.animate-glow {
+  animation: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
