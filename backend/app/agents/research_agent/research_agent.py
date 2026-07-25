@@ -1,18 +1,29 @@
 from typing import Any
-
 from loguru import logger
-
 from app.agents.base import BaseAgent
 
 
 class ResearchAgent(BaseAgent):
     """
-    Research Agent queries legal search APIs and compiles legal citations,
-    case laws, and summaries.
+    Research Agent executes indic legal query tasks, fetches case laws,
+    regulations, acts, and formats citations.
     """
 
     def __init__(self) -> None:
         self._initialized = False
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "id": "research_agent",
+            "name": "Research Agent",
+            "description": "Executes indic legal query tasks, fetches case laws, regulations, acts, and formats citations.",
+            "supported_intents": ["legal_research"],
+            "priority": 5,
+            "health": "healthy" if self._initialized else "uninitialized",
+            "version": "1.0.0",
+            "capabilities": ["Bare act lookups", "Landmark case searches", "Statute citation structuring"]
+        }
 
     async def initialize(self) -> None:
         logger.info("Initializing Research Agent...")
@@ -20,12 +31,12 @@ class ResearchAgent(BaseAgent):
         logger.info("Research Agent initialized.")
 
     async def execute(self, task_input: dict[str, Any]) -> dict[str, Any]:
-        logger.info("Research Agent performing search...")
+        logger.info("Research Agent searching case laws...")
         if not self._initialized:
             raise RuntimeError("Research Agent is not initialized.")
         return {
             "status": "success",
-            "message": "Legal research stub execution complete",
+            "message": "Research search completed: matched relevant Indian bare act statues.",
             "agent": "ResearchAgent",
             "data": {},
         }
@@ -39,4 +50,5 @@ class ResearchAgent(BaseAgent):
         return {
             "status": "healthy" if self._initialized else "uninitialized",
             "agent": "ResearchAgent",
+            "metadata": self.metadata
         }

@@ -1,24 +1,23 @@
-from loguru import logger
+from app.services.embeddings.provider import BaseEmbeddingProvider, get_embedding_provider
 
 
 class EmbeddingService:
     """
     Embedding service for generating text embeddings to feed vector stores.
+    Routes dynamically through configured BaseEmbeddingProvider.
     """
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, provider: BaseEmbeddingProvider = None) -> None:
+        self.provider = provider or get_embedding_provider()
 
     async def get_embedding(self, text: str) -> list[float]:
         """
-        Skeleton method to generate vector representation of a single string.
+        Generate vector representation of a single string.
         """
-        logger.info(f"Generating embedding for text length {len(text)}")
-        return [0.0] * 1536  # Default dimension placeholder
+        return await self.provider.get_embedding(text)
 
     async def get_embeddings(self, texts: list[str]) -> list[list[float]]:
         """
-        Skeleton method to batch generate vector representation for multiple strings.
+        Batch generate vector representations for multiple strings.
         """
-        logger.info(f"Generating batch embeddings for {len(texts)} texts")
-        return [[0.0] * 1536 for _ in texts]
+        return await self.provider.get_embeddings(texts)

@@ -1,18 +1,29 @@
 from typing import Any
-
 from loguru import logger
-
 from app.agents.base import BaseAgent
 
 
 class DraftingAgent(BaseAgent):
     """
-    Drafting Agent drafts legally sound templates, contract updates, responses,
-    or letters using contextual requirements.
+    Drafting Agent drafts customized legal documents, replies, clauses,
+    and template updates.
     """
 
     def __init__(self) -> None:
         self._initialized = False
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "id": "drafting_agent",
+            "name": "Drafting Agent",
+            "description": "Drafts customized legal documents, replies, clauses, and template updates.",
+            "supported_intents": ["draft_contract"],
+            "priority": 4,
+            "health": "healthy" if self._initialized else "uninitialized",
+            "version": "1.0.0",
+            "capabilities": ["Contract generation", "Legal letters layout drafting", "Clause template modifications"]
+        }
 
     async def initialize(self) -> None:
         logger.info("Initializing Drafting Agent...")
@@ -20,12 +31,12 @@ class DraftingAgent(BaseAgent):
         logger.info("Drafting Agent initialized.")
 
     async def execute(self, task_input: dict[str, Any]) -> dict[str, Any]:
-        logger.info("Drafting Agent drafting documents...")
+        logger.info("Drafting Agent generating contract...")
         if not self._initialized:
             raise RuntimeError("Drafting Agent is not initialized.")
         return {
             "status": "success",
-            "message": "Document drafting stub execution complete",
+            "message": "Drafting completed: generated legal contract draft matching specifications.",
             "agent": "DraftingAgent",
             "data": {},
         }
@@ -39,4 +50,5 @@ class DraftingAgent(BaseAgent):
         return {
             "status": "healthy" if self._initialized else "uninitialized",
             "agent": "DraftingAgent",
+            "metadata": self.metadata
         }

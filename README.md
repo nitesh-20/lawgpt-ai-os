@@ -145,8 +145,22 @@ All routes are versioned and prefix-nested under `/api/v1`:
   - `POST /api/v1/compliance/verify` - Verify SEBI, FEMA, or labor codes against operations.
   - `POST /api/v1/draft/generate` - Draft legal letters and contracts.
   - `POST /api/v1/voice/transcribe` - Transcribe voice clips or translate text values.
+  - `POST /api/v1/knowledge/ingest` - Trigger background legal document ingestion.
+  - `POST /api/v1/knowledge/reindex` - Reset database and rebuild RAG vector store indexes.
+  - `GET /api/v1/knowledge/status` - Fetch processing logs and status of ingestion pipeline.
+  - `GET /api/v1/knowledge/statistics` - Retrieve knowledge database metrics.
+  - `POST /api/v1/orchestrator/chat` - Coordinate chat loop query dispatching.
+  - `POST /api/v1/orchestrator/plan` - Parse user intent and formulate execution task plans.
+  - `GET /api/v1/orchestrator/status` - Check orchestrator health and sub-agent connection states.
+  - `GET /api/v1/orchestrator/agents` - Query capabilities of registered child agents.
+  - `GET /api/v1/orchestrator/metrics` - Fetch sub-agent execution durations dashboard.
+
+For complete indexing pipeline details, refer to the [Document Ingestion Guide](file:///Users/niteshsahu/Desktop/lawgpt-ai-os/docs/document_ingestion.md).
+
+For cognitive planning and multi-agent coordination details, refer to the [Orchestrator Guide](file:///Users/niteshsahu/Desktop/lawgpt-ai-os/docs/orchestrator.md).
 
 ---
+
 
 ## 🛠️ Verification & Quality Assurance
 
