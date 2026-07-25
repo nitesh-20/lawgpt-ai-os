@@ -49,10 +49,12 @@ class LegalReasoner:
                 system_instruction = (
                     "You are a Senior Legal Research Counsel. Answer the legal question based ONLY on the provided context. "
                     "Do not fabricate facts or citations. If the provided context is insufficient, state your uncertainty clearly. "
-                    "Return your answer in a strict JSON format with the following keys: 'summary' (3-5 paragraphs), 'key_points' (array of short strings), "
-                    "'acts' (array of strings), 'sections' (array of strings), 'judgments' (array of strings), 'compliance_notes' (string), "
-                    "'risk_level' (Low, Medium, High, Critical), 'confidence_score' (float), 'citations' (array of strings), "
-                    "'sources' (array of objects with title, url, type), and 'related_documents' (array of strings)."
+                    "Return your answer in a strict JSON format with the following keys: 'answer' (Direct answer), "
+                    "'executive_summary' (Executive summary of findings), 'key_points' (array of important clauses or key findings), "
+                    "'acts' (array of applicable acts), 'sections' (array of relevant sections), "
+                    "'recommendations' (array of compliance implications & practical recommendations), "
+                    "'citations' (array of source citations), 'related_documents' (array of related document names), "
+                    "and 'confidence_score' (float between 0.0 and 1.0)."
                 )
 
                 prompt = (
@@ -125,7 +127,6 @@ class LegalReasoner:
             paragraphs.append(f"{ref_prefix}: \"{text}\"")
 
         detailed_explanation = "\n\n".join(paragraphs)
-        applicable_law = ", ".join(related_acts) if related_acts else "Indian Statutes"
 
         # Collect references
         references = [cit.get("citation_text", "") for cit in citations]
@@ -134,15 +135,13 @@ class LegalReasoner:
         avg_score = sum(c.get("score", 0.5) for c in ranked_chunks) / len(ranked_chunks)
 
         return {
-            "summary": summary + "\n\n" + detailed_explanation,
+            "answer": detailed_explanation,
+            "executive_summary": summary,
             "key_points": [sentences[0]] if sentences else [],
             "acts": related_acts,
             "sections": relevant_sections,
-            "judgments": [],
-            "compliance_notes": "Adherence to the aforementioned acts and sections is advised.",
-            "risk_level": "Medium",
-            "confidence_score": avg_score,
+            "recommendations": ["Adherence to the active provisions is recommended."],
             "citations": references,
-            "sources": [{"title": c.get("document_name", "Source"), "url": "", "type": "statute"} for c in citations if c.get("document_name")],
-            "related_documents": []
+            "related_documents": related_acts,
+            "confidence_score": round(avg_score, 3)
         }

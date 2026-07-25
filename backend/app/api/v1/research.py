@@ -57,8 +57,7 @@ async def query_research(payload: ResearchQueryRequest):
         import datetime
         now = datetime.datetime.utcnow().isoformat()
         
-        # We synthesize the Cases/Statutes format expected by frontend
-        
+        # Return the structured agent result directly to the frontend
         return {
             "status": "success",
             "message": "Research query completed.",
