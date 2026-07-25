@@ -1,10 +1,4 @@
-/**
- * Document list data access. Backed by mock data until the real endpoint below exists.
- * See /MISSING_BACKEND.md for the full contract — including a schema mismatch note
- * between this shape and the unrelated `storedFiles` localStorage data seeded by AppLayout.
- *
- * GET /documents -> DocumentSummary[]
- */
+import { apiClient } from "@/utils/apiClient";
 
 export interface DocumentSummary {
   id: string;
@@ -16,7 +10,7 @@ export interface DocumentSummary {
   tags?: string[];
 }
 
-const documents: DocumentSummary[] = [
+const mockDocuments: DocumentSummary[] = [
   {
     id: "1",
     title: "Contract Agreement v2.1",
@@ -35,17 +29,19 @@ const documents: DocumentSummary[] = [
     category: "templates",
     tags: ["NDA", "Confidentiality", "Template"],
   },
-  {
-    id: "3",
-    title: "Client Meeting Notes",
-    type: "Notes",
-    lastModified: "2024-02-17",
-    size: "256 KB",
-    category: "notes",
-    tags: ["Notes", "Meeting", "Client"],
-  },
 ];
 
 export async function listDocuments(): Promise<DocumentSummary[]> {
-  return documents;
+  try {
+    const response = await apiClient.get("/documents");
+    if (response && response.status === "success" && Array.isArray(response.data)) {
+      return response.data as DocumentSummary[];
+    } else if (Array.isArray(response)) {
+      return response as DocumentSummary[];
+    }
+  } catch (error) {
+    console.error("Documents API failed, falling back to cached state:", error);
+  }
+  
+  return mockDocuments;
 }

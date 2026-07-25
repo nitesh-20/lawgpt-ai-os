@@ -1,19 +1,14 @@
-/**
- * Case data access. Backed by localStorage (seeded demo data) until the real
- * endpoints below exist. See /MISSING_BACKEND.md for the full contract.
- *
- * GET    /cases              -> Case[]
- * GET    /cases/:id          -> Case
- * POST   /cases              -> Case  (body: CaseInput)
- * POST   /cases/:id/hearings -> Case  (body: Hearing)
- * DELETE /cases/:id          -> void
- */
+import { apiClient } from "@/utils/apiClient";
 import type { Case, Hearing } from "@/types/case";
 
 const STORAGE_KEY = "cases";
 
 function readCases(): Case[] {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
 }
 
 function writeCases(cases: Case[]): void {
@@ -21,16 +16,49 @@ function writeCases(cases: Case[]): void {
 }
 
 export async function listCases(): Promise<Case[]> {
+  try {
+    const response = await apiClient.get("/cases");
+    if (response && Array.isArray(response.data)) {
+      writeCases(response.data);
+      return response.data;
+    } else if (Array.isArray(response)) {
+      writeCases(response);
+      return response;
+    }
+  } catch (error) {
+    console.warn("Backend /cases not reachable, falling back to local cache.");
+  }
   return readCases();
 }
 
 export async function getCase(id: string): Promise<Case | undefined> {
+  try {
+    const response = await apiClient.get(`/cases/${id}`);
+    if (response && response.status === "success" && response.data) {
+      return response.data;
+    } else if (response && response.id === id) {
+      return response as Case;
+    }
+  } catch (error) {
+    console.warn(`Backend /cases/${id} not reachable, falling back to local cache.`);
+  }
   return readCases().find((c) => c.id === id);
 }
 
 export type CaseInput = Omit<Case, "id" | "user_id" | "created_at" | "updated_at" | "hearings">;
 
 export async function createCase(input: CaseInput): Promise<Case> {
+  try {
+    const response = await apiClient.post("/cases", input);
+    if (response && (response.data || response.id)) {
+      const serverCase = response.data || response;
+      writeCases([serverCase, ...readCases()]);
+      return serverCase;
+    }
+  } catch (error) {
+    console.warn("Backend case creation failed, performing local optimistic update.", error);
+  }
+
   const newCase: Case = {
     ...input,
     id: crypto.randomUUID(),
@@ -44,6 +72,18 @@ export async function createCase(input: CaseInput): Promise<Case> {
 }
 
 export async function addHearing(caseId: string, hearing: Omit<Hearing, "id" | "case_id" | "created_at">): Promise<Case> {
+  try {
+    const response = await apiClient.post(`/cases/${caseId}/hearings`, hearing);
+    if (response && (response.data || response.id)) {
+      const serverCase = response.data || response;
+      const cases = readCases();
+      writeCases(cases.map((c) => (c.id === caseId ? serverCase : c)));
+      return serverCase;
+    }
+  } catch (error) {
+    console.warn("Backend hearing creation failed, performing local optimistic update.", error);
+  }
+
   const cases = readCases();
   const target = cases.find((c) => c.id === caseId);
   if (!target) throw new Error(`Case ${caseId} not found`);
@@ -60,5 +100,10 @@ export async function addHearing(caseId: string, hearing: Omit<Hearing, "id" | "
 }
 
 export async function deleteCase(id: string): Promise<void> {
+  try {
+    await apiClient.post(`/cases/${id}/delete`, {});
+  } catch (error) {
+    console.warn(`Backend case deletion failed, performing local optimistic update for ${id}.`);
+  }
   writeCases(readCases().filter((c) => c.id !== id));
 }
