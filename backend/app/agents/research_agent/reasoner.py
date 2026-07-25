@@ -102,10 +102,10 @@ class LegalReasoner:
         # Calculate average score for confidence
         avg_score = sum(c.get("score", 0.5) for c in ranked_chunks) / max(len(ranked_chunks), 1)
 
-        # If the search score is too low, we likely fetched irrelevant documents (hybrid score below 0.82 typically means no direct match)
-        if avg_score < 0.82:
+        # If the search score is too low, we likely fetched irrelevant documents
+        if avg_score < 0.50:
             return {
-                "answer": "I searched the current legal database but could not locate any documents directly matching your query. The system currently only contains the Companies Act and BNS. Please upload documents related to Data Privacy to get accurate answers.",
+                "answer": "I searched the current legal database but could not locate any documents directly matching your query. Please upload more relevant documents to get accurate answers.",
                 "executive_summary": "No relevant legal context found in the database.",
                 "key_points": [],
                 "acts": [],
