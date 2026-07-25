@@ -189,12 +189,12 @@ const CaseDetails = () => {
               </div>
               
               <div className="mt-4 md:mt-0 flex flex-col md:items-end">
-                <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 inline-flex items-center gap-2">
+                <div className="px-4 py-2 rounded-lg bg-secondary border border-border inline-flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${
-                    caseData.status === 'active' ? 'bg-green-500 animate-pulse' :
-                    caseData.status === 'pending' ? 'bg-yellow-500' : 'bg-blue-500'
+                    caseData.status === 'active' ? 'bg-primary animate-pulse' :
+                    caseData.status === 'pending' ? 'bg-accent' : 'bg-muted-foreground'
                   }`}></div>
-                  <span className="font-medium capitalize">{caseData.status || 'Active'}</span>
+                  <span className="font-medium capitalize text-ink">{caseData.status || 'Active'}</span>
                 </div>
                 <span className="text-xs text-neutral-500 mt-1">Updated: {formatDate(caseData.updated_at)}</span>
               </div>
