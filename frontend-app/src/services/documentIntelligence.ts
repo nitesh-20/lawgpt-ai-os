@@ -19,8 +19,8 @@ export async function getDocumentDetail(id: string): Promise<DocumentDetail> {
              risk: c.severity === "High" ? "high" : c.severity === "Medium" ? "medium" : "low",
              note: c.recommended_action || "No notes."
            })),
-           aiNotes: [],
-           entities: [],
+           aiNotes: results.risk_factors ? results.risk_factors.map((n: string, i: number) => ({ id: `n${i}`, note: n })) : [],
+           entities: results.parties ? results.parties.map((p: string, i: number) => ({ id: `e${i}`, name: p, value: "Party Identified", type: "ORG" })) : [],
            relatedJudgments: [],
            timeline: []
          };
@@ -47,12 +47,30 @@ export async function getDocumentDetail(id: string): Promise<DocumentDetail> {
            risk: c.severity === "High" ? "high" : c.severity === "Medium" ? "medium" : "low",
            note: c.recommended_action || "No notes."
          })),
-         aiNotes: [],
-         entities: [],
+         aiNotes: res.risk_factors ? res.risk_factors.map((n: string, i: number) => ({ id: `n${i}`, note: n })) : [],
+         entities: res.parties ? res.parties.map((p: string, i: number) => ({ id: `e${i}`, name: p, value: "Party Identified", type: "ORG" })) : [],
          relatedJudgments: [],
          timeline: []
        };
     }
     
     throw new Error("Failed to get document detail");
+}
+
+export async function summarizeDocument(documentId: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("document_id", documentId);
+  const response = await apiClient.postMultipart("/document/summarize", formData);
+  if (response && response.status === "success") {
+    return response.summary || response.data?.summary || "";
+  }
+  return response.summary || "";
+}
+
+export async function compareDocuments(docId1: string, docId2: string): Promise<any> {
+  const formData = new FormData();
+  formData.append("doc_id_1", docId1);
+  formData.append("doc_id_2", docId2);
+  const response = await apiClient.postMultipart("/document/compare", formData);
+  return response;
 }

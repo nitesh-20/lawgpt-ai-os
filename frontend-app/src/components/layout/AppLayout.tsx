@@ -44,7 +44,7 @@ const AppLayout = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 400);
+    }, 200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -53,13 +53,13 @@ const AppLayout = () => {
       <CommandPalette />
       
       {isLoading ? (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#09090b] z-50">
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
           <div className="flex flex-col items-center gap-4">
             <div className="relative flex items-center justify-center">
               <div className="w-10 h-10 border border-primary/25 border-t-primary rounded-full animate-spin" />
               <div className="absolute w-6 h-6 bg-primary/10 rounded-full animate-pulse" />
             </div>
-            <div className="text-2xs font-mono tracking-widest text-muted-foreground uppercase">Booting LawGPT OS</div>
+            <div className="text-2xs font-mono tracking-widest text-neutral-500 uppercase">Booting LawGPT OS</div>
           </div>
         </div>
       ) : (
@@ -71,8 +71,8 @@ const AppLayout = () => {
             
             <main
               className={`flex-1 transition-all duration-300 ${
-                isMobile ? 'ml-0' : 'ml-64'
-              } pt-20 px-4 md:px-8 pb-12`}
+                isMobile ? 'ml-0' : 'ml-60'
+              } pt-24 px-4 md:px-8 pb-12`}
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -80,7 +80,7 @@ const AppLayout = () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  transition={{ duration: 0.15, ease: "easeInOut" }}
                   className="h-full"
                 >
                   <Outlet />

@@ -15,6 +15,7 @@ import ComplianceChecker from "./pages/ComplianceChecker";
 import Chatbot from "./pages/Chatbot";
 import AgentDashboard from "./pages/AgentDashboard";
 import DocumentIntelligence from "./pages/DocumentIntelligence";
+import VoicePlayground from "./pages/VoicePlayground";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/layout/AppLayout";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/drafting" element={<DocumentDrafting />} />
             <Route path="/compliance" element={<ComplianceChecker />} />
             <Route path="/chat" element={<Chatbot />} />
+            <Route path="/voice" element={<VoicePlayground />} />
             <Route path="/agents" element={<AgentDashboard />} />
           </Route>
           

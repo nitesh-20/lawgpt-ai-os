@@ -1,60 +1,45 @@
+import { useEffect, useState } from "react";
 import { 
-  Scale, 
-  Briefcase, 
-  Clock, 
-  Calendar, 
   Activity, 
-  ChevronRight, 
-  ChevronUp, 
-  BellRing, 
-  AlertCircle, 
-  CheckCircle2, 
-  Layers, 
-  ArrowUpRight,
-  TrendingUp,
-  Cpu,
-  BookOpen
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import {
-  getDashboardStats,
-  getDashboardNotifications,
-  getTaskCompletion,
-  getCaseStatusBreakdown,
+  FileText, 
+  Search, 
+  ShieldAlert, 
+  TrendingUp, 
+  TrendingDown, 
+  FolderOpen, 
+  Bell, 
+  Cpu, 
+  CheckCircle,
+  Clock
+} from "lucide-react";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
+import { 
+  getDashboardStats, 
+  getDashboardNotifications, 
+  getTaskCompletion, 
+  getCaseStatusBreakdown, 
   getTeamActivity,
   type DashboardStat,
   type DashboardNotification,
   type TaskCompletion,
   type CaseStatusCount,
-  type TeamMetric,
-} from '@/services/dashboard';
-import { listCases } from '@/services/cases';
-import type { Case } from '@/types/case';
+  type TeamMetric
+} from "@/services/dashboard";
+import { listDocuments } from "@/services/documents";
+import { getResearchHistory } from "@/services/research";
+import { getComplianceSnapshot } from "@/services/compliance";
 
-const STAT_ICONS = [Scale, Briefcase, Clock, Calendar];
-
-const NOTIFICATION_STYLE: Record<string, { icon: any, className: string }> = {
-  alert: { icon: AlertCircle, className: 'text-destructive border-destructive/10 bg-destructive/5' },
-  success: { icon: CheckCircle2, className: 'text-emerald-500 border-emerald-500/10 bg-emerald-500/5' },
-  info: { icon: BellRing, className: 'text-primary border-primary/10 bg-primary/5' },
-  warning: { icon: AlertCircle, className: 'text-amber-500 border-amber-500/10 bg-amber-500/5' },
-};
-
-const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
+const DashboardIndex = () => {
   const [stats, setStats] = useState<DashboardStat[]>([]);
   const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
   const [tasks, setTasks] = useState<TaskCompletion[]>([]);
   const [caseStatus, setCaseStatus] = useState<CaseStatusCount[]>([]);
-  const [team, setTeam] = useState<TeamMetric[]>([]);
-  const [recentCases, setRecentCases] = useState<Case[]>([]);
-  const navigate = useNavigate();
+  const [teamMetrics, setTeamMetrics] = useState<TeamMetric[]>([]);
+  
+  const [recentDocs, setRecentDocs] = useState<any[]>([]);
+  const [recentQueries, setRecentQueries] = useState<any[]>([]);
+  const [complianceScore, setComplianceScore] = useState(85);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -63,255 +48,157 @@ const Dashboard = () => {
       getTaskCompletion(),
       getCaseStatusBreakdown(),
       getTeamActivity(),
-      listCases(),
-    ]).then(([s, n, t, cs, ta, cases]) => {
-      setStats(s);
-      setNotifications(n);
-      setTasks(t);
+      listDocuments(),
+      getResearchHistory(),
+      getComplianceSnapshot()
+    ]).then(([st, nt, tk, cs, tm, docs, queries, comp]) => {
+      setStats(st);
+      setNotifications(nt);
+      setTasks(tk);
       setCaseStatus(cs);
-      setTeam(ta);
-      setRecentCases(cases.slice(0, 3));
+      setTeamMetrics(tm);
+      setRecentDocs(docs.slice(0, 4));
+      setRecentQueries(queries.slice(0, 4));
+      if (comp) {
+        setComplianceScore(comp.complianceScore);
+      }
       setIsLoading(false);
-    }).catch(err => {
-      console.error("Error loading dashboard data:", err);
+    }).catch((err) => {
+      console.error("Dashboard error:", err);
       setIsLoading(false);
     });
   }, []);
 
-  // Simple telemetry data for chart
-  const telemetryData = [
-    { name: '00:00', load: 12 },
-    { name: '04:00', load: 19 },
-    { name: '08:00', load: 32 },
-    { name: '12:00', load: 45 },
-    { name: '16:00', load: 38 },
-    { name: '20:00', load: 52 },
-    { name: '24:00', load: 30 },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="text-2xs font-mono tracking-widest text-neutral-500 uppercase">Synchronizing Command Center</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
-      {/* Upper Title Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-white/[0.06]">
+    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-6">
+      {/* Title */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Activity className="h-4.5 w-4.5 text-white" />
+            <div className="w-9 h-9 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Activity className="h-4.5 w-4.5 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">Legal Command Center</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Command Center</h1>
           </div>
-          <p className="text-xs text-muted-foreground/80 font-mono uppercase tracking-wider">Real-time system telemetry and practice intelligence</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => navigate('/chat')} className="btn-primary flex items-center gap-2">
-            <span>Consult Assistant</span>
-            <ArrowUpRight className="h-4 w-4" />
-          </Button>
+          <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
+            Live telemetry monitoring of legal RAG indexes, agent subtasks, and portfolios
+          </p>
         </div>
       </div>
 
-      {/* Grid of 4 key stats */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {Array(4).fill(0).map((_, idx) => (
-            <div key={idx} className="h-28 bg-white/[0.02] border border-white/[0.04] rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-        >
-          {stats.map((stat, idx) => {
-            const Icon = STAT_ICONS[idx] || Scale;
-            return (
-              <div 
-                key={stat.title}
-                className="glass-card glass-card-hover p-5 flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xs font-mono tracking-wider text-muted-foreground/75 uppercase">{stat.title}</span>
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center">
-                    <Icon className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-baseline justify-between">
-                  <span className="text-2xl font-semibold tracking-tight text-white">{stat.value}</span>
-                  <div className="flex items-center gap-1 text-2xs text-emerald-500 font-mono bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>{stat.change}</span>
-                  </div>
-                </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {stats.map((stat, idx) => {
+          const isUp = stat.trend === "up";
+          const isDown = stat.trend === "down";
+          return (
+            <div key={idx} className="glass-card p-5 space-y-2">
+              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">{stat.title}</span>
+              <div className="flex items-baseline justify-between">
+                <span className="text-2xl font-bold text-neutral-900">{stat.value}</span>
+                <span className={`text-[10px] font-mono font-medium flex items-center gap-0.5 ${isUp ? 'text-emerald-600' : isDown ? 'text-red-500' : 'text-neutral-500'}`}>
+                  {isUp ? <TrendingUp size={11} /> : isDown ? <TrendingDown size={11} /> : null}
+                  {stat.change}
+                </span>
               </div>
-            );
-          })}
-        </motion.div>
-      )}
-
-      {/* Analytics Chart & Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Telemetry Chart */}
-        <Card className="lg:col-span-2 bg-card/45 border-white/[0.06] backdrop-blur-md rounded-xl">
-          <CardHeader className="border-b border-white/[0.04] pb-4 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold text-white">Core Agent Query Load</CardTitle>
-              <CardDescription className="text-2xs font-mono">Real-time inference tracking and pipeline metrics</CardDescription>
             </div>
-            <Cpu className="h-4.5 w-4.5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={telemetryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorLoad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#09090b', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '8px' }}
-                    labelStyle={{ color: '#a1a1aa', fontFamily: 'monospace', fontSize: '10px' }}
-                    itemStyle={{ color: '#fff', fontSize: '12px' }}
-                  />
-                  <Area type="monotone" dataKey="load" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorLoad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* System Audits and Notifications */}
-        <Card className="bg-card/45 border-white/[0.06] backdrop-blur-md rounded-xl">
-          <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm font-semibold text-white">System Events & Audits</CardTitle>
-            <CardDescription className="text-2xs font-mono">Agent intent executions and security events</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <div className="space-y-3 max-h-[225px] overflow-y-auto pr-1">
-              {notifications.length > 0 ? notifications.map((notif) => {
-                const style = NOTIFICATION_STYLE[notif.type] || NOTIFICATION_STYLE.info;
-                const Icon = style.icon;
-                return (
-                  <div
-                    key={notif.id}
-                    className={`p-3 rounded-lg border ${style.className} transition-all duration-200`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <Icon className="h-4 w-4 mt-0.5 shrink-0" />
-                      <div className="space-y-0.5 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="font-semibold text-xs text-white truncate">{notif.title}</p>
-                          <span className="font-mono text-[9px] text-muted-foreground shrink-0">
-                            {new Date(notif.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-[11px] leading-relaxed text-muted-foreground/80">{notif.message}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }) : (
-                <div className="text-center py-8 text-xs text-muted-foreground">No pending alerts.</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          );
+        })}
       </div>
 
-      {/* Row for dossiers & tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Cases / Dossiers */}
-        <Card className="bg-card/45 border-white/[0.06] backdrop-blur-md rounded-xl">
-          <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm font-semibold text-white">Active Dossiers</CardTitle>
-            <CardDescription className="text-2xs font-mono">Quick inspection of registered matters</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <div className="space-y-3">
-              {recentCases.length > 0 ? recentCases.map((case_) => (
-                <div
-                  key={case_.id}
-                  className="p-3.5 rounded-lg border border-white/[0.05] hover:border-primary/40 bg-black/20 hover:bg-black/30 transition-all cursor-pointer flex justify-between items-center"
-                  onClick={() => navigate(`/cases/${case_.id}`)}
-                >
-                  <div className="min-w-0 pr-2">
-                    <h3 className="font-semibold text-xs text-white truncate">{case_.title}</h3>
-                    <p className="text-3xs font-mono text-muted-foreground/75 mt-0.5">{case_.client}</p>
-                  </div>
-                  <div className="px-2 py-0.5 bg-primary/10 rounded-full text-3xs text-primary font-mono capitalize border border-primary/20">
-                    {case_.status}
+      {/* Task Completion Recharts Chart vs Live Notifications */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
+        <div className="glass-card p-6">
+          <h2 className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase mb-6">Execution Progression Metrics</h2>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={tasks} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.04)" />
+                <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} axisLine={false} />
+                <YAxis stroke="#888888" fontSize={9} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', fontSize: '10px' }} />
+                <Legend verticalAlign="top" height={36} iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
+                <Bar dataKey="completed" name="Completed Tasks" fill="hsl(var(--primary))" barSize={16} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="pending" name="Pending Audits" fill="#94a3b8" barSize={16} radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Live Notifications */}
+        <div className="glass-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 border-b border-border pb-3.5 mb-4">
+              <Bell className="h-4 w-4 text-primary" />
+              <h2 className="text-xs font-mono uppercase text-neutral-800 tracking-wider">Live System Alerts</h2>
+            </div>
+            <div className="space-y-3 max-h-[220px] overflow-y-auto">
+              {notifications.map((n) => (
+                <div key={n.id} className="p-3 rounded border border-border bg-neutral-50/50 flex gap-2.5 items-start">
+                  <ShieldAlert size={14} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-neutral-900 text-2xs">{n.title}</p>
+                    <p className="text-[10px] text-neutral-500 mt-0.5 leading-relaxed">{n.message}</p>
                   </div>
                 </div>
-              )) : (
-                <div className="text-center py-6 text-xs text-muted-foreground">No active cases. Create one in Cases.</div>
-              )}
-              <Button
-                variant="outline"
-                className="w-full text-xs rounded-lg border-white/[0.06] hover:bg-white/[0.03] mt-1 text-muted-foreground hover:text-white"
-                onClick={() => navigate('/cases')}
-              >
-                Go to Case Registry
-                <ChevronRight className="h-3.5 w-3.5 ml-1" />
-              </Button>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
 
-        {/* Ingestion progress */}
-        <Card className="bg-card/45 border-white/[0.06] backdrop-blur-md rounded-xl">
-          <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm font-semibold text-white">Ingestion Queue</CardTitle>
-            <CardDescription className="text-2xs font-mono">Document processing indexing progress</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <div className="space-y-4">
-              {tasks.length > 0 ? tasks.map((task) => (
-                <div key={task.name} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-muted-foreground">{task.name}</span>
-                    <span className="font-mono text-2xs text-primary">{task.completed}%</span>
-                  </div>
-                  <Progress value={task.completed} className="h-1 bg-white/[0.04] rounded-full" />
+      {/* Grid: Recent Dossiers and RAG Searches */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Recent Documents */}
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <FolderOpen className="h-4 w-4 text-primary" />
+            <h2 className="text-xs font-mono uppercase text-neutral-800 tracking-wider">Recent Documents</h2>
+          </div>
+          <div className="divide-y divide-border">
+            {recentDocs.map((doc, idx) => (
+              <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
+                <div>
+                  <p className="font-semibold text-neutral-800">{doc.title}</p>
+                  <p className="text-3xs font-mono text-neutral-400 mt-0.5 uppercase">{doc.type} · {doc.size}</p>
                 </div>
-              )) : (
-                <div className="text-center py-6 text-xs text-muted-foreground">No active ingestion queues.</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <span className="text-3xs font-mono text-neutral-400">{new Date(doc.lastModified).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* Case Allocations breakdown */}
-        <Card className="bg-card/45 border-white/[0.06] backdrop-blur-md rounded-xl">
-          <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm font-semibold text-white">Status Allocation</CardTitle>
-            <CardDescription className="text-2xs font-mono">Matters classification in Firestore</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <div className="space-y-3">
-              {caseStatus.length > 0 ? (
-                caseStatus.map((status) => (
-                  <div key={status.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.fill }} />
-                      <span className="font-medium text-muted-foreground capitalize">{status.name}</span>
-                    </div>
-                    <span className="font-mono font-semibold text-white">{status.count} matters</span>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6 text-xs text-muted-foreground">No active distributions.</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recent Search queries */}
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <Search className="h-4 w-4 text-primary" />
+            <h2 className="text-xs font-mono uppercase text-neutral-800 tracking-wider">Recent RAG Queries</h2>
+          </div>
+          <div className="divide-y divide-border">
+            {recentQueries.length > 0 ? (
+              recentQueries.slice(0, 4).map((q, idx) => (
+                <div key={idx} className="py-3 flex items-center justify-between text-xs font-mono text-neutral-600">
+                  <span className="truncate max-w-[280px]">{q.query || q}</span>
+                  <Badge variant="outline" className="text-3xs bg-neutral-50">Vector Inquired</Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-xs text-neutral-400">No RAG search audits executed.</div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default DashboardIndex;

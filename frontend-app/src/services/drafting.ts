@@ -1,30 +1,65 @@
 import { apiClient } from "@/utils/apiClient";
 
-export interface GenerateDocumentInput {
-  documentType: string;
-  details: string;
-  jurisdiction: string;
+export interface GenerateDraftPayload {
+  doc_type: string;
+  variables?: Record<string, any>;
+  custom_clauses?: Record<string, string>;
+  user_instructions?: string;
+  document_id?: string;
 }
 
-export async function generateDocument(input: GenerateDocumentInput): Promise<{ document: string }> {
-  try {
-    const response = await apiClient.post("/drafting/generate", {
-      doc_type: input.documentType === "contract" ? "general_contract" :
-                input.documentType === "employment_contract" ? "employment_agreement" :
-                input.documentType === "letter" ? "legal_notice" :
-                input.documentType,
-      user_instructions: input.details,
-      variables: {
-        jurisdiction: input.jurisdiction
-      }
-    });
+export interface ReviewDraftPayload {
+  text: string;
+  doc_type?: string;
+}
 
-    if (response && response.status === "success" && response.data) {
-      return { document: response.data.generated_draft };
-    }
-    throw new Error("Invalid response from drafting API");
-  } catch (error) {
-    console.error("Failed to generate document:", error);
-    throw error;
+export interface RedlineDraftPayload {
+  original_text: string;
+  revised_text: string;
+}
+
+export interface ImproveDraftPayload {
+  text: string;
+  instructions?: string;
+  doc_type?: string;
+}
+
+export async function listDraftTemplates(): Promise<any> {
+  const res = await apiClient.get("/drafting/templates");
+  if (res && res.status === "success") {
+    return res.data || res;
   }
+  return res;
+}
+
+export async function generateDraft(payload: GenerateDraftPayload): Promise<any> {
+  const res = await apiClient.post("/drafting/generate", payload);
+  if (res && res.status === "success") {
+    return res.data || res;
+  }
+  return res;
+}
+
+export async function reviewDraft(payload: ReviewDraftPayload): Promise<any> {
+  const res = await apiClient.post("/drafting/review", payload);
+  if (res && res.status === "success") {
+    return res.data || res;
+  }
+  return res;
+}
+
+export async function redlineDraft(payload: RedlineDraftPayload): Promise<any> {
+  const res = await apiClient.post("/drafting/redline", payload);
+  if (res && res.status === "success") {
+    return res.data || res;
+  }
+  return res;
+}
+
+export async function improveDraft(payload: ImproveDraftPayload): Promise<any> {
+  const res = await apiClient.post("/drafting/improve", payload);
+  if (res && res.status === "success") {
+    return res.data || res;
+  }
+  return res;
 }

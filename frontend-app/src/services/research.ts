@@ -34,3 +34,19 @@ export async function search(params: ResearchSearchParams): Promise<ResearchResu
   }
   return [];
 }
+
+export async function getResearchHistory(): Promise<any[]> {
+  const response = await apiClient.get("/research/history");
+  if (response && response.status === "success" && Array.isArray(response.data)) {
+    return response.data;
+  }
+  return Array.isArray(response) ? response : [];
+}
+
+export async function getResearchStatistics(): Promise<any> {
+  const response = await apiClient.get("/research/statistics");
+  if (response && response.status === "success" && response.data) {
+    return response.data;
+  }
+  return response;
+}

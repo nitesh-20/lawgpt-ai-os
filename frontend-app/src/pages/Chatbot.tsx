@@ -8,15 +8,15 @@ import {
   Sparkles, 
   Loader2, 
   X, 
-  AlertCircle, 
   BookOpen, 
-  Volume2 
+  Download, 
+  Trash2 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
 import { apiClient } from "@/utils/apiClient";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Chatbot = () => {
   const [message, setMessage] = useState("");
@@ -31,7 +31,6 @@ const Chatbot = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom on message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
@@ -48,7 +47,7 @@ const Chatbot = () => {
           ...prev,
           { id: crypto.randomUUID(), name: file.name, content, uploadDate: new Date() },
         ]);
-        toast({ title: "Document Attached", description: `"${file.name}" added to current context.` });
+        toast({ title: "Document Attached", description: `"${file.name}" added to session context.` });
       };
       reader.readAsText(file);
     });
@@ -182,7 +181,6 @@ const Chatbot = () => {
     }
   };
 
-  // Recording Controls
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -205,10 +203,10 @@ const Chatbot = () => {
       mediaRecorder.start();
       setIsRecording(true);
     } catch (err) {
-      console.error("Microphone access denied:", err);
+      console.error(err);
       toast({
         title: "Microphone Error",
-        description: "Please grant microphone permissions to use voice queries.",
+        description: "Please grant mic permissions for voice mode.",
         variant: "destructive",
       });
     }
@@ -221,26 +219,56 @@ const Chatbot = () => {
     }
   };
 
+  const handleClearHistory = () => {
+    setMessages([]);
+    toast({ title: "History Cleared", description: "All message logs removed." });
+  };
+
+  const handleExportHistory = () => {
+    if (messages.length === 0) return;
+    const historyString = messages.map(m => `[${m.timestamp?.toLocaleTimeString()}] ${m.sender === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`).join("\n\n");
+    const blob = new Blob([historyString], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "conversation_history.txt");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: "History Exported", description: "Downloaded conversation_history.txt" });
+  };
+
   const SUGGESTED_PROMPTS = [
-    "What are the main liabilities in a typical NDA?",
+    "What are the main liability issues in an NDA?",
     "Summarize Section 420 of the IPC.",
     "Draft a standard termination clause for service agreements."
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_300px] gap-6 max-w-6xl mx-auto h-[calc(100vh-120px)] items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_300px] gap-6 max-w-5xl mx-auto h-[calc(100vh-140px)] items-stretch">
       
       {/* Left Side: Main Chat Area */}
-      <div className="flex flex-col bg-card/45 border border-white/[0.06] rounded-2xl overflow-hidden backdrop-blur-md">
+      <div className="flex flex-col bg-white border border-border rounded overflow-hidden">
         
         {/* Chat Title header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.05] bg-white/[0.01]">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Bot className="h-4 w-4 text-white" />
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-neutral-50">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Bot className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xs font-semibold text-neutral-800 font-mono uppercase tracking-wider">AI Legal Assistant</h2>
+              <p className="text-[10px] text-neutral-400">Ask questions or attach files for localized RAG queries</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xs font-semibold text-white font-mono uppercase tracking-wider">AI Legal Assistant</h2>
-            <p className="text-[10px] text-muted-foreground">Ask questions or upload documents for context analysis</p>
+
+          <div className="flex items-center gap-2">
+            <Button onClick={handleExportHistory} disabled={messages.length === 0} variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-neutral-900 rounded">
+              <Download size={14} />
+            </Button>
+            <Button onClick={handleClearHistory} disabled={messages.length === 0} variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-600 rounded">
+              <Trash2 size={14} />
+            </Button>
           </div>
         </div>
 
@@ -253,12 +281,12 @@ const Chatbot = () => {
                 animate={{ opacity: 1 }} 
                 className="flex flex-col items-center justify-center h-full text-center max-w-sm mx-auto space-y-6"
               >
-                <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center animate-pulse">
+                <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded flex items-center justify-center">
                   <Sparkles className="h-5 w-5 text-primary" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-white">Initiate Consultation</h3>
-                  <p className="text-2xs text-muted-foreground/80 leading-relaxed">Enter a legal draft review query or select a pre-configured prompt below.</p>
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-neutral-900">Initiate AI Consultation</h3>
+                  <p className="text-2xs text-neutral-500 leading-relaxed">Enter a query, upload files to context, or select a prompt below.</p>
                 </div>
                 
                 <div className="space-y-2 w-full pt-4">
@@ -266,7 +294,7 @@ const Chatbot = () => {
                     <button
                       key={idx}
                       onClick={() => setMessage(p)}
-                      className="w-full text-left p-3 text-2xs text-muted-foreground hover:text-white rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-primary/40 hover:bg-white/[0.04] transition-all"
+                      className="w-full text-left p-3 text-2xs text-neutral-600 hover:text-neutral-900 rounded bg-neutral-50 border border-border hover:border-neutral-300 transition-all font-mono"
                     >
                       {p}
                     </button>
@@ -282,22 +310,21 @@ const Chatbot = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex gap-3 max-w-[85%] ${m.sender === "user" ? "ml-auto flex-row-reverse" : ""}`}
               >
-                <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-xs ${m.sender === "user" ? "bg-primary text-white" : "bg-white/[0.04] border border-white/[0.08]"}`}>
-                  {m.sender === "user" ? "U" : <Bot size={14} className="text-primary" />}
+                <div className={`w-7 h-7 rounded shrink-0 flex items-center justify-center text-2xs ${m.sender === "user" ? "bg-primary text-white" : "bg-neutral-50 border border-border"}`}>
+                  {m.sender === "user" ? "U" : <Bot size={13} className="text-primary" />}
                 </div>
 
                 <div className="space-y-2">
-                  <div className={`p-3.5 rounded-2xl text-xs leading-relaxed ${m.sender === "user" ? "bg-primary/10 text-white border border-primary/20 rounded-tr-none" : "bg-white/[0.02] text-muted-foreground border border-white/[0.04] rounded-tl-none"}`}>
+                  <div className={`p-3.5 rounded-lg text-xs leading-relaxed ${m.sender === "user" ? "bg-primary/10 text-primary border border-primary/20" : "bg-neutral-50 text-neutral-800 border border-border"}`}>
                     <p className="whitespace-pre-wrap">{m.content}</p>
                   </div>
 
-                  {/* Citations panel if present */}
                   {m.citations && m.citations.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {m.citations.map((c: any) => (
                         <div 
                           key={c.id}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.06] text-3xs font-mono text-primary"
+                          className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-50 border border-border text-3xs font-mono text-primary"
                         >
                           <BookOpen className="h-2.5 w-2.5" />
                           <span>{c.label}</span>
@@ -311,12 +338,12 @@ const Chatbot = () => {
 
             {isStreaming && (
               <div className="flex gap-3 max-w-[80%]">
-                <div className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center bg-white/[0.04] border border-white/[0.08]">
+                <div className="w-7 h-7 rounded shrink-0 flex items-center justify-center bg-neutral-50 border border-border">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                 </div>
-                <div className="p-3.5 rounded-2xl bg-white/[0.02] text-xs text-muted-foreground border border-white/[0.04] rounded-tl-none flex items-center gap-1.5 font-mono text-3xs uppercase tracking-wider">
+                <div className="p-3.5 rounded bg-neutral-50 text-xs text-neutral-500 border border-border flex items-center gap-1.5 font-mono text-3xs uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
-                  Synthesizing legal references...
+                  Formulating response citations...
                 </div>
               </div>
             )}
@@ -324,14 +351,14 @@ const Chatbot = () => {
           <div ref={chatEndRef} />
         </div>
 
-        {/* File attachment preview */}
+        {/* Document attachment preview */}
         {documents.length > 0 && (
-          <div className="px-5 py-2.5 bg-black/40 border-t border-white/[0.05] flex flex-wrap gap-2">
+          <div className="px-5 py-2.5 bg-neutral-50 border-t border-border flex flex-wrap gap-2">
             {documents.map((d) => (
-              <div key={d.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-3xs font-mono">
+              <div key={d.id} className="flex items-center gap-1.5 px-2 py-1 rounded bg-white border border-border text-3xs font-mono">
                 <Paperclip className="h-3 w-3 text-primary" />
-                <span className="text-white max-w-[120px] truncate">{d.name}</span>
-                <button onClick={() => handleRemoveDocument(d.id)} className="text-muted-foreground hover:text-white">
+                <span className="text-neutral-800 max-w-[120px] truncate">{d.name}</span>
+                <button onClick={() => handleRemoveDocument(d.id)} className="text-neutral-400 hover:text-neutral-900">
                   <X className="h-3 w-3" />
                 </button>
               </div>
@@ -340,7 +367,7 @@ const Chatbot = () => {
         )}
 
         {/* Input panel */}
-        <form onSubmit={handleSend} className="p-4 border-t border-white/[0.05] flex gap-2 items-center bg-black/20">
+        <form onSubmit={handleSend} className="p-4 border-t border-border flex gap-2 items-center bg-neutral-50/50">
           <input
             type="file"
             ref={fileInputRef}
@@ -354,17 +381,17 @@ const Chatbot = () => {
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
-            className="text-muted-foreground hover:text-white hover:bg-white/[0.05] rounded-lg shrink-0"
+            className="text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded shrink-0"
           >
             <Paperclip className="h-4.5 w-4.5" />
           </Button>
 
           <input
             type="text"
-            placeholder="Type your legal query..."
+            placeholder="Ask your legal question..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full bg-black/40 border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+            className="w-full bg-white border border-border rounded px-4 py-2.5 text-xs text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-primary transition-all"
             disabled={isStreaming}
           />
 
@@ -374,46 +401,46 @@ const Chatbot = () => {
             variant="ghost"
             size="icon"
             onClick={isRecording ? stopRecording : startRecording}
-            className={`rounded-lg shrink-0 ${isRecording ? 'text-red-500 bg-red-500/10 hover:bg-red-500/20' : 'text-muted-foreground hover:text-white hover:bg-white/[0.05]'}`}
+            className={`rounded shrink-0 ${isRecording ? 'text-red-500 bg-red-50 hover:bg-red-100 border border-red-200' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100'}`}
           >
-            {isRecording ? <MicOff className="h-4.5 w-4.5" /> : <Mic className="h-4.5 w-4.5" />}
+            {isRecording ? <MicOff className="h-4.5 w-4.5 animate-pulse" /> : <Mic className="h-4.5 w-4.5" />}
           </Button>
 
           <Button
             type="submit"
             disabled={isStreaming || !message.trim()}
-            className="btn-primary p-2.5 rounded-xl shrink-0"
+            className="btn-primary p-2.5 rounded shrink-0"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4 text-white" />
           </Button>
         </form>
       </div>
 
       {/* Right Side: Context Parameter Sidebar */}
-      <div className="hidden lg:flex flex-col bg-card/45 border border-white/[0.06] rounded-2xl p-5 space-y-6 backdrop-blur-md">
+      <div className="hidden lg:flex flex-col bg-white border border-border rounded p-5 space-y-6">
         <div>
-          <span className="text-[10px] font-mono text-muted-foreground/80 uppercase tracking-widest">Active Context</span>
-          <h3 className="text-sm font-semibold text-white mt-1">Dossiers & Context</h3>
+          <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest">Active Context</span>
+          <h3 className="text-xs font-semibold text-neutral-800 uppercase font-mono tracking-wider mt-1 border-b border-border pb-2">Session Files</h3>
         </div>
 
         <div className="space-y-4 flex-1 overflow-y-auto">
           {documents.length > 0 ? (
             <div className="space-y-2">
-              <span className="text-[9px] font-mono text-primary uppercase">Files loaded:</span>
+              <span className="text-[9px] font-mono text-primary uppercase">Context attachments:</span>
               <div className="space-y-2">
                 {documents.map((d) => (
-                  <div key={d.id} className="p-3 bg-white/[0.01] border border-white/[0.04] rounded-lg">
-                    <p className="font-semibold text-2xs text-white truncate">{d.name}</p>
-                    <p className="text-[9px] font-mono text-muted-foreground/50 mt-1">Size: {d.content.length} chars</p>
+                  <div key={d.id} className="p-3 bg-neutral-50 border border-border rounded">
+                    <p className="font-semibold text-3xs text-neutral-800 truncate">{d.name}</p>
+                    <p className="text-[9px] font-mono text-neutral-400 mt-1">Size: {d.content.length} chars</p>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground border border-dashed border-white/[0.06] rounded-xl p-4">
-              <Paperclip className="h-8 w-8 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-2xs font-semibold text-white">No files attached</p>
-              <p className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed">Attach case files to restrict RAG checks specifically to those files.</p>
+            <div className="text-center py-12 text-neutral-400 border border-dashed border-border rounded p-4">
+              <Paperclip className="h-8 w-8 mx-auto text-neutral-300 mb-3" />
+              <p className="text-2xs font-semibold text-neutral-800">No context files attached</p>
+              <p className="text-[10px] text-neutral-500 mt-1 leading-relaxed">Attach document drafts to perform localized RAG comparisons.</p>
             </div>
           )}
         </div>
