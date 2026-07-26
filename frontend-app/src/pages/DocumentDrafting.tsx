@@ -1295,7 +1295,6 @@ Additional contract clauses to inject: ${additionalClauses}
               </div>
             )}
 
-          </div>
         </motion.div>
       )}
 
