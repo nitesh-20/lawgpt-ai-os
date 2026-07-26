@@ -117,9 +117,13 @@ class LegalReasoner:
                     if resp.status_code == 200:
                         res_data = resp.json()
                         text_response = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                        parsed = self._clean_and_parse_json(text_response)
-                        logger.info("Successfully received and parsed Gemini response.")
-                        return parsed
+                        try:
+                            parsed = self._clean_and_parse_json(text_response)
+                            logger.info("Successfully received and parsed Gemini response.")
+                            return parsed
+                        except Exception as parse_err:
+                            logger.warning(f"Gemini JSON parse failed: {parse_err}. Recovering text response.")
+                            return self._recover_text_to_dict(text_response, query)
                     else:
                         logger.warning(f"Gemini API returned status {resp.status_code}: {resp.text}. Falling back to Sarvam LLM.")
             except Exception as e:
@@ -131,9 +135,14 @@ class LegalReasoner:
             logger.info("Attempting Sarvam LLM for legal reasoning...")
             sarvam_resp = await SarvamLLMManager.generate_content(prompt)
             if sarvam_resp.get("status") == "success":
-                parsed = self._clean_and_parse_json(sarvam_resp["content"])
-                logger.info("Successfully received and parsed Sarvam LLM response.")
-                return parsed
+                text_response = sarvam_resp["content"]
+                try:
+                    parsed = self._clean_and_parse_json(text_response)
+                    logger.info("Successfully received and parsed Sarvam LLM response.")
+                    return parsed
+                except Exception as parse_err:
+                    logger.warning(f"Sarvam JSON parse failed: {parse_err}. Recovering text response.")
+                    return self._recover_text_to_dict(text_response, query)
             else:
                 logger.warning(f"Sarvam LLM failed: {sarvam_resp.get('message')}. Falling back to local reasoning.")
         except Exception as e:
@@ -141,6 +150,51 @@ class LegalReasoner:
 
         # Fallback 2: Local reasoning
         return self._local_reasoning(query, ranked_chunks, citations, has_pdf_context, default_source)
+
+    def _recover_text_to_dict(self, raw_text: str, query: str) -> dict[str, Any]:
+        """
+        Recovers a plain text or malformed JSON response into a valid response dictionary.
+        """
+        # Clean plain text fallback
+        cleaned_text = raw_text.replace("```json", "").replace("```", "").strip()
+        
+        # Simple extraction of JSON fields via regex if possible
+        import re
+        direct_ans = ""
+        exec_sum = ""
+        
+        direct_match = re.search(r'"direct_answer"\s*:\s*"([^"]+)"', cleaned_text)
+        if direct_match:
+            direct_ans = direct_match.group(1)
+        else:
+            direct_match_sq = re.search(r"'direct_answer'\s*:\s*'([^']+)'", cleaned_text)
+            if direct_match_sq:
+                direct_ans = direct_match_sq.group(1)
+                
+        sum_match = re.search(r'"executive_summary"\s*:\s*"([^"]+)"', cleaned_text)
+        if sum_match:
+            exec_sum = sum_match.group(1)
+        
+        # If we couldn't extract structured fields, use the entire raw text as direct_answer
+        if not direct_ans:
+            direct_ans = cleaned_text
+        if not exec_sum:
+            exec_sum = cleaned_text[:300] + "..." if len(cleaned_text) > 300 else cleaned_text
+            
+        return {
+            "direct_answer": direct_ans,
+            "executive_summary": exec_sum,
+            "applicable_law": [],
+            "legal_analysis": {"interpretation": direct_ans, "implications": "N/A", "exceptions": "N/A"},
+            "compliance_requirements": [],
+            "risks": [],
+            "recommendations": [],
+            "case_references": [],
+            "citations": [],
+            "confidence": "Medium",
+            "source": "General Legal Knowledge",
+            "is_context_grounded": False
+        }
 
     def _local_reasoning(
         self, query: str, ranked_chunks: list[dict[str, Any]], citations: list[dict[str, Any]], has_pdf_context: bool, default_source: str

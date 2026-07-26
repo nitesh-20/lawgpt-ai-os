@@ -408,7 +408,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
   const sourceDocs = compileSourceDocs(activeResult?.citations);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-0 py-8 space-y-8 min-h-[calc(100vh-120px)] flex flex-col justify-start">
+    <div className="max-w-4xl mx-auto px-4 md:px-0 py-8 space-y-8 min-h-[calc(100vh-120px)] flex flex-col justify-start font-sans">
       <style>{`
         @media print {
           body * {
@@ -431,46 +431,42 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
       `}</style>
 
       {/* Page Title Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">Legal Search</h1>
-        <p className="text-xs text-slate-500 font-sans">
-          Search central acts, precedents, and compliance regulations grounded in your legal database
+      <div className="text-center space-y-3 py-4">
+        <h1 className="text-[28px] font-bold tracking-tight text-slate-900">Legal Search</h1>
+        <p className="text-sm text-slate-500 max-w-md mx-auto">
+          Query central acts, precedents, and compliance regulations grounded in your legal database
         </p>
       </div>
 
       {/* PERSISTENT SEARCH CONSOLE: Always visible at the top (ChatGPT Style) */}
-      <div className="w-full max-w-2xl mx-auto bg-white border border-slate-200 p-4 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
+      <div className="w-full max-w-3xl mx-auto bg-white border border-slate-200 p-3.5 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
         <form onSubmit={handleSearchSubmit} className="space-y-4">
-          <div className="relative">
-            <SearchIcon className="absolute left-3.5 top-4 h-4.5 w-4.5 text-slate-400" />
-            <textarea
-              placeholder="Describe your legal issue, act, or section query..."
+          <div className="relative flex items-center">
+            <SearchIcon className="absolute left-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Ask a compliance or precedent query (e.g. 'Right to speech')..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              rows={2}
-              className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 leading-relaxed resize-none font-sans"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (query.trim()) executeSearch(query);
-                }
-              }}
+              className="w-full h-12 bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 font-sans"
             />
           </div>
 
           <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <div className="flex items-center gap-2">
-              <VoiceButton
-                onTranscribe={(t) => {
-                  setQuery(t);
-                  executeSearch(t);
-                }}
-              />
+              <div className="h-10 flex items-center justify-center">
+                <VoiceButton
+                  onTranscribe={(t) => {
+                    setQuery(t);
+                    executeSearch(t);
+                  }}
+                />
+              </div>
               
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1.5 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
+                className="bg-slate-50 border border-slate-200 text-xs font-semibold h-10 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-xl text-slate-700 uppercase"
               >
                 <option value="en">English (EN)</option>
                 <option value="hi-IN">Hindi (HI)</option>
@@ -483,10 +479,10 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             <Button 
               type="submit" 
               disabled={isSearching || !query.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center font-sans py-2 px-5 text-xs font-semibold shadow-sm transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center font-sans h-10 px-6 text-xs font-semibold shadow-sm transition-colors"
             >
               Search
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </div>
         </form>
@@ -500,10 +496,10 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="w-full max-w-xl mx-auto space-y-4 pt-4"
+            className="w-full max-w-2xl mx-auto space-y-4 pt-4"
           >
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block text-center font-bold">Suggested Prompts</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block text-center">Suggested Prompts</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { text: "Explain obligations under DPDP Act", val: "What are the obligations under DPDP Act?" },
                 { text: "Review NDA liabilities and termination clauses", val: "Review NDA liabilities and termination clauses" },
@@ -513,10 +509,10 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 <button
                   key={idx}
                   onClick={() => handleSelectRecent(item.val)}
-                  className="p-3.5 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-xl transition-all duration-150 text-xs font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
+                  className="p-4 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-2xl transition-all duration-150 text-sm font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
                 >
                   <span>{item.text}</span>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
                 </button>
               ))}
             </div>
@@ -531,17 +527,19 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             className="w-full max-w-2xl mx-auto py-8 space-y-8"
           >
             <div className="space-y-4">
-              <div className="h-4 bg-slate-200 rounded-md w-3/4 animate-pulse" />
-              <div className="h-3.5 bg-slate-100 rounded-md w-full animate-pulse" />
-              <div className="h-3.5 bg-slate-100 rounded-md w-5/6 animate-pulse" />
-              <div className="h-3.5 bg-slate-100 rounded-md w-4/5 animate-pulse" />
+              <div className="h-4.5 bg-slate-200 rounded-md w-3/4 animate-pulse" />
+              <div className="h-4 bg-slate-100 rounded-md w-full animate-pulse" />
+              <div className="h-4 bg-slate-100 rounded-md w-5/6 animate-pulse" />
+              <div className="h-4 bg-slate-100 rounded-md w-4/5 animate-pulse" />
             </div>
 
             <div className="border border-slate-200 bg-white p-6 rounded-2xl shadow-3xs text-center space-y-5">
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-xs font-semibold text-slate-700">
-                  {loadingStages[loadingStage]}
+                <span className="text-sm font-semibold text-slate-700">
+                  {loadingStage === 0 && "Searching legal database..."}
+                  {loadingStage === 1 && "Finding precedents..."}
+                  {loadingStage >= 2 && "Generating grounded answer..."}
                 </span>
               </div>
 
@@ -565,16 +563,16 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               
               {/* Question Header */}
               <div className="border-b border-slate-100 pb-5">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold mb-1">Question</span>
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Question</span>
                 <h2 className="text-lg font-bold text-slate-900 leading-snug">
                   "{query}"
                 </h2>
               </div>
 
-              {/* Direct Answer (with fallback to executive_summary/summary/text if empty) */}
+              {/* Direct Answer */}
               <div className="space-y-3">
-                <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Direct Answer</span>
-                <div className="text-sm leading-relaxed text-slate-800 space-y-4 whitespace-pre-line font-normal">
+                <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block">Direct Answer</span>
+                <div className="text-base leading-relaxed text-slate-800 space-y-4 whitespace-pre-line font-normal">
                   {translatedAnswer || 
                    activeResult?.direct_answer || 
                    activeResult?.executive_summary || 
@@ -583,17 +581,17 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 </div>
               </div>
 
-              {/* Key Legal Points */}
-              {activeResult?.compliance_requirements && activeResult.compliance_requirements.length > 0 && (
+              {/* Legal Analysis */}
+              {activeResult?.legal_analysis?.interpretation && (
                 <div className="space-y-3 pt-2">
-                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Key Legal Points</span>
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {activeResult.compliance_requirements.map((point: string, idx: number) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-sm text-slate-700 leading-relaxed">
-                        <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
-                        <span>{point}</span>
-                      </div>
-                    ))}
+                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block">Legal Analysis</span>
+                  <div className="text-sm leading-relaxed text-slate-700 space-y-3">
+                    <p>{activeResult.legal_analysis.interpretation}</p>
+                    {activeResult.legal_analysis.implications && activeResult.legal_analysis.implications !== "N/A" && (
+                      <p className="border-l-2 border-blue-500 pl-3 text-slate-600 italic">
+                        Implication: {activeResult.legal_analysis.implications}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -601,13 +599,13 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               {/* Applicable Sections (badges) */}
               {activeResult?.applicable_law && activeResult.applicable_law.length > 0 && (
                 <div className="space-y-3 pt-2">
-                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Applicable Sections</span>
+                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block">Applicable Laws</span>
                   <div className="flex flex-wrap gap-2">
                     {activeResult.applicable_law.map((law: any, idx: number) => (
                       <Badge 
                         key={idx} 
                         variant="secondary" 
-                        className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100/60 font-medium px-2.5 py-1 text-xs rounded-lg"
+                        className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100/60 font-medium px-3 py-1.5 text-xs rounded-xl"
                       >
                         {law.act_name || law} {law.sections ? `• Section ${law.sections}` : ""}
                       </Badge>
@@ -617,59 +615,71 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               )}
 
               {/* Practical Interpretation */}
-              {activeResult?.legal_analysis?.interpretation && (
+              {activeResult?.recommendations && activeResult.recommendations.length > 0 && (
                 <div className="space-y-2 pt-2">
-                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Practical Interpretation</span>
-                  <p className="text-sm leading-relaxed text-slate-700">
-                    {activeResult.legal_analysis.interpretation}
-                  </p>
+                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block">Practical Interpretation</span>
+                  <div className="space-y-2">
+                    {activeResult.recommendations.map((rec: string, idx: number) => (
+                      <p key={idx} className="text-sm leading-relaxed text-slate-700">
+                        {rec}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Potential Risks / Exceptions */}
-              {((activeResult?.risks && activeResult.risks.length > 0) || activeResult?.legal_analysis?.exceptions) && (
-                <div className="space-y-3 pt-2 border-t border-slate-100">
-                  <span className="text-[10px] font-mono text-red-600 uppercase tracking-widest block font-bold">Risks & Exceptions</span>
-                  
-                  {activeResult?.risks && activeResult.risks.length > 0 && (
-                    <div className="space-y-2">
-                      {activeResult.risks.map((risk: string, idx: number) => (
-                        <div key={idx} className="flex gap-2 text-sm text-slate-700 leading-relaxed">
-                          <span className="text-red-500 font-bold shrink-0">⚠️</span>
-                          <span>{risk}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              {/* Key Takeaways */}
+              {activeResult?.compliance_requirements && activeResult.compliance_requirements.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block">Key Takeaways</span>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {activeResult.compliance_requirements.map((point: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2.5 text-sm text-slate-700 leading-relaxed">
+                        <span className="text-blue-500 shrink-0 mt-1">•</span>
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                  {activeResult?.legal_analysis?.exceptions && (
-                    <p className="text-sm leading-relaxed text-slate-600 italic mt-2">
-                      * Exception: {activeResult.legal_analysis.exceptions}
-                    </p>
-                  )}
+              {/* Potential Risks */}
+              {activeResult?.risks && activeResult.risks.length > 0 && (
+                <div className="space-y-3 pt-2 border-t border-slate-100">
+                  <span className="text-xs font-semibold text-red-600 uppercase tracking-wider block">Potential Risks</span>
+                  <div className="space-y-2">
+                    {activeResult.risks.map((risk: string, idx: number) => (
+                      <div key={idx} className="flex gap-2 text-sm text-slate-700 leading-relaxed">
+                        <span className="text-red-500 shrink-0">⚠️</span>
+                        <span>{risk}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Sources / Citations */}
               <div className="pt-5 border-t border-slate-100 space-y-3">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Sources</span>
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block font-bold">Sources</span>
                 
                 {activeResult?.citations && activeResult.citations.length > 0 ? (
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex flex-wrap gap-3">
                     {compileSourceDocs(activeResult.citations).map((doc, idx) => (
                       <div 
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
                       >
-                        <span className="text-slate-500 font-sans">📄</span>
-                        <span>{doc.name}</span>
-                        <span className="text-[10px] font-mono text-slate-400">Page {doc.pages.join(", ")}</span>
+                        <span className="text-slate-500">📄</span>
+                        <div className="flex flex-col text-left">
+                          <span className="font-semibold">{doc.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Page {doc.pages.join(", ")}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 italic bg-slate-50 px-3.5 py-2.5 border border-slate-100 rounded-lg">
-                    Generated from General Legal Knowledge
+                  <div className="text-xs text-slate-500 italic bg-slate-50 px-3.5 py-2.5 border border-slate-100 rounded-xl">
+                    General Legal Knowledge (Gemini)
                   </div>
                 )}
               </div>
