@@ -54,6 +54,7 @@ import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 import { synthesizeText } from "@/services/voice";
 import { apiClient } from "@/utils/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
+import AILoader from "@/components/ui/ai-loader";
 
 const Search = () => {
   const [query, setQuery] = useState("");
@@ -653,33 +654,9 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
           </div>
         )}
 
-        {/* Loading / Searching Bubble */}
+        {/* Full Screen AI Loader Overlay */}
         {isSearching && (
-          <div className="space-y-6 max-w-3xl mx-auto animate-pulse">
-            <div className="flex justify-end">
-              <div className="bg-blue-600/70 text-white rounded-2xl rounded-tr-xs px-5 py-3 max-w-[80%] text-sm font-medium">
-                {query}
-              </div>
-            </div>
-            <div className="flex justify-start">
-              <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-6 md:p-8 w-full max-w-full shadow-xs space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                  <span>
-                    {loadingStage === 0 && "Searching legal database..."}
-                    {loadingStage === 1 && "Finding precedents..."}
-                    {loadingStage >= 2 && "Generating grounded answer..."}
-                  </span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-600 transition-all duration-500 rounded-full" 
-                    style={{ width: `${((loadingStage + 1) / loadingStages.length) * 100}%` }} 
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <AILoader text={loadingStages[loadingStage].replace("...", "")} />
         )}
       </div>
 
