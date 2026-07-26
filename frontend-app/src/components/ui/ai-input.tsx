@@ -6,6 +6,9 @@ import { AnimatePresence, motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useNavigate } from "react-router-dom"
+import { VoiceButton } from "@/components/voice/VoiceButton"
+import { Mic } from "lucide-react"
 
 interface OrbProps {
   dimension?: string
@@ -254,7 +257,7 @@ export function MorphPanel() {
       >
         <FormContext.Provider value={ctx}>
           <DockBar />
-          <InputForm ref={textareaRef} onSuccess={handleSuccess} />
+          <VoiceInputForm />
         </FormContext.Provider>
       </motion.div>
     </div>
@@ -292,11 +295,12 @@ function DockBar() {
 
         <Button
           type="button"
-          className="flex h-fit flex-1 justify-end rounded-full px-2 !py-0.5"
+          className="flex h-fit flex-1 justify-end items-center gap-1 rounded-full px-2 !py-0.5 text-xs text-slate-700 font-semibold"
           variant="ghost"
           onClick={triggerOpen}
         >
-          <span className="truncate">Ask AI</span>
+          <Mic className="h-3.5 w-3.5 text-blue-600 animate-pulse" />
+          <span className="truncate">Voice AI</span>
         </Button>
       </div>
     </footer>
@@ -304,92 +308,45 @@ function DockBar() {
 }
 
 const FORM_WIDTH = 360
-const FORM_HEIGHT = 200
+const FORM_HEIGHT = 120
 
-function InputForm({ ref, onSuccess }: { ref: React.Ref<HTMLTextAreaElement>; onSuccess: () => void }) {
+function VoiceInputForm() {
   const { triggerClose, showForm } = useFormContext()
-  const btnRef = React.useRef<HTMLButtonElement>(null)
+  const navigate = useNavigate()
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    onSuccess()
-  }
-
-  function handleKeys(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Escape") triggerClose()
-    if (e.key === "Enter" && e.metaKey) {
-      e.preventDefault()
-      btnRef.current?.click()
-    }
-  }
+  const handleTranscribe = (text: string) => {
+    navigate("/search");
+    setTimeout(() => {
+      const event = new CustomEvent("trigger-search", { detail: { query: text } });
+      document.dispatchEvent(event);
+    }, 200);
+    triggerClose();
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="absolute bottom-0"
+    <div
+      className="absolute bottom-0 flex flex-col items-center justify-center p-3"
       style={{ width: FORM_WIDTH, height: FORM_HEIGHT, pointerEvents: showForm ? "all" : "none" }}
     >
       <AnimatePresence>
         {showForm && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 550 / SPEED_FACTOR, damping: 45, mass: 0.7 }}
-            className="flex h-full flex-col p-1"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 550 / SPEED_FACTOR, damping: 45 }}
+            className="flex flex-col items-center justify-center h-full w-full space-y-2.5"
           >
-            <div className="flex justify-between py-1">
-              <p className="text-foreground z-2 ml-[38px] flex items-center gap-[6px] select-none">
-                AI Input
-              </p>
-              <button
-                type="submit"
-                ref={btnRef}
-                className="text-foreground right-4 mt-1 flex -translate-y-[3px] cursor-pointer items-center justify-center gap-1 rounded-[12px] bg-transparent pr-1 text-center select-none"
-              >
-                <KeyHint>⌘</KeyHint>
-                <KeyHint className="w-fit">Enter</KeyHint>
-              </button>
-            </div>
-            <textarea
-              ref={ref}
-              placeholder="Ask me anything..."
-              name="message"
-              className="h-full w-full resize-none scroll-py-2 rounded-md p-4 outline-0"
-              required
-              onKeyDown={handleKeys}
-              spellCheck={false}
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+              Multilingual Voice AI
+            </span>
+            <VoiceButton
+              showLanguageSelect={true}
+              onTranscribe={handleTranscribe}
             />
           </motion.div>
         )}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-2 left-3"
-          >
-            <ColorOrb dimension="24px" tones={{ base: "oklch(22.64% 0 0)" }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </form>
-  )
-}
-
-function KeyHint({ children, className }: { children: string; className?: string }) {
-  return (
-    <kbd
-      className={cx(
-        "text-foreground flex h-6 w-fit items-center justify-center rounded-sm border px-[6px] font-sans",
-        className
-      )}
-    >
-      {children}
-    </kbd>
+    </div>
   )
 }
