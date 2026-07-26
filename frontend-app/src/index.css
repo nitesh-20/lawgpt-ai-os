@@ -161,6 +161,7 @@
 .text-slate-700,
 .text-slate-705,
 .text-neutral-900,
+.text-neutral-805,
 .text-neutral-800 {
   color: #ffffff !important;
 }
@@ -170,11 +171,30 @@
 .text-slate-500,
 .text-slate-450,
 .text-slate-400,
+.text-neutral-700,
+.text-neutral-600,
 .text-neutral-500,
 .text-neutral-450,
 .text-slate-350 {
-  color: #94a3b8 !important; /* text-slate-400 */
+  color: #cbd5e1 !important; /* light slate-300/neutral-300 */
 }
+
+/* Hover color overrides */
+.hover\:text-neutral-900:hover,
+.hover\:text-slate-900:hover,
+.hover\:text-slate-800:hover,
+.hover\:text-neutral-800:hover,
+.hover\:text-slate-700:hover {
+  color: #ffffff !important;
+}
+
+/* Hover border overrides */
+.hover\:border-neutral-300:hover,
+.hover\:border-slate-300:hover,
+.hover\:border-neutral-400:hover {
+  border-color: #7c5cff !important;
+}
+
 
 /* Purple overrides for greens */
 .bg-emerald-50,
