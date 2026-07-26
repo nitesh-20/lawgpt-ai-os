@@ -6,36 +6,36 @@
 
 @layer base {
   :root {
-    /* Premium light-theme Notion AI + Vercel Hybrid (Slate & Emerald accents on crisp white) */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Cinematic Dark Theme matching the landing page */
+    --background: 240 10% 2%; /* #050505 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
     
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 240 10% 6%; /* #101010 */
+    --card-foreground: 0 0% 100%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 100%;
     
-    --primary: 152 76% 36%; /* Solid Clean Emerald */
+    --primary: 252 100% 68%; /* #7C5CFF */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 240 4.8% 95.9%; /* Slate Gray Light */
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 250 100% 76%; /* #9B87FF */
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 240 10% 8%; 
+    --muted-foreground: 240 10% 72%; 
     
-    --accent: 152 76% 36%; /* Emerald */
+    --accent: 252 100% 68%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 240 5.9% 90%; /* Crisp Slate/Gray Borders */
-    --input: 240 5.9% 90%;
-    --ring: 152 76% 36%;
+    --border: 0 0% 100% / 0.06; /* rgba(255,255,255,.06) */
+    --input: 0 0% 100% / 0.06;
+    --ring: 252 100% 68%;
     
-    --radius: 0.375rem; /* Professional Vercel/Notion radius */
+    --radius: 0.75rem; /* Rounded XL */
   }
 }
 
@@ -48,13 +48,13 @@
     @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "cv11", "ss01", "ss03";
     scroll-behavior: smooth;
-    background-color: #ffffff;
-    color: #09090b;
+    background-color: #050505;
+    color: #ffffff;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-sans font-bold text-neutral-900;
+    @apply tracking-tight font-serif font-semibold text-white;
   }
 
   h1 { @apply text-3xl; }
@@ -68,27 +68,27 @@
 }
 
 @layer components {
-  /* High Density Grid Layout Panels (Notion/Vercel light aesthetic) */
+  /* High Density Grid Layout Panels (Cinematic Dark theme) */
   .glass-card {
-    @apply bg-white border border-border shadow-sm rounded transition-all duration-150;
+    @apply bg-[#101010] border border-white/5 shadow-2xl rounded-2xl transition-all duration-300;
   }
   
   .glass-card-hover {
-    @apply hover:border-neutral-300 hover:shadow-md transition-all duration-150;
+    @apply hover:border-white/10 hover:bg-[#151515] transition-all duration-300;
   }
 
   /* Bloomberg/Vercel Light Interactive Elements */
   .btn-primary {
-    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 rounded text-xs transition-all duration-150 active:scale-[0.98] border border-primary/20;
+    @apply bg-[#7C5CFF] hover:bg-[#9B87FF] text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all duration-300 active:scale-[0.98] border border-[#7C5CFF]/30 shadow-[0_0_15px_rgba(124,92,255,0.2)];
   }
 
   .btn-secondary {
-    @apply bg-secondary hover:bg-secondary/90 text-foreground font-semibold px-4 py-2 rounded text-xs border border-border transition-all duration-150 active:scale-[0.98];
+    @apply bg-[#151515] hover:bg-[#1C1C1C] text-white font-semibold px-4 py-2 rounded-xl text-xs border border-white/5 transition-all duration-300 active:scale-[0.98];
   }
 
   /* Custom Input Styling */
   .input-premium {
-    @apply bg-white border border-border rounded px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-0 transition-all duration-150;
+    @apply bg-[#101010] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-[#7C5CFF] focus:ring-1 focus:ring-[#7C5CFF]/30 transition-all duration-300 shadow-inner;
   }
   
   /* Scrollbar overrides for high-density UI */
@@ -102,12 +102,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.18);
   }
 }
 
