@@ -86,8 +86,7 @@ const Search = () => {
   const speakText = async (textToSpeak: string) => {
     if (!textToSpeak.trim()) return;
     try {
-      const detectedLang = getLanguageCodeForText(textToSpeak);
-      const base64Data = await synthesizeText(textToSpeak, detectedLang, "meera");
+      const base64Data = await synthesizeText(textToSpeak, detectedLang, "priya");
       if (base64Data) {
         const audioUrl = `data:audio/wav;base64,${base64Data}`;
         const audio = new Audio(audioUrl);

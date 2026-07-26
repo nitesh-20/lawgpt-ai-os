@@ -241,7 +241,7 @@ class VoiceAgent(BaseAgent):
         audio_b64 = ""
         
         if SarvamConfig.is_enabled():
-            tts_res = await TextToSpeechManager.synthesize(response_text_native, speaker="meera", language_code=detected_lang)
+            tts_res = await TextToSpeechManager.synthesize(response_text_native, speaker="priya", language_code=detected_lang)
             if tts_res.get("status") == "success" and tts_res.get("audio_base64"):
                 audio_b64 = tts_res["audio_base64"]
                 

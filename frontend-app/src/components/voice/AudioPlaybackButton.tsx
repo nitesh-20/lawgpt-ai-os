@@ -46,8 +46,7 @@ export const AudioPlaybackButton = ({ text, className = "" }: AudioPlaybackButto
 
     setIsSynthesizing(true);
     try {
-      const detectedLang = getLanguageCodeForText(text);
-      const base64Data = await synthesizeText(text, detectedLang, "meera");
+      const base64Data = await synthesizeText(text, detectedLang, "priya");
       if (base64Data) {
         setCachedAudioBase64(base64Data);
         playAudio(base64Data);
