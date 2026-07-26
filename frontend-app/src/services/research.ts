@@ -41,6 +41,7 @@ export async function search(params: ResearchSearchParams): Promise<ResearchResu
   });
 
   if (response && response.status === "success" && response.data) {
+    console.log("\n=== STEP 6: FRONTEND RECEIVED PAYLOAD ===", response);
     if (response.data.results) {
       return response.data.results as ResearchResult[];
     }

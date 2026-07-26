@@ -91,8 +91,14 @@ class ResearchAgent(BaseAgent):
             query=query, ranked_chunks=ranked_chunks, citations=citations
         )
 
+        print("\n=== STEP 4: FORMATTER INPUT ===")
+        print(json.dumps(reasoning_result, indent=2))
+
         # 6. Format Result
         formatted = self.formatter.format(reasoning_result, citations)
+
+        print("\n=== STEP 5: FINAL API JSON ===")
+        print(json.dumps(formatted, indent=2))
 
         end_time = time.time()
         duration = round(end_time - start_time, 3)

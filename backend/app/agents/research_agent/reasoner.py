@@ -56,6 +56,12 @@ class LegalReasoner:
         default_source = "✓ PDF Knowledge Base"
         default_is_grounded = True if has_pdf_context else False
 
+        # Print retrieved chunks
+        print("\n=== STEP 1: RETRIEVED CHUNKS ===")
+        print(f"Total chunks retrieved: {len(ranked_chunks)}")
+        for i, chunk in enumerate(ranked_chunks):
+            print(f"  Chunk [{i}]: document_id={chunk.get('document_id')}, score={chunk.get('score')}, text_preview={chunk.get('text', '')[:100]}...")
+
         # Format context for reasoning (limit to top 3 for optimal token limits)
         context_blocks = []
         for idx, chunk in enumerate(ranked_chunks[:3], 1):
@@ -98,6 +104,9 @@ class LegalReasoner:
             "Construct the factual legal report now. Respond ONLY with the raw JSON object."
         )
 
+        print("\n=== STEP 2: PROMPT SENT TO MODEL ===")
+        print(prompt)
+
         api_key = settings.GEMINI_API_KEY or ""
         if api_key:
             try:
@@ -117,6 +126,8 @@ class LegalReasoner:
                     if resp.status_code == 200:
                         res_data = resp.json()
                         text_response = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                        print("\n=== STEP 3: RAW GEMINI RESPONSE ===")
+                        print(text_response)
                         try:
                             parsed = self._clean_and_parse_json(text_response)
                             logger.info("Successfully received and parsed Gemini response.")
@@ -136,6 +147,8 @@ class LegalReasoner:
             sarvam_resp = await SarvamLLMManager.generate_content(prompt)
             if sarvam_resp.get("status") == "success":
                 text_response = sarvam_resp["content"]
+                print("\n=== STEP 3: RAW SARVAM RESPONSE ===")
+                print(text_response)
                 try:
                     parsed = self._clean_and_parse_json(text_response)
                     logger.info("Successfully received and parsed Sarvam LLM response.")
