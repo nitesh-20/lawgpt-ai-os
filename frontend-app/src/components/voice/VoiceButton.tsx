@@ -9,6 +9,7 @@ interface VoiceButtonProps {
   onTranscribe: (text: string) => void;
   placeholder?: string;
   className?: string;
+  showLanguageSelect?: boolean;
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -19,7 +20,12 @@ const SUPPORTED_LANGUAGES = [
   { code: "bn-IN", label: "Bengali" }
 ];
 
-export const VoiceButton = ({ onTranscribe, placeholder = "Speak now...", className = "" }: VoiceButtonProps) => {
+export const VoiceButton = ({ 
+  onTranscribe, 
+  placeholder = "Speak now...", 
+  className = "",
+  showLanguageSelect = true
+}: VoiceButtonProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingLanguage, setRecordingLanguage] = useState("en-IN");
   const [timer, setTimer] = useState(0);
@@ -125,7 +131,7 @@ export const VoiceButton = ({ onTranscribe, placeholder = "Speak now...", classN
   return (
     <div className={`inline-flex items-center gap-1.5 ${className}`}>
       {/* Language select indicator */}
-      {!isRecording && (
+      {!isRecording && showLanguageSelect && (
         <div className="relative inline-flex items-center gap-1">
           <select
             value={recordingLanguage}

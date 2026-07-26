@@ -450,6 +450,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
           setLanguage={setLanguage}
           voiceComponent={
             <VoiceButton
+              showLanguageSelect={false}
               onTranscribe={(t) => {
                 setQuery(t);
                 executeSearch(t);

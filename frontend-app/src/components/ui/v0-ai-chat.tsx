@@ -127,20 +127,22 @@ export function VercelV0Chat({
                             }}
                             onKeyDown={handleKeyDown}
                             placeholder="Ask LawGPT a legal compliance or research query..."
+                            style={{
+                                overflow: "hidden",
+                                backgroundColor: "transparent",
+                                color: "#ffffff"
+                            }}
                             className={cn(
                                 "w-full px-4 py-4.5",
                                 "resize-none",
-                                "bg-transparent",
-                                "border-none",
-                                "text-white text-base leading-relaxed",
+                                "!bg-transparent",
+                                "!border-none",
+                                "!text-white text-base leading-relaxed",
                                 "focus:outline-none",
-                                "focus-visible:ring-0 focus-visible:ring-offset-0",
+                                "!focus-visible:ring-0 !focus-visible:ring-offset-0",
                                 "placeholder:text-neutral-500 placeholder:text-sm",
                                 "min-h-[60px]"
                             )}
-                            style={{
-                                overflow: "hidden",
-                            }}
                         />
                     </div>
 
