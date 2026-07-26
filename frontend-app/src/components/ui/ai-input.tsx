@@ -471,7 +471,7 @@ function VoicePanel() {
           if (e.data.size > 0) chunksRef.current.push(e.data)
         }
         recorder.onstop = () => {
-          const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" })
+          const audioBlob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" })
           cleanupMic()
           if (audioBlob.size > 0) {
             runVoiceTurn(audioBlob)
@@ -482,6 +482,67 @@ function VoicePanel() {
 
         mediaRecorderRef.current = recorder
         recorder.start()
+
+        // Web Audio Voice Activity / Silence Auto-Stop
+        let audioContext: AudioContext | null = null;
+        let analyser: AnalyserNode | null = null;
+        let source: MediaStreamAudioSourceNode | null = null;
+
+        try {
+          audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 512;
+          source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          let lastSpeechTime = Date.now();
+
+          const checkSilence = () => {
+            if (cancelled || !recorder || recorder.state !== "recording") {
+              if (audioContext && audioContext.state !== "closed") {
+                audioContext.close();
+              }
+              return;
+            }
+
+            analyser!.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sum += dataArray[i];
+            }
+            const average = sum / bufferLength;
+
+            if (average > 8) {
+              lastSpeechTime = Date.now();
+            } else {
+              // If user stops talking for 1.8 seconds, automatically submit
+              if (Date.now() - lastSpeechTime > 1800) {
+                console.log("Auto-stopping recording due to silence...");
+                if (recorder.state === "recording") {
+                  recorder.stop();
+                }
+                if (audioContext && audioContext.state !== "closed") {
+                  audioContext.close();
+                }
+                return;
+              }
+            }
+
+            requestAnimationFrame(checkSilence);
+          };
+
+          // Start checking after 1 second delay
+          setTimeout(() => {
+            if (!cancelled && recorder.state === "recording") {
+              checkSilence();
+            }
+          }, 1000);
+
+        } catch (audioErr) {
+          console.error("VAD setup error:", audioErr);
+        }
       })
       .catch(() => {
         if (!cancelled) {
