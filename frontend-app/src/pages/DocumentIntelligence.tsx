@@ -12,6 +12,7 @@ import { getDocumentDetail, summarizeDocument } from "@/services/documentIntelli
 import type { DocClause, DocumentDetail } from "@/types/documentIntelligence";
 import { apiClient } from "@/utils/apiClient";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 
