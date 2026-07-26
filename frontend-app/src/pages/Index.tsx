@@ -320,14 +320,17 @@ const DashboardIndex = () => {
           </div>
           
           <div className="divide-y divide-neutral-100">
-            {recentQueries.map((q, idx) => (
-              <div key={idx} className="py-3.5 flex items-center justify-between text-xs font-serif text-slate-650 hover:bg-neutral-50/20 px-1 transition-colors">
-                <span className="truncate max-w-[280px] italic">"{q}"</span>
-                <Badge variant="outline" className="text-[9px] font-mono bg-neutral-50 text-slate-500 border-neutral-200 uppercase font-bold py-0.5 px-2">
-                  Vector Match
-                </Badge>
-              </div>
-            ))}
+            {recentQueries.map((q, idx) => {
+              const queryText = typeof q === "string" ? q : (q?.query || "Generic Search Query");
+              return (
+                <div key={idx} className="py-3.5 flex items-center justify-between text-xs font-serif text-slate-650 hover:bg-neutral-50/20 px-1 transition-colors">
+                  <span className="truncate max-w-[280px] italic">"{queryText}"</span>
+                  <Badge variant="outline" className="text-[9px] font-mono bg-neutral-50 text-slate-500 border-neutral-200 uppercase font-bold py-0.5 px-2">
+                    Vector Match
+                  </Badge>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
