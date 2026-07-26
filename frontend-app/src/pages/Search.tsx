@@ -404,21 +404,20 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
       </button>
     );
   };
-
   const activeResult = results[activeIndex];
   const sourceDocs = compileSourceDocs(activeResult?.citations);
 
   return (
-    <div className="h-full space-y-6">
+    <div className="max-w-4xl mx-auto px-4 md:px-0 py-8 space-y-8 min-h-[calc(100vh-120px)] flex flex-col justify-start">
       <style>{`
         @media print {
           body * {
             visibility: hidden;
           }
-          #premium-report-workspace, #premium-report-workspace * {
+          #premium-answer-workspace, #premium-answer-workspace * {
             visibility: visible;
           }
-          #premium-report-workspace {
+          #premium-answer-workspace {
             position: absolute;
             left: 0;
             top: 0;
@@ -431,67 +430,43 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         }
       `}</style>
 
-      {/* HEADER SECTION (Top Banner Title) */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-neutral-100">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <SearchIcon className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Legal Search Desk</h1>
-          </div>
-          <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
-            Query regulations and retrieve citing precedent with autonomous RAG pipelines
-          </p>
-        </div>
-        
-        {results.length > 0 && (
-          <Button onClick={handleNewResearch} variant="outline" className="border-neutral-200 text-xs font-mono font-bold uppercase tracking-wider h-9">
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
-            New Query
-          </Button>
-        )}
+      {/* Page Title Header (centered or left, clean AI style) */}
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">Legal Search</h1>
+        <p className="text-xs text-slate-500 font-sans">
+          Search central acts, precedents, and compliance regulations grounded in your legal database
+        </p>
       </div>
 
       <AnimatePresence mode="wait">
-        {/* NO RESULTS & INITIAL STATE: Display clean, large input dashboard (Perplexity-style Home) */}
+        {/* EMPTY STATE: Centered search console (Harvey AI style) */}
         {!isSearching && results.length === 0 ? (
           <motion.div
             key="empty-state"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.25 }}
-            className="max-w-2xl mx-auto py-12 md:py-20 space-y-12 text-center"
+            exit={{ opacity: 0, y: -12 }}
+            className="flex-1 flex flex-col justify-center items-center py-8 space-y-8"
           >
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-[9px] font-mono uppercase tracking-wider text-emerald-700 font-bold">Unified Vector RAG Platform</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-neutral-950 font-sans tracking-tight leading-tight">
-                Search Legislation & Precedent.
-              </h2>
-              <p className="text-xs text-neutral-500 max-w-md mx-auto leading-relaxed">
-                Query central acts, SEBI guidelines, or local contract caches. Our orchestrator compiles citation trees automatically.
-              </p>
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 shadow-sm animate-pulse">
+              <Sparkles className="w-5 h-5 text-blue-600" />
             </div>
 
-            {/* Central glowing search console */}
-            <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm relative overflow-hidden">
+            {/* Central clean search console */}
+            <div className="w-full max-w-2xl bg-white border border-slate-200 p-4 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
               <form onSubmit={handleSearchSubmit} className="space-y-4">
                 <div className="relative">
-                  <SearchIcon className="absolute left-3.5 top-4 h-4.5 w-4.5 text-neutral-400" />
+                  <SearchIcon className="absolute left-3.5 top-4 h-4.5 w-4.5 text-slate-400" />
                   <textarea
-                    placeholder="Ask a compliance or precedent query (e.g. 'What is the compounding penalty for FEMA Section 13?')..."
+                    placeholder="Describe your legal issue, act, or section query..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     rows={3}
-                    className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 py-2 text-xs text-slate-800 placeholder:text-neutral-400 leading-relaxed resize-none"
+                    className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 leading-relaxed resize-none font-sans"
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
                   <div className="flex items-center gap-2">
                     <VoiceButton
                       onTranscribe={(t) => {
@@ -503,7 +478,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="bg-white border border-neutral-200 text-[10px] font-mono py-1.5 px-2 focus:outline-none focus:border-emerald-600 cursor-pointer rounded uppercase font-bold"
+                      className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1.5 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
                     >
                       <option value="en">English (EN)</option>
                       <option value="hi-IN">Hindi (HI)</option>
@@ -516,439 +491,244 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                   <Button 
                     type="submit" 
                     disabled={isSearching || !query.trim()}
-                    className="btn-primary flex items-center font-mono py-4 text-[10px] font-bold uppercase tracking-wider px-6"
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center font-sans py-2 px-5 text-xs font-semibold shadow-sm transition-colors"
                   >
-                    Analyze
+                    Search
                     <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Button>
                 </div>
               </form>
             </div>
 
-            {/* Quick scope tags selector */}
-            <div className="space-y-3">
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Filter Research Scope</span>
-              <div className="flex flex-wrap gap-2 justify-center">
+            {/* Suggested prompt shortcuts */}
+            <div className="w-full max-w-xl space-y-3">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block text-center font-bold">Suggested Prompts</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { key: "all", label: "Global search" },
-                  { key: "cases", label: "Citing Precedents" },
-                  { key: "statutes", label: "Central Acts" },
-                  { key: "articles", label: "Risk Manuals" }
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => setContentType(item.key as ResearchContentType)}
-                    className={`px-3 py-1.5 text-2xs font-mono uppercase tracking-wider rounded border transition-all ${
-                      contentType === item.key
-                        ? "bg-slate-900 border-slate-900 text-white font-bold"
-                        : "bg-white border-neutral-200 text-slate-500 hover:bg-neutral-50"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Suggested prompts list */}
-            <div className="space-y-3.5 pt-6 border-t border-neutral-100">
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Suggested Inquiries</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
-                {relatedQuestions.slice(0, 4).map((q, idx) => (
+                  { text: "Explain obligations under DPDP Act", val: "What are the obligations under DPDP Act?" },
+                  { text: "Review NDA liabilities and termination clauses", val: "Review NDA liabilities and termination clauses" },
+                  { text: "Can an employer terminate employment without notice?", val: "Can an employer terminate employment without notice?" },
+                  { text: "Summarize major FEMA compounding penalties", val: "What are compounding options under FEMA Section 13?" }
+                ].map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => handleSelectRecent(q)}
-                    className="p-3 text-left bg-white border border-neutral-200 hover:border-emerald-600/40 rounded-xl transition-all duration-200 text-2xs font-sans font-semibold text-slate-700 hover:text-emerald-700 flex justify-between items-center group shadow-3xs"
+                    onClick={() => handleSelectRecent(item.val)}
+                    className="p-3.5 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-xl transition-all duration-150 text-xs font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
                   >
-                    <span className="truncate">{q}</span>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors shrink-0 ml-2" />
+                    <span>{item.text}</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
                   </button>
                 ))}
               </div>
             </div>
           </motion.div>
         ) : isSearching ? (
-          /* SEARCH PIPELINE LOADING TICKER PANEL */
+          /* LOADING STATE: Custom shimmery legal skeleton */
           <motion.div
             key="searching-state"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="border border-neutral-200 bg-white p-12 text-center space-y-8 rounded-2xl max-w-xl mx-auto my-12 shadow-3xs"
+            className="w-full max-w-2xl mx-auto py-16 space-y-8"
           >
-            <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
-              <div className="w-12 h-12 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-              <div className="absolute w-6 h-6 bg-emerald-50 rounded-full animate-pulse" />
+            <div className="space-y-4">
+              {/* Shimmering paragraphs */}
+              <div className="h-4 bg-slate-200 rounded-md w-3/4 animate-pulse" />
+              <div className="h-3.5 bg-slate-100 rounded-md w-full animate-pulse" />
+              <div className="h-3.5 bg-slate-100 rounded-md w-5/6 animate-pulse" />
+              <div className="h-3.5 bg-slate-100 rounded-md w-4/5 animate-pulse" />
             </div>
-            
-            <div className="space-y-2">
-              <h3 className="font-sans font-semibold text-sm text-slate-800">
-                {loadingStages[loadingStage]}
-              </h3>
-              <p className="font-mono text-[9px] text-slate-400 uppercase tracking-widest">
-                Running Autonomous RAG queries
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-1.5 w-48 mx-auto">
-              {loadingStages.map((_, idx) => (
+
+            <div className="border border-slate-200 bg-white p-6 rounded-2xl shadow-3xs text-center space-y-5">
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                <span className="text-xs font-semibold text-slate-700">
+                  {loadingStages[loadingStage]}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div 
-                  key={idx} 
-                  className={`h-1 flex-1 transition-all duration-300 ${
-                    idx <= loadingStage ? "bg-emerald-600 animate-pulse" : "bg-slate-100"
-                  }`} 
+                  className="h-full bg-blue-600 transition-all duration-500 rounded-full" 
+                  style={{ width: `${((loadingStage + 1) / loadingStages.length) * 100}%` }} 
                 />
-              ))}
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                <span>Searching legal database...</span>
+                <span>Generating grounded response...</span>
+              </div>
             </div>
           </motion.div>
         ) : (
-          /* MAIN RESULTS PANEL: Redesigned 3-column workspace */
+          /* RESULT STATE: Single answer card view */
           <motion.div
             key="results-layout"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-3xl mx-auto space-y-6"
           >
-            {/* COLUMN 1 (Left): Research controls & query history */}
-            <aside className="xl:col-span-3 space-y-6">
+            {/* New query trigger link to start over */}
+            <div className="flex justify-between items-center">
+              <button 
+                onClick={handleNewResearch} 
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
+              >
+                ← Back to search
+              </button>
+            </div>
+
+            <div id="premium-answer-workspace" className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm space-y-8 font-sans">
               
-              {/* Search query input */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-xl shadow-3xs">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Modify Query</span>
-                <form onSubmit={handleSearchSubmit} className="space-y-3">
-                  <textarea
-                    placeholder="Enter query..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    rows={2}
-                    className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-2 text-xs text-slate-900 placeholder:text-neutral-400 rounded resize-none leading-relaxed"
-                  />
-                  <div className="flex items-center justify-between">
-                    <VoiceButton
-                      onTranscribe={(t) => {
-                        setQuery(t);
-                        executeSearch(t);
-                      }}
-                    />
-                    <Button 
-                      type="submit" 
-                      disabled={isSearching || !query.trim()}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded h-7 px-3 text-2xs font-mono font-bold uppercase tracking-wider"
-                    >
-                      Run query
-                    </Button>
-                  </div>
-                </form>
+              {/* Question Header */}
+              <div className="border-b border-slate-100 pb-5">
+                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold mb-1">Question</span>
+                <h2 className="text-lg font-bold text-slate-900 leading-snug">
+                  "{query}"
+                </h2>
               </div>
 
-              {/* Research Scope selectors */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-xl shadow-3xs">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold font-bold">Research Filters</span>
-                
-                <div className="space-y-2">
-                  <label className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Jurisdiction</label>
-                  <select
-                    value={jurisdiction}
-                    onChange={(e) => setJurisdiction(e.target.value)}
-                    className="w-full bg-white border border-neutral-200 text-xs px-2.5 py-1.5 focus:outline-none focus:border-emerald-600 rounded cursor-pointer"
-                  >
-                    <option value="all">All Jurisdictions</option>
-                    <option value="Supreme Court">Supreme Court</option>
-                    <option value="High Court">High Court</option>
-                    <option value="FEMA">FEMA Regulations</option>
-                    <option value="SEBI">SEBI Regulations</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* History index */}
+              {/* Direct Answer */}
               <div className="space-y-3">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Query History</span>
-                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                  {recentSearches.map((h, idx) => {
-                    const queryText = typeof h === "string" ? h : h.query || "";
-                    const timestamp = typeof h === "object" ? h.timestamp : undefined;
-                    
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelectRecent(queryText)}
-                        className="w-full text-left p-3 bg-white border border-neutral-200 hover:border-emerald-600/40 rounded-xl transition-all flex flex-col gap-1 shadow-3xs group"
-                      >
-                        <span className="font-semibold text-2xs text-slate-800 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
-                          {queryText}
-                        </span>
-                        <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 w-full mt-1">
-                          <span>{formatRelativeTime(timestamp)}</span>
-                          {getSearchIcon(h)}
-                        </div>
-                      </button>
-                    );
-                  })}
+                <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Direct Answer</span>
+                <div className="text-sm leading-relaxed text-slate-800 space-y-4 whitespace-pre-line font-normal">
+                  {translatedAnswer || activeResult?.direct_answer}
                 </div>
               </div>
 
-            </aside>
+              {/* Key Legal Points */}
+              {activeResult?.compliance_requirements && activeResult.compliance_requirements.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Key Legal Points</span>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {activeResult.compliance_requirements.map((point: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2.5 text-sm text-slate-700 leading-relaxed">
+                        <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* COLUMN 2 (Center): Modern AI Legal Reading Brief Paper */}
-            <main className="xl:col-span-6 space-y-6">
-              {results.length > 0 && activeResult ? (
-                <div id="premium-report-workspace" className="bg-white border border-neutral-200/80 p-8 rounded-2xl shadow-sm relative overflow-hidden font-serif space-y-6">
+              {/* Applicable Sections (badges) */}
+              {activeResult?.applicable_law && activeResult.applicable_law.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Applicable Sections</span>
+                  <div className="flex flex-wrap gap-2">
+                    {activeResult.applicable_law.map((law: any, idx: number) => (
+                      <Badge 
+                        key={idx} 
+                        variant="secondary" 
+                        className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100/60 font-medium px-2.5 py-1 text-xs rounded-lg"
+                      >
+                        {law.act_name || law} {law.sections ? `• Section ${law.sections}` : ""}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Practical Interpretation */}
+              {activeResult?.legal_analysis?.interpretation && (
+                <div className="space-y-2 pt-2">
+                  <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Practical Interpretation</span>
+                  <p className="text-sm leading-relaxed text-slate-700">
+                    {activeResult.legal_analysis.interpretation}
+                  </p>
+                </div>
+              )}
+
+              {/* Potential Risks / Exceptions */}
+              {((activeResult?.risks && activeResult.risks.length > 0) || activeResult?.legal_analysis?.exceptions) && (
+                <div className="space-y-3 pt-2 border-t border-slate-100">
+                  <span className="text-[10px] font-mono text-red-600 uppercase tracking-widest block font-bold">Risks & Exceptions</span>
                   
-                  {/* Watermark/Grid overlay */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000001_1px,transparent_1px),linear-gradient(to_bottom,#00000001_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
-
-                  {/* Document header banner */}
-                  <div className="border-b border-neutral-100 pb-4 font-sans flex justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] font-bold uppercase rounded py-0.5">
-                          {activeResult.source || "RAG Synthesis"}
-                        </Badge>
-                        <span className="text-[10px] font-mono text-slate-400">Published: {new Date(activeResult.date).toLocaleDateString()}</span>
-                      </div>
-                      <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-snug pt-1">
-                        {activeResult.title}
-                      </h2>
+                  {activeResult?.risks && activeResult.risks.length > 0 && (
+                    <div className="space-y-2">
+                      {activeResult.risks.map((risk: string, idx: number) => (
+                        <div key={idx} className="flex gap-2 text-sm text-slate-700 leading-relaxed">
+                          <span className="text-red-500 font-bold shrink-0">⚠️</span>
+                          <span>{risk}</span>
+                        </div>
+                      ))}
                     </div>
+                  )}
 
-                    <div className="flex items-center gap-1 text-[9px] font-mono bg-neutral-100 text-slate-500 border border-neutral-200 px-2 py-1 rounded-sm">
-                      <Volume2 className="h-3 w-3 text-slate-400 shrink-0" />
-                      <AudioPlaybackButton text={translatedAnswer || activeResult.direct_answer || ""} />
-                    </div>
-                  </div>
-
-                  {/* Sub-sections tabs */}
-                  <div className="space-y-6">
-                    {/* Direct Answer */}
-                    {!collapsedSections.directAnswer && (
-                      <div className="space-y-2">
-                        {renderCollapsibleHeader("Direct Answer", <Sparkles className="h-3.5 w-3.5 text-emerald-600" />, "directAnswer")}
-                        <p className="text-xs leading-relaxed text-slate-700 font-serif whitespace-pre-line bg-neutral-50/50 p-4 border border-neutral-200/40 rounded-xl shadow-3xs">
-                          {translatedAnswer || activeResult.direct_answer}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Executive Summary */}
-                    {!collapsedSections.executiveSummary && activeResult.executive_summary && (
-                      <div className="space-y-2">
-                        {renderCollapsibleHeader("Executive Summary", <FileText className="h-3.5 w-3.5 text-slate-500" />, "executiveSummary")}
-                        <p className="text-xs leading-relaxed text-slate-650 font-serif whitespace-pre-line">
-                          {translatedSummary || activeResult.executive_summary}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Applicable Legislation */}
-                    {!collapsedSections.applicableLaw && activeResult.applicable_law && activeResult.applicable_law.length > 0 && (
-                      <div className="space-y-2">
-                        {renderCollapsibleHeader("Applicable Legislation", <BookOpen className="h-3.5 w-3.5 text-slate-500" />, "applicableLaw")}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans">
-                          {activeResult.applicable_law.map((law: any, idx: number) => (
-                            <div key={idx} className="p-3 bg-neutral-50/50 border border-neutral-200/60 rounded-xl flex items-start gap-2.5 shadow-3xs">
-                              <Building className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
-                              <div className="space-y-0.5">
-                                <p className="font-bold text-slate-800 text-[11px] leading-snug">{law.act_name || law}</p>
-                                <p className="text-[10px] font-mono text-slate-400">Section: {law.sections || "General"}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Legal Analysis */}
-                    {!collapsedSections.legalAnalysis && activeResult.legal_analysis && (
-                      <div className="space-y-4">
-                        {renderCollapsibleHeader("Legal Interpretation & Implications", <Scale className="h-3.5 w-3.5 text-slate-500" />, "legalAnalysis")}
-                        <div className="space-y-3 font-serif">
-                          {activeResult.legal_analysis.interpretation && (
-                            <div className="space-y-1">
-                              <span className="font-sans text-[9px] font-mono uppercase text-slate-400 font-bold">Interpretation</span>
-                              <p className="text-xs leading-relaxed text-slate-650">{activeResult.legal_analysis.interpretation}</p>
-                            </div>
-                          )}
-                          {activeResult.legal_analysis.implications && (
-                            <div className="space-y-1">
-                              <span className="font-sans text-[9px] font-mono uppercase text-slate-400 font-bold">Implications</span>
-                              <p className="text-xs leading-relaxed text-slate-655">{activeResult.legal_analysis.implications}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Compliance Risks & Recommendations */}
-                    {!collapsedSections.complianceRequirements && activeResult.compliance_requirements && activeResult.compliance_requirements.length > 0 && (
-                      <div className="space-y-3">
-                        {renderCollapsibleHeader("Actionable Compliance Guidelines", <ListChecks className="h-3.5 w-3.5 text-slate-500" />, "complianceRequirements")}
-                        <div className="space-y-2">
-                          {activeResult.compliance_requirements.map((req: string, idx: number) => (
-                            <div key={idx} className="flex gap-2 text-xs text-slate-650 leading-relaxed">
-                              <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                              <span>{req}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Citations panel */}
-                    {activeResult.citations && activeResult.citations.length > 0 && (
-                      <div className="pt-4 border-t border-neutral-100 space-y-3.5">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Citations Schedule</span>
-                        <div className="space-y-2">
-                          {activeResult.citations.map((c: any, idx: number) => {
-                            const title = typeof c === "string" ? c : c.document_name || c.citation_text || "Document citation";
-                            const body = typeof c === "object" ? c.text || c.context : "";
-                            
-                            return (
-                              <div key={idx} className="p-3 bg-neutral-50/50 border border-neutral-200/50 rounded-xl space-y-1 text-2xs font-sans shadow-3xs">
-                                <div className="flex justify-between items-center text-[10px] text-slate-700 font-semibold">
-                                  <span>[{idx + 1}] {title}</span>
-                                  {typeof c === "object" && c.section && (
-                                    <span className="font-mono text-[9px] text-emerald-600 font-bold uppercase">Section {c.section}</span>
-                                  )}
-                                </div>
-                                {body && <p className="text-[11px] leading-relaxed text-slate-500 font-serif italic">"{body}"</p>}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="border border-neutral-200 border-dashed bg-neutral-50/30 p-12 text-center rounded-2xl min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
-                  <Scale className="h-10 w-10 text-neutral-300" />
-                  <div className="space-y-1.5 mt-4">
-                    <p className="text-xs font-semibold text-slate-700 font-sans">Reading Desk</p>
-                    <p className="text-2xs text-slate-400 max-w-xs leading-normal">
-                      Initiate a query to generate comprehensive legal research reports with live citation indexing.
+                  {activeResult?.legal_analysis?.exceptions && (
+                    <p className="text-sm leading-relaxed text-slate-600 italic mt-2">
+                      * Exception: {activeResult.legal_analysis.exceptions}
                     </p>
-                  </div>
-                </div>
-              )}
-            </main>
-
-            {/* COLUMN 3 (Right): Quick actions, confidence levels, translations */}
-            <aside className="xl:col-span-3 space-y-6">
-              
-              {/* Confidence Gauge & Stats */}
-              {activeResult && (
-                <div className="border border-neutral-200 bg-white p-5 rounded-2xl shadow-3xs space-y-4 font-sans">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Confidence Indicator</span>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">Retrieval Score:</span>
-                      <span className="font-semibold text-slate-800">{activeResult.confidence || "High"}</span>
-                    </div>
-                    
-                    {/* Progress indicator */}
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: "94%" }} />
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* Translation drawer */}
-              {activeResult && (
-                <div className="border border-neutral-200 bg-white p-5 rounded-2xl shadow-3xs space-y-4 font-sans">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Translation Engine</span>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {[
-                      { code: "en", label: "English" },
-                      { code: "hi", label: "Hindi" },
-                      { code: "ta", label: "Tamil" },
-                      { code: "te", label: "Telugu" },
-                      { code: "bn", label: "Bengali" }
-                    ].map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => handleTranslate(lang.code)}
-                        disabled={isTranslating}
-                        className={`py-1.5 px-2.5 rounded border transition-all text-center ${
-                          activeLanguage === lang.code
-                            ? "bg-slate-900 border-slate-900 text-white font-semibold"
-                            : "bg-white border-neutral-200 text-slate-600 hover:bg-neutral-50"
-                        }`}
+              {/* Sources / Citations */}
+              <div className="pt-5 border-t border-slate-100 space-y-3">
+                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Sources</span>
+                
+                {activeResult?.citations && activeResult.citations.length > 0 ? (
+                  <div className="flex flex-wrap gap-2.5">
+                    {compileSourceDocs(activeResult.citations).map((doc, idx) => (
+                      <div 
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                       >
-                        {lang.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Action tools list */}
-              {activeResult && (
-                <div className="border border-neutral-200 bg-white p-5 rounded-2xl shadow-3xs space-y-3 font-sans">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Export Options</span>
-                  <div className="space-y-2 text-xs font-semibold">
-                    <Button onClick={handleCopy} variant="outline" className="w-full text-left justify-start border-neutral-200 hover:bg-neutral-50 h-9">
-                      <Copy className="mr-2 h-4 w-4 text-slate-400" />
-                      Copy Report Markdown
-                    </Button>
-                    
-                    <Button onClick={handleDownload} variant="outline" className="w-full text-left justify-start border-neutral-200 hover:bg-neutral-50 h-9">
-                      <Download className="mr-2 h-4 w-4 text-slate-400" />
-                      Download Raw JSON
-                    </Button>
-                    
-                    <Button onClick={handlePrint} variant="outline" className="w-full text-left justify-start border-neutral-200 hover:bg-neutral-50 h-9">
-                      <FileDown className="mr-2 h-4 w-4 text-slate-400" />
-                      Print brief report (PDF)
-                    </Button>
-
-                    <Button onClick={handleShare} variant="outline" className="w-full text-left justify-start border-neutral-200 hover:bg-neutral-50 h-9">
-                      <Share2 className="mr-2 h-4 w-4 text-slate-400" />
-                      Share Reference link
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Source files used in this report */}
-              {activeResult && sourceDocs.length > 0 && (
-                <div className="space-y-3">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Indexed Source Files</span>
-                  <div className="space-y-2">
-                    {sourceDocs.map((doc, idx) => (
-                      <div key={idx} className="p-3 bg-white border border-neutral-200 rounded-xl space-y-1 shadow-3xs">
-                        <span className="font-semibold text-2xs text-slate-800 block truncate">📄 {doc.name}</span>
-                        <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 mt-1">
-                          <span>Pages referenced: {doc.pages.join(", ")}</span>
-                          <span className="text-emerald-600 font-bold uppercase">{doc.chunks} matches</span>
-                        </div>
+                        <span className="text-slate-500 font-sans">📄</span>
+                        <span>{doc.name}</span>
+                        <span className="text-[10px] font-mono text-slate-400">Page {doc.pages.join(", ")}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Related prompts box */}
-              {activeResult && relatedQuestions.length > 0 && (
-                <div className="space-y-3">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Follow-up inquiries</span>
-                  <div className="space-y-2">
-                    {relatedQuestions.map((q, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelectRecent(q)}
-                        className="w-full text-left p-3.5 bg-white border border-neutral-200 hover:border-emerald-600/40 rounded-xl text-2xs font-semibold text-slate-700 hover:text-emerald-700 transition-all flex justify-between items-center group shadow-3xs"
-                      >
-                        <span className="truncate max-w-[200px]">{q}</span>
-                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors shrink-0" />
-                      </button>
-                    ))}
+                ) : (
+                  <div className="text-xs text-slate-500 italic bg-slate-50 px-3.5 py-2.5 border border-slate-100 rounded-lg">
+                    Generated from General Legal Knowledge
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
 
-            </aside>
+            {/* BOTTOM ACTIONS BAR */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 px-6 py-3.5 rounded-2xl shadow-3xs">
+              <div className="flex items-center gap-2">
+                <Button onClick={handleCopy} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs">
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy
+                </Button>
+                <Button onClick={handlePrint} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs">
+                  <FileDown className="h-3.5 w-3.5" />
+                  Export PDF
+                </Button>
+                <Button onClick={handleDownload} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs">
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </Button>
+                <div className="flex items-center gap-1 text-slate-600 border-l border-slate-200 pl-2">
+                  <AudioPlaybackButton text={translatedAnswer || activeResult?.direct_answer || ""} />
+                </div>
+              </div>
+
+              {/* Translation Selection Trigger */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-sans">Translate:</span>
+                <select
+                  value={activeLanguage}
+                  onChange={(e) => handleTranslate(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1 px-2.5 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
+                >
+                  <option value="en">English (EN)</option>
+                  <option value="hi">Hindi (HI)</option>
+                  <option value="ta">Tamil (TA)</option>
+                  <option value="te">Telugu (TE)</option>
+                  <option value="bn">Bengali (BN)</option>
+                </select>
+
+                <Button onClick={handleShare} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs border-l border-slate-200 pl-2">
+                  <Share2 className="h-3.5 w-3.5" />
+                  Share
+                </Button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
