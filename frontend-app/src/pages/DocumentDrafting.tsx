@@ -214,7 +214,7 @@ const DocumentDrafting = () => {
       name: "Data Processing Agreement (DPA)",
       description: "Specifies secure sub-processor compliance under GDPR and regional privacy rules.",
       category: "Compliance",
-      useCase: "Transferring customer database logs to cloud analyticial hosting environments.",
+      useCase: "Transferring customer database logs to cloud analytical hosting environments.",
       backendId: "nda",
       fields: ["Effective Date", "Data Exporter", "Data Importer", "Categories of Data", "Data Security Covenants"],
       draftTime: "3 min draft"
@@ -436,7 +436,7 @@ Additional contract clauses to inject: ${additionalClauses}
       });
       const data = res.data || res;
       setGeneratedDraft(data.generated_draft || data.draft || "");
-      toast({ title: "Draft Compiled", description: "AI compiled the legal document successfully." });
+      toast({ title: "Draft Completed", description: "AI compiled the legal document successfully." });
     } catch (e) {
       console.error(e);
       toast({ title: "Generation Error", description: "Failed to compile document draft.", variant: "destructive" });
@@ -526,36 +526,36 @@ Additional contract clauses to inject: ${additionalClauses}
     return matchSearch && matchCat;
   });
 
-  // A4 Document parser formatter
+  // A4 Document parser formatter (Premium large readable typography)
   const renderDocumentViewer = (text: string) => {
     if (!text) return null;
     return text.split("\n").map((line, idx) => {
       const trimmed = line.trim();
       
-      // Document Main Title
+      // Document Main Title - Large, bold, centered
       if (trimmed.startsWith("# ")) {
         return (
-          <h1 key={idx} className="text-center text-sm font-bold font-sans uppercase tracking-tight my-6 text-slate-900 leading-tight">
+          <h1 key={idx} className="text-center text-2xl font-bold font-sans uppercase tracking-tight my-8 text-slate-900 leading-tight">
             {trimmed.replace("# ", "")}
           </h1>
         );
       }
       
-      // Clause Heading Level 1 (e.g. 1. 2. 3.)
+      // Clause Heading Level 1 (e.g. 1. 2. 3.) - Bold and readable
       const h2Match = trimmed.match(/^##\s+(\d+\.?\s*.*)/) || trimmed.match(/^##\s+(.*)/);
       if (h2Match) {
         return (
-          <h2 key={idx} className="text-xs font-bold font-sans tracking-wide uppercase mt-5 mb-2.5 text-slate-850">
+          <h2 key={idx} className="text-lg font-bold font-sans tracking-wide uppercase mt-8 mb-4 text-slate-855">
             {h2Match[1]}
           </h2>
         );
       }
 
-      // Subclause Heading Level 2 (e.g. 1.1, 1.2)
+      // Subclause Heading Level 2 (e.g. 1.1, 1.2) - Bold and clear
       const h3Match = trimmed.match(/^###\s+(\d+\.\d+\.?\s*.*)/) || trimmed.match(/^###\s+(.*)/);
       if (h3Match) {
         return (
-          <h3 key={idx} className="text-[11px] font-bold font-sans tracking-normal mt-4 mb-2 text-slate-800 pl-2">
+          <h3 key={idx} className="text-base font-bold font-sans tracking-normal mt-6 mb-3 text-slate-800 pl-2">
             {h3Match[1]}
           </h3>
         );
@@ -564,7 +564,7 @@ Additional contract clauses to inject: ${additionalClauses}
       // Bullet lists
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         return (
-          <li key={idx} className="list-disc pl-6 leading-relaxed my-2 font-serif text-[13px] text-slate-700">
+          <li key={idx} className="list-disc pl-8 leading-relaxed my-3 font-serif text-[15px] text-slate-700">
             {trimmed.substring(2)}
           </li>
         );
@@ -572,13 +572,13 @@ Additional contract clauses to inject: ${additionalClauses}
 
       // Empty Lines
       if (trimmed === "") {
-        return <div key={idx} className="h-3.5" />;
+        return <div key={idx} className="h-5" />;
       }
 
-      // Paragraph elements (Indented if starting with numbers)
+      // Paragraph elements (Indented if starting with numbers) - Highly readable serif sizes
       const isIndented = trimmed.match(/^\d+\.\d+/) || trimmed.match(/^\d+\./);
       return (
-        <p key={idx} className={`leading-relaxed my-2 text-justify font-serif text-[13px] text-slate-700 ${isIndented ? "pl-5 font-semibold" : ""}`}>
+        <p key={idx} className={`leading-relaxed my-3.5 text-justify font-serif text-[15px] text-slate-700 ${isIndented ? "pl-6 font-semibold" : ""}`}>
           {trimmed}
         </p>
       );
@@ -589,28 +589,28 @@ Additional contract clauses to inject: ${additionalClauses}
   const getTemplateIcon = (cat: string) => {
     switch (cat) {
       case "Confidentiality":
-        return <FolderLock className="h-6 w-6 text-emerald-600" />;
+        return <FolderLock className="h-8 w-8 text-emerald-600" />;
       case "Employment":
-        return <User className="h-6 w-6 text-emerald-600" />;
+        return <User className="h-8 w-8 text-emerald-600" />;
       case "Corporate":
-        return <Scale className="h-6 w-6 text-emerald-600" />;
+        return <Scale className="h-8 w-8 text-emerald-600" />;
       case "Commercial":
-        return <Briefcase className="h-6 w-6 text-emerald-600" />;
+        return <Briefcase className="h-8 w-8 text-emerald-600" />;
       case "Compliance":
-        return <FileCheck className="h-6 w-6 text-emerald-600" />;
+        return <FileCheck className="h-8 w-8 text-emerald-600" />;
       case "Real Estate":
-        return <BookOpen className="h-6 w-6 text-emerald-600" />;
+        return <BookOpen className="h-8 w-8 text-emerald-600" />;
       default:
-        return <FileText className="h-6 w-6 text-emerald-600" />;
+        return <FileText className="h-8 w-8 text-emerald-600" />;
     }
   };
 
   return (
-    <div className="h-full bg-white text-slate-800 font-sans leading-normal">
+    <div className="h-full bg-white text-slate-800 font-sans leading-normal px-2 py-4">
       
       {/* 1. TOP TAB NAVIGATION WITH THIN UNDERLINE */}
-      <div className="flex flex-wrap items-center justify-between border-b border-neutral-100 pb-3 mb-6 gap-4">
-        <div className="flex gap-6 text-[10px] font-mono uppercase tracking-wider">
+      <div className="flex flex-wrap items-center justify-between border-b border-neutral-100 pb-4 mb-8 gap-4">
+        <div className="flex gap-8 text-xs font-mono uppercase tracking-wider">
           {[
             { id: "templates", label: "Templates Browser" },
             { id: "generate", label: "Interactive Generate" },
@@ -621,7 +621,7 @@ Additional contract clauses to inject: ${additionalClauses}
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-2.5 transition-all relative font-bold cursor-pointer ${
+              className={`pb-3 transition-all relative font-bold cursor-pointer text-xs md:text-sm ${
                 activeTab === tab.id 
                   ? "text-emerald-700 font-extrabold border-b-2 border-emerald-600" 
                   : "text-slate-400 hover:text-slate-900 border-b-2 border-transparent"
@@ -633,11 +633,11 @@ Additional contract clauses to inject: ${additionalClauses}
         </div>
 
         {/* Action selects */}
-        <div className="flex items-center gap-2 text-xs font-sans">
+        <div className="flex items-center gap-3 text-xs md:text-sm font-sans">
           <select
             value={selectedJurisdiction}
             onChange={(e) => setSelectedJurisdiction(e.target.value)}
-            className="bg-neutral-50/50 border border-neutral-200 text-[11px] py-1 px-2 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-655"
+            className="bg-neutral-50/50 border border-neutral-200 text-xs py-1.5 px-3 focus:outline-none focus:border-emerald-600 rounded cursor-pointer text-slate-655"
           >
             <option value="Central Govt, India">India (Central)</option>
             <option value="State of Maharashtra, India">Maharashtra State</option>
@@ -648,7 +648,7 @@ Additional contract clauses to inject: ${additionalClauses}
           <select
             value={selectedLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value)}
-            className="bg-neutral-50/50 border border-neutral-200 text-[11px] py-1 px-2 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-655"
+            className="bg-neutral-50/50 border border-neutral-200 text-xs py-1.5 px-3 focus:outline-none focus:border-emerald-600 rounded cursor-pointer text-slate-655"
           >
             <option value="en">English (EN)</option>
             <option value="hi-IN">Hindi (HI)</option>
@@ -670,40 +670,40 @@ Additional contract clauses to inject: ${additionalClauses}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-8"
+            className="space-y-10"
           >
             {/* HERO HERO SECTION */}
-            <div className="text-center max-w-2xl mx-auto py-10 space-y-3">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-600 font-bold block">
+            <div className="text-center max-w-3xl mx-auto py-12 space-y-4">
+              <span className="text-xs font-mono uppercase tracking-widest text-emerald-600 font-extrabold block">
                 Enterprise AI Contract Studio
               </span>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 font-sans sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-700 pb-1">
+              <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 font-sans sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-700 pb-2">
                 A4 Document Drafting Workspace
               </h1>
-              <p className="text-xs text-neutral-500 font-serif max-w-md mx-auto leading-relaxed">
-                Generate high-quality contract templates, run automated compliance audits, and compare drafts with side-by-side redlines.
+              <p className="text-sm md:text-base text-neutral-500 font-serif max-w-xl mx-auto leading-relaxed">
+                Generate premium legal contract templates, perform automated audits, and optimize terms with side-by-side redlines.
               </p>
 
               {/* Large search input */}
-              <div className="pt-4 max-w-md mx-auto flex items-center gap-2">
+              <div className="pt-6 max-w-lg mx-auto flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
                   <input
                     placeholder="Search 21 legal templates (e.g. Shareholders, DPA)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-10 pr-3 py-2 text-xs placeholder:text-neutral-400/80 rounded-none shadow-3xs transition-all"
+                    className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-12 pr-4 py-3 text-sm placeholder:text-neutral-400 rounded shadow-3xs transition-all"
                   />
                 </div>
               </div>
 
               {/* Scrollable Category pills */}
-              <div className="flex flex-wrap justify-center gap-1.5 pt-3">
+              <div className="flex flex-wrap justify-center gap-2 pt-4">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1 text-3xs font-mono uppercase tracking-wider transition-all border rounded-none ${
+                    className={`px-4 py-1.5 text-xs font-mono uppercase tracking-wider transition-all border rounded ${
                       selectedCategory === cat
                         ? "bg-emerald-600 text-white border-emerald-600 font-bold"
                         : "bg-white text-slate-500 border-neutral-200 hover:bg-neutral-50"
@@ -716,42 +716,42 @@ Additional contract clauses to inject: ${additionalClauses}
             </div>
 
             {/* Visual template cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTemplates.map((tpl) => (
                 <motion.div
                   key={tpl.id}
-                  whileHover={{ scale: 1.02, y: -4 }}
+                  whileHover={{ scale: 1.025, y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="border border-neutral-200 bg-white p-5 hover:border-emerald-600/40 hover:shadow-xs transition-all flex flex-col justify-between h-full rounded-none relative overflow-hidden group cursor-pointer"
+                  className="border border-neutral-200 bg-white p-6 hover:border-emerald-600/40 hover:shadow-md transition-all flex flex-col justify-between h-full rounded relative overflow-hidden group cursor-pointer"
                   onClick={() => handleSelectTemplate(tpl)}
                 >
                   {tpl.popular && (
-                    <div className="absolute right-0 top-0 bg-emerald-600 text-white text-[8px] font-mono font-bold uppercase tracking-wider px-2 py-0.5">
+                    <div className="absolute right-0 top-0 bg-emerald-600 text-white text-[9px] font-mono font-bold uppercase tracking-wider px-3 py-1">
                       Popular
                     </div>
                   )}
 
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded">
                         {getTemplateIcon(tpl.category)}
                       </div>
                       <div>
-                        <h3 className="font-bold text-xs text-slate-800 font-sans group-hover:text-emerald-700 transition-colors">
+                        <h3 className="font-bold text-sm md:text-base text-slate-800 font-sans group-hover:text-emerald-700 transition-colors">
                           {tpl.name}
                         </h3>
-                        <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wide block">{tpl.category}</span>
+                        <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wide block font-bold">{tpl.category}</span>
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-455 font-serif leading-relaxed">
+                    <p className="text-[13px] text-slate-505 font-serif leading-relaxed">
                       {tpl.description}
                     </p>
 
-                    <div className="flex items-center justify-between text-[9.5px] font-mono text-slate-400 pt-2 border-t border-neutral-100/60">
+                    <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-3 border-t border-neutral-100/60">
                       <span>Latency: {tpl.draftTime}</span>
-                      <span className="text-emerald-600 flex items-center gap-0.5">
-                        Setup Fields <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                      <span className="text-emerald-600 font-bold flex items-center gap-1">
+                        Setup Fields <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                       </span>
                     </div>
                   </div>
@@ -768,29 +768,29 @@ Additional contract clauses to inject: ${additionalClauses}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
+            className="space-y-8"
           >
             {/* Notion style header block */}
-            <div className="border-b border-neutral-150 pb-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="border-b border-neutral-150 pb-5 flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Document Title</span>
-                <h2 className="text-sm font-bold text-slate-900 font-sans flex items-center gap-2">
+                <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block font-bold">Document Title</span>
+                <h2 className="text-base md:text-lg font-bold text-slate-905 font-sans flex items-center gap-2">
                   📄 {selectedTemplate.name}
                 </h2>
               </div>
               
-              <div className="flex items-center gap-4 text-xs font-sans">
-                <div className="text-[10px] font-mono text-slate-500 uppercase space-y-0.5">
+              <div className="flex items-center gap-5 text-sm font-sans">
+                <div className="text-xs font-mono text-slate-500 uppercase space-y-0.5">
                   <span className="text-slate-400 block text-3xs uppercase">Jurisdiction</span>
                   <span className="font-bold text-slate-800">{selectedJurisdiction}</span>
                 </div>
-                <div className="text-[10px] font-mono text-slate-500 uppercase space-y-0.5">
+                <div className="text-xs font-mono text-slate-500 uppercase space-y-0.5">
                   <span className="text-slate-400 block text-3xs uppercase">Language</span>
                   <span className="font-bold text-slate-800">{selectedLanguage === 'en' ? 'English' : selectedLanguage}</span>
                 </div>
                 <button
                   onClick={() => setActiveTab("templates")}
-                  className="h-8 px-3 border border-neutral-200 hover:bg-neutral-50 text-3xs font-mono uppercase tracking-wider rounded-none"
+                  className="h-9 px-4 border border-neutral-200 hover:bg-neutral-50 text-xs font-mono uppercase tracking-wider rounded"
                 >
                   Change Template
                 </button>
@@ -798,10 +798,10 @@ Additional contract clauses to inject: ${additionalClauses}
             </div>
 
             {/* ChatGPT style large prompt editor */}
-            <div className="bg-neutral-50 border border-neutral-200 p-4 space-y-4 rounded-none shadow-3xs">
+            <div className="bg-neutral-50 border border-neutral-200 p-5 space-y-5 rounded shadow-3xs">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-mono text-slate-450 uppercase font-bold flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="text-xs font-mono text-slate-450 uppercase font-bold flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-emerald-600" />
                   Drafting Instructions Prompt Console
                 </span>
                 <VoiceButton onTranscribe={(t) => setPromptInstructions(prev => prev + (prev ? " " : "") + t)} />
@@ -811,12 +811,12 @@ Additional contract clauses to inject: ${additionalClauses}
                 placeholder="Ask AI to draft or rewrite this contract. Define liabilities, intellectual property rights, notice terms..."
                 value={promptInstructions}
                 onChange={(e) => setPromptInstructions(e.target.value)}
-                rows={3}
-                className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3.5 text-xs text-slate-900 placeholder:text-neutral-400/80 rounded-none resize-none leading-relaxed font-sans shadow-inner"
+                rows={4}
+                className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-4 text-sm text-slate-900 placeholder:text-neutral-400/80 rounded resize-none leading-relaxed font-sans shadow-inner"
               />
 
               {/* Suggestions quick tags */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {[
                   "Make liability cap mutual.",
                   "Add strict intellectual property assignment.",
@@ -826,36 +826,36 @@ Additional contract clauses to inject: ${additionalClauses}
                   <button
                     key={idx}
                     onClick={() => setPromptInstructions(prev => prev + (prev ? " " : "") + s)}
-                    className="px-2 py-0.5 border border-neutral-200 bg-white hover:bg-neutral-50 text-[10px] text-slate-500 rounded-none font-mono"
+                    className="px-3 py-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-xs text-slate-500 rounded font-mono"
                   >
                     + {s}
                   </button>
                 ))}
               </div>
 
-              <div className="flex justify-between items-center border-t border-neutral-200 pt-3 flex-wrap gap-2">
+              <div className="flex justify-between items-center border-t border-neutral-200 pt-4 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <input
                     placeholder="Extra clauses (e.g. non-solicit)..."
                     value={additionalClauses}
                     onChange={(e) => setAdditionalClauses(e.target.value)}
-                    className="w-64 bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-2 py-1 text-2xs placeholder:text-neutral-400 rounded-none font-sans"
+                    className="w-72 bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-3 py-1.5 text-xs placeholder:text-neutral-400 rounded font-sans"
                   />
                 </div>
 
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating} 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-9 text-xs font-semibold uppercase tracking-wider"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded px-8 h-10 text-xs font-semibold uppercase tracking-wider"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Assembling Draft...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-3.5 w-3.5 mr-2" />
+                      <Sparkles className="h-4 w-4 mr-2" />
                       Generate Draft
                     </>
                   )}
@@ -872,11 +872,11 @@ Additional contract clauses to inject: ${additionalClauses}
                   <div className="space-y-4">
                     
                     {/* Document control bar */}
-                    <div className="flex items-center justify-between border-b border-neutral-100 pb-2 flex-wrap gap-2 font-mono text-[9px] text-slate-400 uppercase">
+                    <div className="flex items-center justify-between border-b border-neutral-100 pb-2 flex-wrap gap-2 font-mono text-xs text-slate-400 uppercase">
                       <span>Microsoft Word Viewport Editor</span>
                       
-                      <div className="flex items-center gap-1.5">
-                        <AudioPlaybackButton text={generatedDraft} className="scale-90 bg-white border-neutral-200" />
+                      <div className="flex items-center gap-2">
+                        <AudioPlaybackButton text={generatedDraft} className="scale-95 bg-white border-neutral-200" />
                         
                         <Button
                           onClick={() => {
@@ -885,9 +885,9 @@ Additional contract clauses to inject: ${additionalClauses}
                             toast({ title: "Document Loaded", description: "Audit dashboard populated." });
                           }}
                           variant="outline"
-                          className="h-7 px-3.5 border-neutral-200 text-3xs font-mono uppercase tracking-wider rounded-none bg-white font-bold"
+                          className="h-8 px-4 border-neutral-200 text-xs font-mono uppercase tracking-wider rounded bg-white font-bold"
                         >
-                          <FileCheck className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                          <FileCheck className="h-4 w-4 mr-1.5 text-emerald-600" />
                           Audit
                         </Button>
                         
@@ -898,9 +898,9 @@ Additional contract clauses to inject: ${additionalClauses}
                             toast({ title: "Document Loaded", description: "Compare baseline saved." });
                           }}
                           variant="outline"
-                          className="h-7 px-3.5 border-neutral-200 text-3xs font-mono uppercase tracking-wider rounded-none bg-white font-bold"
+                          className="h-8 px-4 border-neutral-200 text-xs font-mono uppercase tracking-wider rounded bg-white font-bold"
                         >
-                          <Scale className="h-3.5 w-3.5 mr-1" />
+                          <Scale className="h-4 w-4 mr-1.5" />
                           Compare
                         </Button>
 
@@ -910,27 +910,27 @@ Additional contract clauses to inject: ${additionalClauses}
                             toast({ title: "Copied", description: "Report draft copied." });
                           }}
                           variant="outline"
-                          className="h-7 w-7 p-0 border-neutral-200 rounded-none bg-white"
+                          className="h-8 w-8 p-0 border-neutral-200 rounded bg-white"
                           title="Copy draft"
                         >
-                          <Copy className="h-3.5 w-3.5 text-slate-400" />
+                          <Copy className="h-4 w-4 text-slate-400" />
                         </Button>
 
                         <Button 
                           onClick={() => handleExportText(generatedDraft, `${selectedTemplate.id}_draft.md`)}
-                          className="h-7 px-3.5 bg-slate-800 hover:bg-slate-900 text-white text-3xs font-mono uppercase tracking-wider rounded-none font-bold"
+                          className="h-8 px-4 bg-slate-800 hover:bg-slate-900 text-white text-xs font-mono uppercase tracking-wider rounded font-bold"
                         >
-                          <Download className="h-3.5 w-3.5 mr-1.5" />
+                          <Download className="h-4 w-4 mr-1.5" />
                           Export .md
                         </Button>
                       </div>
                     </div>
 
-                    {/* Virtual A4 White Paper */}
-                    <div className="bg-white border border-neutral-200 shadow-md p-16 min-h-[900px] relative overflow-hidden rounded-none mx-auto max-w-[21cm]">
+                    {/* Virtual A4 White Paper (Highly readable, styled margins, deep shadow) */}
+                    <div className="bg-white border border-neutral-200 shadow-lg p-16 md:p-20 min-h-[1000px] relative overflow-hidden rounded mx-auto max-w-[21cm]">
                       
                       {/* Watermark header */}
-                      <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-wider text-slate-400 border-b border-neutral-100 pb-3 mb-8">
+                      <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-wider text-slate-400 border-b border-neutral-100 pb-3 mb-10">
                         <span>{selectedTemplate.name}</span>
                         <span className="text-emerald-700 font-bold">✓ AI Document Workspace</span>
                         <span>DATE: {docVariables["Effective Date"] || docVariables["Start Date"] || "Current"}</span>
@@ -941,25 +941,25 @@ Additional contract clauses to inject: ${additionalClauses}
                         <textarea
                           value={generatedDraft}
                           onChange={(e) => setGeneratedDraft(e.target.value)}
-                          rows={32}
-                          className="w-full bg-white border border-neutral-200 focus:outline-none p-4 text-xs font-serif leading-relaxed text-slate-850 rounded-none resize-none"
+                          rows={34}
+                          className="w-full bg-white border border-neutral-200 focus:outline-none p-5 text-sm font-serif leading-relaxed text-slate-850 rounded resize-none"
                         />
                       ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           {renderDocumentViewer(generatedDraft)}
                         </div>
                       )}
 
                       {/* Signatures Panel */}
-                      <div className="grid grid-cols-2 gap-12 border-t border-neutral-150 pt-8 mt-12 text-[10px] font-mono uppercase text-slate-500">
-                        <div className="space-y-8">
+                      <div className="grid grid-cols-2 gap-12 border-t border-neutral-150 pt-10 mt-16 text-xs font-mono uppercase text-slate-500">
+                        <div className="space-y-10">
                           <span>For Party A (Principal):</span>
-                          <div className="border-b border-neutral-250 w-32 h-6" />
+                          <div className="border-b border-neutral-250 w-40 h-8" />
                           <span>Authorized Representative</span>
                         </div>
-                        <div className="space-y-8">
+                        <div className="space-y-10">
                           <span>For Party B (Counterparty):</span>
-                          <div className="border-b border-neutral-250 w-32 h-6" />
+                          <div className="border-b border-neutral-250 w-40 h-8" />
                           <span>Authorized Representative</span>
                         </div>
                       </div>
@@ -967,21 +967,21 @@ Additional contract clauses to inject: ${additionalClauses}
                       {/* Inline Edit trigger */}
                       <button 
                         onClick={() => setIsEditingDraft(!isEditingDraft)} 
-                        className="absolute right-4 bottom-4 p-1.5 border border-neutral-200 hover:bg-neutral-50 rounded-none text-slate-400 bg-white cursor-pointer"
+                        className="absolute right-6 bottom-6 p-2 border border-neutral-200 hover:bg-neutral-50 rounded text-slate-400 bg-white cursor-pointer"
                         title={isEditingDraft ? "View Styled Paper" : "Edit Raw Text"}
                       >
-                        <Edit2 className="h-3.5 w-3.5" />
+                        <Edit2 className="h-4 w-4" />
                       </button>
 
                     </div>
 
                   </div>
                 ) : (
-                  <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-16 text-center space-y-4 rounded-none min-h-[600px] flex flex-col justify-center items-center font-serif shadow-3xs">
-                    <FileText className="h-10 w-10 text-neutral-350" />
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-slate-750 font-sans">Legal drafting page empty</p>
-                      <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                  <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-20 text-center space-y-4 rounded min-h-[600px] flex flex-col justify-center items-center font-serif shadow-3xs">
+                    <FileText className="h-12 w-12 text-neutral-350" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-slate-755 font-sans">Legal drafting page empty</p>
+                      <p className="text-xs text-slate-400 max-w-xs leading-normal">
                         Configure the parameters, enter instructions in the prompt bar, and click "Generate Draft" to build.
                       </p>
                     </div>
@@ -990,15 +990,15 @@ Additional contract clauses to inject: ${additionalClauses}
               </div>
 
               {/* Right Column: Placeholders sidebar panel */}
-              <div className="xl:col-span-4 border border-neutral-200 bg-white p-5 space-y-4 rounded-none shadow-3xs">
-                <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+              <div className="xl:col-span-4 border border-neutral-200 bg-white p-6 space-y-5 rounded shadow-3xs">
+                <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                   Document Placeholders
                 </span>
 
-                <div className="space-y-3.5 text-xs font-sans">
+                <div className="space-y-4 text-xs md:text-sm font-sans">
                   {selectedTemplate.fields.map((field) => (
-                    <div key={field} className="space-y-1">
-                      <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">
+                    <div key={field} className="space-y-1.5">
+                      <label className="text-[10px] font-mono text-slate-450 uppercase block font-bold">
                         {field}
                       </label>
                       <input
@@ -1006,7 +1006,7 @@ Additional contract clauses to inject: ${additionalClauses}
                         placeholder={`Enter ${field.toLowerCase()}...`}
                         value={docVariables[field] || ""}
                         onChange={(e) => setDocVariables({ ...docVariables, [field]: e.target.value })}
-                        className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:border-emerald-600 focus:outline-none rounded-none text-slate-800 placeholder:text-neutral-300"
+                        className="w-full bg-white border border-neutral-200 px-3 py-2 focus:border-emerald-600 focus:outline-none rounded text-slate-800 placeholder:text-neutral-300"
                       />
                     </div>
                   ))}
@@ -1024,20 +1024,20 @@ Additional contract clauses to inject: ${additionalClauses}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
+            className="space-y-8"
           >
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
               
               {/* Left Column: Target contract document editor */}
               <div className="xl:col-span-8 space-y-4">
                 <div className="flex justify-between items-center border-b border-neutral-100 pb-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-450">Target contract document text</span>
+                  <span className="text-xs font-mono uppercase text-slate-455">Target contract document text</span>
                   <Button 
                     onClick={handleReviewAudit}
                     disabled={isReviewing || !reviewText.trim()}
-                    className="h-7 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[9px] uppercase tracking-wider rounded-none font-bold"
+                    className="h-8 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs uppercase tracking-wider rounded font-bold"
                   >
-                    {isReviewing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <FileCheck className="h-3.5 w-3.5 mr-1" />}
+                    {isReviewing ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <FileCheck className="h-4 w-4 mr-1.5" />}
                     Audit Document
                   </Button>
                 </div>
@@ -1046,30 +1046,30 @@ Additional contract clauses to inject: ${additionalClauses}
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
                   placeholder="Paste contract text here to audit..."
-                  rows={28}
-                  className="w-full bg-white border border-neutral-200 focus:outline-none p-5 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
+                  rows={30}
+                  className="w-full bg-white border border-neutral-200 focus:outline-none p-6 text-sm text-slate-800 font-serif leading-relaxed rounded"
                 />
               </div>
 
               {/* Right Column: Scorecard audit panel */}
               <div className="xl:col-span-4 space-y-6">
                 {reviewResult ? (
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     
                     {/* Score badge */}
-                    <div className={`p-4 border rounded-none flex items-center justify-between ${
+                    <div className={`p-5 border rounded flex items-center justify-between ${
                       (reviewResult.risks?.length || 0) > 3 
                         ? "bg-red-50/50 border-red-200 text-red-905"
                         : "bg-emerald-50/50 border-emerald-200 text-emerald-950"
                     }`}>
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] font-mono uppercase text-slate-400 block font-bold">Risk Assessment</span>
-                        <span className="font-sans font-bold text-xs uppercase">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-400 block font-bold">Risk Assessment</span>
+                        <span className="font-sans font-bold text-sm uppercase">
                           {(reviewResult.risks?.length || 0) > 3 ? "Critical Liabilities" : "Secure Contract"}
                         </span>
                       </div>
 
-                      <div className={`text-2xs font-mono font-bold border px-2 py-0.5 ${
+                      <div className={`text-xs font-mono font-bold border px-3 py-1 ${
                         (reviewResult.risks?.length || 0) > 3 ? "bg-red-100 border-red-300 text-red-800" : "bg-emerald-100 border-emerald-300 text-emerald-800"
                       }`}>
                         {(reviewResult.risks?.length || 0) > 3 ? "HIGH" : "LOW"} RISK
@@ -1077,16 +1077,16 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
 
                     {/* Missing clauses */}
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs text-slate-707 shadow-3xs">
+                      <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Missing Clauses
                       </span>
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         {reviewResult.missing_clauses && reviewResult.missing_clauses.length > 0 ? (
                           reviewResult.missing_clauses.map((c: string, idx: number) => (
-                            <div key={idx} className="flex justify-between items-center border-b border-neutral-100 pb-2 last:border-0 last:pb-0">
-                              <span className="font-sans font-semibold text-red-800">📄 {c}</span>
-                              <Badge className="bg-red-50 text-red-700 text-[8px] font-mono border border-red-200 rounded-none uppercase font-bold">High</Badge>
+                            <div key={idx} className="flex justify-between items-center border-b border-neutral-100 pb-2.5 last:border-0 last:pb-0">
+                              <span className="font-sans font-semibold text-red-800 text-xs md:text-sm">📄 {c}</span>
+                              <Badge className="bg-red-50 text-red-700 text-[9px] font-mono border border-red-200 rounded uppercase font-bold">High</Badge>
                             </div>
                           ))
                         ) : (
@@ -1096,22 +1096,22 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
 
                     {/* Ambiguous clauses */}
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs text-slate-707 shadow-3xs">
+                      <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Ambiguous Clauses
                       </span>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {reviewResult.ambiguous_wording && reviewResult.ambiguous_wording.length > 0 ? (
                           reviewResult.ambiguous_wording.map((c: any, idx: number) => {
                             const title = typeof c === 'object' ? c.clause : `Provision #${idx+1}`;
                             const detail = typeof c === 'object' ? c.description || c.reason : String(c);
                             return (
-                              <div key={idx} className="space-y-1 border-b border-neutral-100 pb-2.5 last:border-0 last:pb-0">
+                              <div key={idx} className="space-y-2 border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
                                 <div className="flex justify-between items-center">
-                                  <span className="font-sans font-semibold text-slate-805">{title}</span>
-                                  <Badge className="bg-amber-50 text-amber-700 text-[8px] font-mono border border-amber-200 rounded-none uppercase font-bold">Medium</Badge>
+                                  <span className="font-sans font-semibold text-slate-805 text-xs md:text-sm">{title}</span>
+                                  <Badge className="bg-amber-50 text-amber-700 text-[9px] font-mono border border-amber-200 rounded uppercase font-bold">Medium</Badge>
                                 </div>
-                                <p className="font-serif text-slate-600 leading-normal">{detail}</p>
+                                <p className="font-serif text-slate-600 leading-normal text-xs md:text-sm">{detail}</p>
                               </div>
                             );
                           })
@@ -1122,20 +1122,20 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
 
                     {/* Compliance issues */}
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs text-slate-707 shadow-3xs">
+                      <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Compliance Issues
                       </span>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {reviewResult.risks && reviewResult.risks.length > 0 ? (
                           reviewResult.risks.map((r: any, idx: number) => (
-                            <div key={idx} className="space-y-1.5 border-b border-neutral-100 pb-2.5 last:border-0 last:pb-0">
+                            <div key={idx} className="space-y-2 border-b border-neutral-100 pb-3 last:border-0 last:pb-0 text-xs md:text-sm">
                               <div className="flex justify-between items-center font-sans font-semibold text-slate-800">
-                                <span className="truncate max-w-[150px]">{r.clause || "Compliance"}</span>
-                                <Badge className="bg-red-50 text-red-700 text-[8px] font-mono border border-red-200 rounded-none uppercase font-bold">{r.level || "Critical"}</Badge>
+                                <span className="truncate max-w-[180px]">{r.clause || "Compliance"}</span>
+                                <Badge className="bg-red-50 text-red-700 text-[9px] font-mono border border-red-200 rounded uppercase font-bold">{r.level || "Critical"}</Badge>
                               </div>
                               <p className="font-serif text-slate-650 leading-relaxed italic">"{r.excerpt || r.reason}"</p>
-                              <p className="font-sans text-slate-700"><span className="font-mono text-slate-400 text-[9px] uppercase font-bold">Recommendation:</span> {r.recommendation}</p>
+                              <p className="font-sans text-slate-700"><span className="font-mono text-slate-455 text-[10px] uppercase font-bold">Recommendation:</span> {r.recommendation}</p>
                             </div>
                           ))
                         ) : (
@@ -1145,11 +1145,11 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
 
                     {/* Suggestions */}
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs text-slate-707 shadow-3xs">
+                      <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Suggestions
                       </span>
-                      <ul className="list-disc pl-5 space-y-1.5 leading-normal text-slate-650 font-serif">
+                      <ul className="list-disc pl-5 space-y-2 leading-normal text-slate-650 font-serif text-xs md:text-sm">
                         {reviewResult.recommendations && reviewResult.recommendations.map((rec: string, idx: number) => (
                           <li key={idx}>{rec}</li>
                         ))}
@@ -1158,11 +1158,11 @@ Additional contract clauses to inject: ${additionalClauses}
 
                   </div>
                 ) : (
-                  <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
+                  <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
                     <FileCheck className="h-10 w-10 text-neutral-350" />
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-750 font-sans">Embedded Audit Page</p>
-                      <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                      <p className="text-xs font-semibold text-slate-750 font-sans font-bold">Embedded Audit Page</p>
+                      <p className="text-xs text-slate-400 max-w-xs leading-normal">
                         Input the contract draft text in the workspace sheet and click 'Audit Document' to load reviews.
                       </p>
                     </div>
@@ -1181,29 +1181,29 @@ Additional contract clauses to inject: ${additionalClauses}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
+            className="space-y-8"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
-                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Document A (Original Baseline)</label>
+              <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded shadow-3xs">
+                <label className="text-xs font-mono text-slate-455 uppercase font-bold block">Document A (Original Baseline)</label>
                 <textarea
                   value={originalText}
                   onChange={(e) => setOriginalText(e.target.value)}
                   placeholder="Paste original contract draft..."
-                  rows={12}
-                  className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-805 font-serif leading-relaxed rounded-none"
+                  rows={14}
+                  className="w-full bg-white border border-neutral-200 focus:outline-none p-4 text-sm text-slate-805 font-serif leading-relaxed rounded"
                 />
               </div>
 
-              <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
-                <label className="text-[10px] font-mono text-slate-455 uppercase font-bold block">Document B (Revised / Counterparty)</label>
+              <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded shadow-3xs">
+                <label className="text-xs font-mono text-slate-455 uppercase font-bold block">Document B (Revised / Counterparty)</label>
                 <textarea
                   value={revisedText}
                   onChange={(e) => setRevisedText(e.target.value)}
                   placeholder="Paste revised contract draft..."
-                  rows={12}
-                  className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-805 font-serif leading-relaxed rounded-none"
+                  rows={14}
+                  className="w-full bg-white border border-neutral-200 focus:outline-none p-4 text-sm text-slate-805 font-serif leading-relaxed rounded"
                 />
               </div>
 
@@ -1212,16 +1212,16 @@ Additional contract clauses to inject: ${additionalClauses}
             <Button 
               onClick={handleRedlineCompare} 
               disabled={isRedlining || !originalText.trim() || !revisedText.trim()} 
-              className="w-full h-10 bg-slate-805 hover:bg-slate-900 text-white rounded-none font-semibold text-xs uppercase tracking-wider font-mono font-bold"
+              className="w-full h-12 bg-slate-805 hover:bg-slate-900 text-white rounded font-semibold text-xs uppercase tracking-wider font-mono font-bold"
             >
               {isRedlining ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Generating comparison...
                 </>
               ) : (
                 <>
-                  <Scale className="h-3.5 w-3.5 mr-2" />
+                  <Scale className="h-4 w-4 mr-2" />
                   Compare Document Versions
                 </>
               )}
@@ -1232,31 +1232,31 @@ Additional contract clauses to inject: ${additionalClauses}
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start pt-6 border-t border-neutral-200">
                 
                 {/* Diff lists */}
-                <div className="xl:col-span-8 space-y-4">
-                  <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Discrepancy Redlines</span>
+                <div className="xl:col-span-8 space-y-6">
+                  <span className="text-xs font-mono text-slate-455 uppercase block font-bold">Discrepancy Redlines</span>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {redlineResult.modifications && redlineResult.modifications.map((mod: any, idx: number) => (
-                      <div key={idx} className="p-4 bg-white border border-neutral-200 rounded-none space-y-3 text-2xs shadow-3xs">
-                        <div className="flex justify-between items-center text-[9px] font-mono border-b border-neutral-100 pb-2">
+                      <div key={idx} className="p-5 bg-white border border-neutral-200 rounded space-y-4 text-xs md:text-sm shadow-3xs">
+                        <div className="flex justify-between items-center text-[10px] font-mono border-b border-neutral-100 pb-2">
                           <span className="font-bold text-slate-800 uppercase">📄 {mod.clause_type || "Provision"}</span>
                           <span className="text-emerald-705 font-bold uppercase">Modified</span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-3 bg-red-50/40 border border-red-100 rounded-none text-red-900 font-serif leading-relaxed">
-                            <span className="font-mono text-[8px] text-red-500 uppercase block font-bold mb-1">Removed:</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="p-4 bg-red-50/40 border border-red-100 rounded text-red-900 font-serif leading-relaxed text-xs md:text-sm">
+                            <span className="font-mono text-[9px] text-red-500 uppercase block font-bold mb-1">Removed:</span>
                             {mod.original}
                           </div>
-                          <div className="p-3 bg-emerald-50/40 border border-emerald-100 rounded-none text-emerald-900 font-serif leading-relaxed">
-                            <span className="font-mono text-[8px] text-emerald-600 uppercase block font-bold mb-1">Added:</span>
+                          <div className="p-4 bg-emerald-50/40 border border-emerald-100 rounded text-emerald-900 font-serif leading-relaxed text-xs md:text-sm">
+                            <span className="font-mono text-[9px] text-emerald-600 uppercase block font-bold mb-1">Added:</span>
                             {mod.revised}
                           </div>
                         </div>
 
                         {mod.impact_summary && (
-                          <p className="bg-neutral-50 p-2.5 border border-neutral-150 text-slate-600 font-sans leading-normal rounded-none">
-                            <span className="font-mono text-[8px] text-slate-450 uppercase block font-bold">AI Risk Assessment:</span>
+                          <p className="bg-neutral-50 p-3.5 border border-neutral-150 text-slate-655 font-sans leading-normal rounded">
+                            <span className="font-mono text-[9px] text-slate-450 uppercase block font-bold">AI Risk Assessment:</span>
                             {mod.impact_summary}
                           </p>
                         )}
@@ -1267,15 +1267,15 @@ Additional contract clauses to inject: ${additionalClauses}
 
                 {/* Compare summaries */}
                 <div className="xl:col-span-4 space-y-6">
-                  <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-705 shadow-3xs">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                  <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs md:text-sm text-slate-705 shadow-3xs">
+                    <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                       Comparison Summary
                     </span>
                     <p className="font-serif leading-relaxed text-slate-650">{redlineResult.summary}</p>
                   </div>
 
-                  <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-705 shadow-3xs">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                  <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded text-xs md:text-sm text-slate-705 shadow-3xs">
+                    <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                       Legal Impact
                     </span>
                     <p className="font-serif leading-relaxed text-slate-655">{redlineResult.legal_impact || redlineResult.risk_changes}</p>
@@ -1284,11 +1284,11 @@ Additional contract clauses to inject: ${additionalClauses}
 
               </div>
             ) : (
-              <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
+              <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
                 <Scale className="h-10 w-10 text-neutral-350" />
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-slate-700 font-sans">Redline Analysis panel</p>
-                  <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                  <p className="text-xs text-slate-400 max-w-xs leading-normal">
                     Paste original and counterparty drafts in the panels above to generate version control differences.
                   </p>
                 </div>
@@ -1305,26 +1305,26 @@ Additional contract clauses to inject: ${additionalClauses}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="space-y-6"
+          className="space-y-8"
         >
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             
             {/* Left: Input details */}
-            <div className="xl:col-span-6 border border-neutral-200 bg-white p-5 space-y-5 rounded-none shadow-3xs">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Target Clause Provision</label>
+            <div className="xl:col-span-6 border border-neutral-200 bg-white p-6 space-y-6 rounded shadow-3xs">
+              <div className="space-y-2">
+                <label className="text-xs font-mono text-slate-455 uppercase font-bold block">Target Clause Provision</label>
                 <textarea
                   value={improveText}
                   onChange={(e) => setImproveText(e.target.value)}
                   placeholder="Paste specific clause text lines here..."
-                  rows={8}
-                  className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
+                  rows={10}
+                  className="w-full bg-white border border-neutral-200 focus:outline-none p-4 text-sm text-slate-800 font-serif leading-relaxed rounded"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Refinement Prompts / Instructions</label>
+                  <label className="text-xs font-mono text-slate-450 uppercase font-bold block">Refinement Prompts / Instructions</label>
                   <VoiceButton onTranscribe={(t) => setImproveInstructions(prev => prev + (prev ? " " : "") + t)} />
                 </div>
                 <input
@@ -1332,23 +1332,23 @@ Additional contract clauses to inject: ${additionalClauses}
                   value={improveInstructions}
                   onChange={(e) => setImproveInstructions(e.target.value)}
                   placeholder="e.g. Rewrite to make liability caps mutual, or make notices written."
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-3 py-2 text-xs text-slate-800 placeholder:text-neutral-350 rounded-none font-sans"
+                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-4 py-3 text-sm text-slate-800 placeholder:text-neutral-350 rounded font-sans"
                 />
               </div>
 
               <Button 
                 onClick={handleImproveClause} 
                 disabled={isImproving || !improveText.trim()} 
-                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-semibold text-xs uppercase tracking-wider"
               >
                 {isImproving ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Optimizing clause...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-3.5 w-3.5 mr-2" />
+                    <Sparkles className="h-4 w-4 mr-2" />
                     Optimize Clause
                   </>
                 )}
@@ -1358,17 +1358,17 @@ Additional contract clauses to inject: ${additionalClauses}
             {/* Right: Improvement results */}
             <div className="xl:col-span-6 space-y-6">
               {improveResult ? (
-                <div className="space-y-5 text-2xs text-slate-750">
+                <div className="space-y-6 text-xs md:text-sm text-slate-750">
                   
                   {/* Optimized version output */}
-                  <div className="border border-emerald-200 bg-white p-5 space-y-3.5 rounded-none relative shadow-3xs">
-                    <span className="absolute right-4 top-4 text-[8px] font-mono text-emerald-750 font-bold bg-emerald-50 px-2 py-0.5 border border-emerald-200 uppercase rounded-none">
+                  <div className="border border-emerald-200 bg-white p-6 space-y-4 rounded relative shadow-3xs">
+                    <span className="absolute right-4 top-4 text-[9px] font-mono text-emerald-755 font-bold bg-emerald-50 px-3 py-1 border border-emerald-200 uppercase rounded">
                       AI Optimized Draft
                     </span>
-                    <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <span className="text-xs font-mono text-slate-455 uppercase block font-bold border-b border-neutral-100 pb-2">
                       Improved Clause
                     </span>
-                    <div className="font-serif leading-relaxed text-slate-800 bg-neutral-50 p-4 border border-neutral-200 rounded-none whitespace-pre-wrap">
+                    <div className="font-serif leading-relaxed text-slate-850 bg-neutral-50 p-5 border border-neutral-200 rounded whitespace-pre-wrap text-sm md:text-base">
                       {improveResult.generated_draft || improveResult.improved_text || improveResult.text || ""}
                     </div>
                     <div className="flex justify-end pt-3">
@@ -1377,9 +1377,9 @@ Additional contract clauses to inject: ${additionalClauses}
                           navigator.clipboard.writeText(improveResult.generated_draft || improveResult.improved_text || "");
                           toast({ title: "Copied", description: "Improved clause copied." });
                         }}
-                        className="h-8 px-4 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-3xs uppercase tracking-wider rounded-none"
+                        className="h-9 px-5 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs uppercase tracking-wider rounded"
                       >
-                        <Copy className="h-3.5 w-3.5 mr-1.5" />
+                        <Copy className="h-4 w-4 mr-2" />
                         Copy Clause
                       </Button>
                     </div>
@@ -1387,8 +1387,8 @@ Additional contract clauses to inject: ${additionalClauses}
 
                   {/* Reason for Improvement */}
                   {(improveResult.executive_summary || improveResult.reason) && (
-                    <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded shadow-3xs">
+                      <span className="text-xs font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Reason for Improvement
                       </span>
                       <p className="font-serif leading-relaxed text-slate-650">
@@ -1399,14 +1399,14 @@ Additional contract clauses to inject: ${additionalClauses}
 
                   {/* Legal Benefit */}
                   {improveResult.clause_explanations && (
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded shadow-3xs">
+                      <span className="text-xs font-mono text-slate-455 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Legal Benefit
                       </span>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {Object.entries(improveResult.clause_explanations).map(([key, exp]: any, idx) => (
-                          <div key={idx} className="space-y-1">
-                            <span className="font-sans font-semibold text-[9px] uppercase tracking-wider text-slate-400 block font-mono">
+                          <div key={idx} className="space-y-1.5">
+                            <span className="font-sans font-semibold text-[9.5px] uppercase tracking-wider text-slate-400 block font-mono">
                               {key.replace("_", " ")}
                             </span>
                             <p className="font-serif leading-relaxed text-slate-600">{exp}</p>
@@ -1418,16 +1418,16 @@ Additional contract clauses to inject: ${additionalClauses}
 
                   {/* Risks */}
                   {improveResult.risk_assessment && improveResult.risk_assessment.length > 0 && (
-                    <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none shadow-3xs">
-                      <span className="text-[10px] font-mono text-slate-455 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    <div className="border border-neutral-200 bg-white p-5 space-y-4 rounded shadow-3xs">
+                      <span className="text-xs font-mono text-slate-455 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Potential Risks
                       </span>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {improveResult.risk_assessment.map((r: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-red-50/20 border border-red-150 rounded-none text-2xs space-y-1 font-serif text-slate-700">
-                            <div className="flex justify-between items-center font-sans font-semibold text-red-900">
+                          <div key={idx} className="p-4 bg-red-50/20 border border-red-150 rounded text-xs space-y-2 font-serif text-slate-700">
+                            <div className="flex justify-between items-center font-sans font-semibold text-red-900 text-xs md:text-sm">
                               <span>{r.clause || "Liability"}</span>
-                              <Badge className="bg-red-100 text-red-750 text-[8px] font-mono uppercase rounded-none border border-red-200">
+                              <Badge className="bg-red-100 text-red-750 text-[9px] font-mono uppercase rounded border border-red-200 font-bold">
                                 {r.level || "Critical"}
                               </Badge>
                             </div>
@@ -1440,11 +1440,11 @@ Additional contract clauses to inject: ${additionalClauses}
 
                 </div>
               ) : (
-                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
+                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
                   <Sparkles className="h-10 w-10 text-neutral-350" />
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-750 font-sans">Optimized Clause Results panel</p>
-                    <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                    <p className="text-xs text-slate-400 max-w-xs leading-normal">
                       Provide a clause and refining prompt to generate the optimized, risk-assessed rewrite options.
                     </p>
                   </div>

@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["'Source Serif 4'", "Georgia", "serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["'Lora'", "Georgia", "serif"],
+        sans: ["'Plus Jakarta Sans'", "system-ui", "sans-serif"],
         mono: ["'IBM Plex Mono'", "ui-monospace", "monospace"],
       },
       colors: {
