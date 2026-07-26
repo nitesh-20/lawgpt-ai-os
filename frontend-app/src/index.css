@@ -6,36 +6,36 @@
 
 @layer base {
   :root {
-    /* Cinematic Dark Theme matching the landing page */
-    --background: 240 10% 2%; /* #050505 */
-    --foreground: 0 0% 100%; /* #FFFFFF */
+    /* Razorpay Inspired Enterprise Light Theme */
+    --background: 210 40% 98%; /* #F8FAFC */
+    --foreground: 222 47% 11%; /* #0F172A */
     
-    --card: 240 10% 6%; /* #101010 */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
     
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
     
-    --primary: 252 100% 68%; /* #7C5CFF */
+    --primary: 221.2 83.2% 53.3%; /* #2563EB - Razorpay Primary Blue */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 250 100% 76%; /* #9B87FF */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%; /* #F1F5F9 - Muted Background */
+    --secondary-foreground: 222.2 47.4% 11.2%;
     
-    --muted: 240 10% 8%; 
-    --muted-foreground: 240 10% 72%; 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B */
     
-    --accent: 252 100% 68%;
+    --accent: 217.2 91.2% 59.8%; /* #60A5FA */
     --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
     
-    --border: 0 0% 100% / 0.06; /* rgba(255,255,255,.06) */
-    --input: 0 0% 100% / 0.06;
-    --ring: 252 100% 68%;
+    --border: 214.3 32% 91.4%; /* #E2E8F0 */
+    --input: 214.3 32% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
     
-    --radius: 0.75rem; /* Rounded XL */
+    --radius: 0.75rem; /* Rounded 12px */
   }
 }
 
@@ -48,13 +48,12 @@
     @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "cv11", "ss01", "ss03";
     scroll-behavior: smooth;
-    background-color: #050505;
-    color: #ffffff;
-    overflow-x: hidden;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-serif font-semibold text-white;
+    @apply tracking-tight font-sans font-bold text-neutral-900;
   }
 
   h1 { @apply text-3xl; }
@@ -67,192 +66,244 @@
   }
 }
 
-@layer components {
-  /* High Density Grid Layout Panels (Cinematic Dark theme) */
-  .glass-card {
-    @apply bg-[#101010] border border-white/5 shadow-2xl rounded-2xl transition-all duration-300;
-  }
-  
-  .glass-card-hover {
-    @apply hover:border-white/10 hover:bg-[#151515] transition-all duration-300;
-  }
+/* ========================================================
+   GLOBAL BRAND REDESIGN OVERRIDES (RAZORPAY LIGHT THEME)
+   ======================================================== */
 
-  /* Bloomberg/Vercel Light Interactive Elements */
-  .btn-primary {
-    @apply bg-[#7C5CFF] hover:bg-[#9B87FF] text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all duration-300 active:scale-[0.98] border border-[#7C5CFF]/30 shadow-[0_0_15px_rgba(124,92,255,0.2)];
-  }
-
-  .btn-secondary {
-    @apply bg-[#151515] hover:bg-[#1C1C1C] text-white font-semibold px-4 py-2 rounded-xl text-xs border border-white/5 transition-all duration-300 active:scale-[0.98];
-  }
-
-  /* Custom Input Styling */
-  .input-premium {
-    @apply bg-[#101010] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-[#7C5CFF] focus:ring-1 focus:ring-[#7C5CFF]/30 transition-all duration-300 shadow-inner;
-  }
-  
-  /* Scrollbar overrides for high-density UI */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.18);
-  }
+/* General background wrappers override */
+.min-h-screen, 
+.bg-background,
+.bg-slate-900\/50,
+.bg-neutral-950,
+.bg-\[\#050505\],
+.bg-\[\#0d0d0d\],
+.bg-\[\#090909\] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-/* Page Transitions */
-.page-fade-enter {
-  opacity: 0;
-}
-.page-fade-enter-active {
-  opacity: 1;
-  transition: opacity 150ms ease;
+/* White elements & cards override */
+.bg-white,
+.bg-slate-900,
+.bg-\[\#101010\],
+.bg-\[\#151515\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
-/* ==========================================
-   GLOBAL UTILITY OVERRIDES FOR DARK THEME
-   ========================================== */
-
-/* Overwrite light backgrounds */
-.bg-white, 
-[class*="bg-white"],
-.bg-slate-50,
 .bg-neutral-50,
+.bg-slate-50,
 .bg-slate-100,
 .bg-neutral-100 {
-  background-color: #101010 !important;
-}
-/* Secondary dark backgrounds for inputs / cards */
-.bg-slate-50\/50,
-.bg-neutral-50\/50,
-.bg-neutral-50\/40,
-.bg-slate-50\/40,
-.bg-neutral-50\/30 {
-  background-color: #151515 !important;
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
-/* Dark theme card default shadows and borders */
-.border-neutral-100,
-.border-neutral-200,
+/* Soft card shadow overrides */
+.glass-card,
+.card,
+.bg-white.border,
+.bg-\[\#101010\].border,
+[class*="rounded-xl"],
+[class*="rounded-2xl"] {
+  border-radius: 0.75rem !important; /* 12px rounded */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.025) !important;
+  border: 1px solid #e2e8f0 !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.glass-card-hover:hover,
+.hover\:scale-\[1\.01\]:hover,
+[class*="rounded-xl"]:hover,
+[class*="rounded-2xl"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Clean border line overrides */
+.border,
+.border-border,
+.border-neutral-900,
+.border-neutral-800,
+.border-slate-800,
 .border-slate-100,
 .border-slate-200,
-.border-neutral-150,
-.border-slate-150 {
-  border-color: rgba(255, 255, 255, 0.06) !important;
+.border-neutral-100,
+.border-neutral-200,
+.border-neutral-900\/60 {
+  border-color: #e2e8f0 !important;
 }
 
-/* Font and text color overrides for white themes */
+/* Typography color overrides */
+.text-white,
+.text-slate-100,
+.text-slate-200,
+.text-slate-300,
+.text-neutral-900,
 .text-slate-900,
 .text-slate-905,
+.text-neutral-800,
 .text-slate-800,
 .text-slate-805,
 .text-slate-700,
 .text-slate-705,
-.text-neutral-900,
-.text-neutral-805,
-.text-neutral-800 {
-  color: #ffffff !important;
+.text-\[\#ffffff\] {
+  color: #0f172a !important;
 }
 
-.text-slate-600,
-.text-slate-650,
-.text-slate-500,
-.text-slate-450,
 .text-slate-400,
-.text-neutral-700,
-.text-neutral-600,
-.text-neutral-500,
+.text-slate-450,
+.text-slate-500,
+.text-neutral-400,
 .text-neutral-450,
-.text-slate-350 {
-  color: #cbd5e1 !important; /* light slate-300/neutral-300 */
+.text-neutral-500,
+.text-slate-600,
+.text-slate-650 {
+  color: #475569 !important;
 }
 
-/* Hover color overrides */
-.hover\:text-neutral-900:hover,
-.hover\:text-slate-900:hover,
-.hover\:text-slate-800:hover,
-.hover\:text-neutral-800:hover,
-.hover\:text-slate-700:hover {
-  color: #ffffff !important;
-}
-
-/* Hover border overrides */
-.hover\:border-neutral-300:hover,
-.hover\:border-slate-300:hover,
-.hover\:border-neutral-400:hover {
-  border-color: #7c5cff !important;
-}
-
-
-/* Purple overrides for greens */
-.bg-emerald-50,
-.bg-emerald-50\/40,
-.bg-emerald-50\/10 {
-  background-color: rgba(124, 92, 255, 0.1) !important;
-  border-color: rgba(124, 92, 255, 0.2) !important;
-}
-
-.text-emerald-600,
-.text-emerald-700,
-.text-emerald-705,
-.text-emerald-800 {
-  color: #9b87ff !important;
-}
-
+/* Primary buttons & emerald button overrides */
 .bg-emerald-600,
 .bg-emerald-650,
 .bg-emerald-700,
+.bg-primary,
+.btn-primary {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: rgba(37, 99, 235, 0.15) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 0.5rem !important;
+}
+
+.bg-emerald-600:hover,
+.bg-emerald-650:hover,
+.bg-emerald-700:hover,
+.bg-primary:hover,
+.btn-primary:hover,
 .hover\:bg-emerald-700:hover,
 .hover\:bg-emerald-800:hover {
-  background-color: #7c5cff !important;
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
 }
 
-/* Hover overlays */
-.hover\:bg-neutral-50:hover,
-.hover\:bg-slate-50:hover,
-.hover\:bg-neutral-50\/30:hover {
-  background-color: rgba(255, 255, 255, 0.04) !important;
+/* Soft light blue backgrounds for indicators */
+.bg-emerald-50,
+.bg-emerald-50\/10,
+.bg-emerald-500\/10,
+.bg-primary\/10 {
+  background-color: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: rgba(37, 99, 235, 0.15) !important;
 }
 
-/* Rounded borders override for luxury dashboard look */
-.rounded-none {
-  border-radius: 0.75rem !important;
-}
-.rounded-2xl {
-  border-radius: 1rem !important;
-}
-
-/* Fix Sheet / Modals overlay background */
-.bg-background\/80 {
-  background-color: rgba(5, 5, 5, 0.8) !important;
+.text-emerald-400,
+.text-emerald-500,
+.text-emerald-600,
+.text-emerald-700,
+.text-emerald-800 {
+  color: #2563eb !important;
 }
 
-/* Force chatbot layout container to take full width */
-.max-w-5xl {
-  max-width: none !important;
-  width: 100% !important;
-  padding-left: 1.5rem !important;
-  padding-right: 1.5rem !important;
+/* Modern clean inputs overrides */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+textarea,
+select,
+.input-premium {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  border-radius: 0.75rem !important; /* 12px rounded */
+  padding: 0.625rem 1rem !important;
+  transition: all 0.2s ease-in-out !important;
 }
 
-/* Hide left/right sidebars in Legal Search & make main panel full width */
-aside.xl\:col-span-3 {
-  display: none !important;
+input:focus,
+textarea:focus,
+select:focus,
+.input-premium:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+  outline: none !important;
 }
-main.xl\:col-span-6 {
-  grid-column: span 12 / span 12 !important;
-  max-width: none !important;
-  width: 100% !important;
+
+/* Sidebar Custom Rebranding Override */
+aside.bg-\[\#050505\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025) !important;
+}
+
+aside .border-neutral-900\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+aside .text-white {
+  color: #0f172a !important;
+}
+
+/* Sidebar navigation links hover & active */
+aside nav a {
+  color: #475569 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+aside nav a.bg-emerald-500\/10 {
+  background-color: #dbeafe !important;
+  color: #2563eb !important;
+  border-color: rgba(37, 99, 235, 0.15) !important;
+  font-weight: 700 !important;
+}
+
+aside nav a.bg-emerald-500\/10 svg {
+  color: #2563eb !important;
+}
+
+aside nav a.text-neutral-400:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+aside nav a.text-neutral-400:hover svg {
+  color: #0f172a !important;
+}
+
+/* Top bar header override */
+header.bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Badges rounded overrides */
+.badge,
+[class*="badge-"] {
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
+  padding: 0.25rem 0.75rem !important;
+}
+
+/* Custom Thin Scrollbar */
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 9999px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb !important;
 }
 

@@ -36,7 +36,6 @@ import { getComplianceSnapshot } from "@/services/compliance";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 // 100% Cohesive Seed Data matching visual requirements
 const DEFAULT_STATS: DashboardStat[] = [
@@ -137,109 +136,78 @@ const DashboardIndex = () => {
     );
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 15,
-        staggerChildren: 0.08
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="space-y-8 max-w-7xl mx-auto px-4 md:px-6 pb-12"
-    >
+    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
       
       {/* Title Area */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 flex items-center justify-center shadow-3xs">
-              <Activity className="h-5 w-5 text-[#9B87FF] animate-pulse" />
+            <div className="w-9 h-9 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+              <Activity className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white font-serif">Command Center</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Command Center</h1>
           </div>
-          <p className="text-xs text-slate-450 font-mono uppercase tracking-wider font-bold">
+          <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
             Live telemetry monitoring of legal RAG indexes, agent subtasks, and dossiers
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="bg-[#7C5CFF]/10 text-[#9B87FF] border border-[#7C5CFF]/20 font-mono text-[9px] rounded-lg uppercase font-bold tracking-wider py-1.5 px-3 shadow-3xs">
+          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] rounded uppercase font-bold tracking-wider py-1.5 px-3">
             System Live: Online
           </Badge>
         </div>
       </div>
 
       {/* Pulsing Workspace Telemetry HUD Hero */}
-      <motion.div 
-        variants={itemVariants}
-        className="relative border border-white/5 bg-[#101010] p-7 rounded-2xl overflow-hidden shadow-3xs"
-      >
-        <div className="absolute top-0 right-0 w-[260px] h-[260px] bg-[#7C5CFF]/5 rounded-full blur-[65px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
+      <div className="relative border border-neutral-200 bg-white p-6 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="absolute top-0 right-0 w-[240px] h-[240px] bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:2rem_2rem] pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          <div className="space-y-3.5 font-sans">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#151515] border border-white/5 rounded-lg shadow-3xs">
-              <span className="w-1.5 h-1.5 bg-[#7C5CFF] rounded-full animate-ping" />
-              <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400 font-bold">Autonomous Orchestrator Mode</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-50 border border-neutral-200 rounded">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500">Autonomous Orchestrator Mode</span>
             </div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-white leading-tight font-serif">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 font-sans leading-none">
               Orchestrating 8 AI Subsystems & 4 Active Matters.
             </h2>
-            <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
+            <p className="text-[13px] text-slate-500 max-w-2xl font-serif leading-relaxed">
               Verify compliance indices, search unified central files, or coordinate sub-agents directly. Access drafting tools to compile structured reports with millisecond response buffers.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3.5 shrink-0 font-mono">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button onClick={() => navigate("/search")} className="bg-[#7C5CFF] hover:bg-[#9B87FF] text-white flex items-center justify-center font-bold py-5 text-2xs uppercase tracking-wider px-6 shadow-2xs rounded-xl h-11 border border-[#7C5CFF]/30">
-                AI Legal Search
-                <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button onClick={() => navigate("/drafting")} variant="outline" className="border-white/5 bg-[#151515] hover:bg-[#1C1C1C] text-white font-bold py-5 text-2xs uppercase tracking-wider px-6 rounded-xl h-11 shadow-3xs">
-                Draft Document
-              </Button>
-            </motion.div>
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+            <Button onClick={() => navigate("/search")} className="btn-primary flex items-center justify-center font-mono py-5 text-xs font-bold uppercase tracking-wider px-6">
+              AI Legal Search
+              <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            </Button>
+            <Button onClick={() => navigate("/drafting")} variant="outline" className="border-neutral-200 bg-white hover:bg-neutral-50 font-mono py-5 text-xs font-bold uppercase tracking-wider px-6 text-slate-700">
+              Draft Document
+            </Button>
           </div>
         </div>
 
         {/* Telemetry Activity Tickers */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-8 pt-6 border-t border-white/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-5 border-t border-neutral-100">
           {[
-            { label: "Research Agent", status: "Active (0ms latency)", color: "bg-[#7C5CFF]" },
-            { label: "Drafting Agent", status: "Active (Idle queue)", color: "bg-[#7C5CFF]" },
-            { label: "Compliance Agent", status: "Scanning Dossier", color: "bg-amber-500 animate-pulse" },
-            { label: "Document Agent", status: "Indexed (RAG active)", color: "bg-[#7C5CFF]" }
+            { label: "Research Agent", status: "Active (0ms latency)", color: "bg-emerald-500" },
+            { label: "Drafting Agent", status: "Active (Idle queue)", color: "bg-emerald-500" },
+            { label: "Compliance Agent", status: "Scanning Dossier", color: "bg-amber-500" },
+            { label: "Document Agent", status: "Indexed (RAG active)", color: "bg-emerald-500" }
           ].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${item.color}`} />
+            <div key={idx} className="flex items-center gap-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${item.color}`} />
               <div>
-                <p className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">{item.label}</p>
-                <p className="text-xs font-semibold text-slate-300 mt-0.5 font-sans leading-none">{item.status}</p>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">{item.label}</p>
+                <p className="text-[11px] font-sans font-bold text-slate-700 mt-0.5">{item.status}</p>
               </div>
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -247,144 +215,126 @@ const DashboardIndex = () => {
           const isUp = stat.trend === "up";
           const isDown = stat.trend === "down";
           return (
-            <motion.div 
-              variants={itemVariants}
-              whileHover={{ scale: 1.015, y: -2 }}
-              key={idx} 
-              className="bg-[#101010] border border-white/5 p-5 rounded-2xl shadow-3xs space-y-2 hover:shadow-2xs transition-all duration-200 relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#7C5CFF]/20" />
-              <span className="text-[10px] font-mono tracking-wider text-slate-450 uppercase font-bold block">{stat.title}</span>
-              <div className="flex items-baseline justify-between pt-1">
-                <span className="text-xl font-bold text-white font-sans tracking-tight">{stat.value}</span>
-                <span className={`text-[9px] font-mono font-bold flex items-center gap-0.5 uppercase px-2 py-0.5 rounded-lg ${
-                  isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                  isDown ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-                  'bg-white/5 text-slate-400 border border-white/5'
+            <div key={idx} className="bg-white border border-neutral-200/60 p-5 rounded-xl shadow-3xs space-y-2 hover:scale-[1.015] hover:shadow-2xs transition-all duration-200">
+              <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-bold">{stat.title}</span>
+              <div className="flex items-baseline justify-between">
+                <span className="text-xl font-bold text-slate-900 font-sans tracking-tight">{stat.value}</span>
+                <span className={`text-[9px] font-mono font-bold flex items-center gap-0.5 uppercase px-2 py-0.5 rounded ${
+                  isUp ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
+                  isDown ? 'bg-red-50 text-red-700 border border-red-100' : 
+                  'bg-neutral-50 text-neutral-500 border border-neutral-200'
                 }`}>
                   {isUp ? <TrendingUp size={10} /> : isDown ? <TrendingDown size={10} /> : null}
                   {stat.change}
                 </span>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
       {/* Task Completion Recharts Chart vs Live Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
-        <motion.div 
-          variants={itemVariants}
-          className="border border-white/5 bg-[#101010] p-6 rounded-2xl shadow-3xs"
-        >
+        <div className="border border-neutral-200/65 bg-white p-6 rounded-2xl shadow-3xs">
           <div className="flex items-center justify-between mb-6">
-            <span className="text-[10px] font-mono tracking-wider text-slate-450 uppercase font-bold">Execution Progression Metrics</span>
-            <span className="text-[10px] font-mono text-[#9B87FF] font-bold uppercase tracking-wider">Weekly RAG Metrics</span>
+            <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-bold">Execution Progression Metrics</span>
+            <span className="text-3xs font-mono text-emerald-600 font-bold uppercase">Weekly RAG Metrics</span>
           </div>
           
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={tasks} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.02)" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} className="font-mono font-bold" />
-                <YAxis stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} className="font-mono font-bold" />
-                <Tooltip contentStyle={{ backgroundColor: '#101010', borderColor: 'rgba(255,255,255,0.06)', fontSize: '9px', borderRadius: '12px', color: '#ffffff' }} />
-                <Legend verticalAlign="top" height={36} iconSize={8} wrapperStyle={{ fontSize: '9px', textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 'bold' }} />
-                <Bar dataKey="completed" name="Completed Audits" fill="#7C5CFF" barSize={12} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="pending" name="Pending Verifications" fill="rgba(255,255,255,0.15)" barSize={12} radius={[3, 3, 0, 0]} />
+                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.03)" />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} className="font-mono" />
+                <YAxis stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} className="font-mono" />
+                <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', fontSize: '10px', borderRadius: '8px' }} />
+                <Legend verticalAlign="top" height={36} iconSize={8} wrapperStyle={{ fontSize: '10px', textTransform: 'uppercase', fontFamily: 'monospace' }} />
+                <Bar dataKey="completed" name="Completed Audits" fill="#059669" barSize={14} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="pending" name="Pending Verifications" fill="#94a3b8" barSize={14} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </motion.div>
+        </div>
 
         {/* Live System Alerts */}
-        <motion.div 
-          variants={itemVariants}
-          className="border border-white/5 bg-[#101010] p-6 rounded-2xl shadow-3xs flex flex-col justify-between"
-        >
+        <div className="border border-neutral-200/65 bg-white p-6 rounded-2xl shadow-3xs flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-white/5 pb-3">
-              <Bell className="h-4.5 w-4.5 text-[#7C5CFF] animate-bounce" />
-              <h2 className="text-xs font-mono uppercase text-slate-300 tracking-wider font-bold">Telemetry Activity Stream</h2>
+            <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
+              <Bell className="h-4 w-4 text-emerald-600" />
+              <h2 className="text-xs font-mono uppercase text-slate-800 tracking-wider font-bold">Telemetry Activity Stream</h2>
             </div>
             
-            <div className="space-y-3.5 max-h-[220px] overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-[220px] overflow-y-auto">
               {notifications.map((n) => (
-                <div key={n.id} className="p-3.5 border border-white/5 bg-[#151515] rounded-xl flex gap-2.5 items-start hover:border-[#7C5CFF]/30 hover:scale-[1.01] transition-all duration-200 shadow-3xs">
-                  <ShieldAlert size={15} className="text-[#7C5CFF] shrink-0 mt-0.5" />
+                <div key={n.id} className="p-3 border border-neutral-100 bg-neutral-50/50 flex gap-2.5 items-start">
+                  <ShieldAlert size={14} className="text-emerald-600 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
-                    <p className="font-semibold text-white text-xs font-sans tracking-tight">{n.title}</p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed font-serif">{n.message}</p>
-                    <span className="text-[9px] font-mono text-slate-500 block pt-1 uppercase font-bold">{n.time}</span>
+                    <p className="font-semibold text-slate-800 text-xs font-sans tracking-tight">{n.title}</p>
+                    <p className="text-[11px] text-slate-550 leading-relaxed font-serif">{n.message}</p>
+                    <span className="text-[9px] font-mono text-slate-400 block pt-1">{n.time}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Grid: Recent Dossiers and RAG Searches */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Documents */}
-        <motion.div 
-          variants={itemVariants}
-          className="border border-white/5 bg-[#101010] p-6 rounded-2xl shadow-3xs space-y-4"
-        >
-          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <div className="border border-neutral-200/65 bg-white p-6 rounded-2xl shadow-3xs space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
             <div className="flex items-center gap-2">
-              <FolderOpen className="h-4.5 w-4.5 text-[#7C5CFF] animate-pulse" />
-              <h2 className="text-xs font-mono uppercase text-slate-300 tracking-wider font-bold">Recent Documents</h2>
+              <FolderOpen className="h-4 w-4 text-emerald-600" />
+              <h2 className="text-xs font-mono uppercase text-slate-800 tracking-wider font-bold">Recent Documents</h2>
             </div>
-            <button onClick={() => navigate("/documents")} className="text-[9px] font-mono uppercase text-[#9B87FF] font-bold hover:underline">
+            <button onClick={() => navigate("/documents")} className="text-[9px] font-mono uppercase text-emerald-700 font-bold hover:underline">
               View All
             </button>
           </div>
           
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-neutral-100">
             {recentDocs.map((doc, idx) => (
-              <div key={idx} className="py-3.5 flex items-center justify-between text-xs hover:bg-[#151515] rounded-lg px-2 transition-colors">
+              <div key={idx} className="py-3 flex items-center justify-between text-xs hover:bg-neutral-50/20 px-1 transition-colors">
                 <div>
-                  <p className="font-semibold text-white font-sans tracking-tight">📄 {doc.title}</p>
-                  <p className="text-[9px] font-mono text-slate-500 mt-0.5 uppercase font-bold">{doc.type} · {doc.size}</p>
+                  <p className="font-semibold text-slate-800 font-sans tracking-tight">📄 {doc.title}</p>
+                  <p className="text-3xs font-mono text-slate-400 mt-0.5 uppercase">{doc.type} · {doc.size}</p>
                 </div>
-                <span className="text-3xs font-mono text-slate-450 font-bold">{new Date(doc.lastModified).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
+                <span className="text-3xs font-mono text-slate-400 font-semibold">{new Date(doc.lastModified).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Recent Search queries */}
-        <motion.div 
-          variants={itemVariants}
-          className="border border-white/5 bg-[#101010] p-6 rounded-2xl shadow-3xs space-y-4"
-        >
-          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <div className="border border-neutral-200/65 bg-white p-6 rounded-2xl shadow-3xs space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
             <div className="flex items-center gap-2">
-              <Search className="h-4.5 w-4.5 text-[#7C5CFF]" />
-              <h2 className="text-xs font-mono uppercase text-slate-300 tracking-wider font-bold">Recent RAG Queries</h2>
+              <Search className="h-4 w-4 text-emerald-600" />
+              <h2 className="text-xs font-mono uppercase text-slate-800 tracking-wider font-bold">Recent RAG Queries</h2>
             </div>
-            <button onClick={() => navigate("/search")} className="text-[9px] font-mono uppercase text-[#9B87FF] font-bold hover:underline">
+            <button onClick={() => navigate("/search")} className="text-[9px] font-mono uppercase text-emerald-700 font-bold hover:underline">
               New Search
             </button>
           </div>
           
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-neutral-100">
             {recentQueries.map((q, idx) => {
               const queryText = typeof q === "string" ? q : (q?.query || "Generic Search Query");
               return (
-                <div key={idx} className="py-3.5 flex items-center justify-between text-xs font-serif text-slate-300 hover:bg-[#151515] rounded-lg px-2 transition-colors">
+                <div key={idx} className="py-3.5 flex items-center justify-between text-xs font-serif text-slate-650 hover:bg-neutral-50/20 px-1 transition-colors">
                   <span className="truncate max-w-[280px] italic">"{queryText}"</span>
-                  <Badge variant="outline" className="text-[9px] font-mono bg-[#151515] text-slate-400 border border-white/5 uppercase font-bold py-0.5 px-2">
+                  <Badge variant="outline" className="text-[9px] font-mono bg-neutral-50 text-slate-500 border-neutral-200 uppercase font-bold py-0.5 px-2">
                     Vector Match
                   </Badge>
                 </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
