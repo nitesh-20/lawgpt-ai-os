@@ -228,18 +228,21 @@ export function MorphPanel() {
   )
 
   return (
-    <div className="flex items-center justify-center" style={{ width: FORM_WIDTH, height: FORM_HEIGHT }}>
+    <div className="relative flex items-center justify-center h-10 w-[110px]">
       <motion.div
         ref={wrapperRef}
         data-panel
         className={cx(
-          "bg-background relative bottom-8 z-3 flex flex-col items-center overflow-hidden border max-sm:bottom-5"
+          "bg-white border border-slate-200/85 shadow-2xs flex flex-col items-center overflow-hidden z-50"
         )}
         initial={false}
         animate={{
-          width: showForm ? FORM_WIDTH : "auto",
-          height: showForm ? FORM_HEIGHT : 44,
-          borderRadius: showForm ? 14 : 20,
+          width: showForm ? FORM_WIDTH : 110,
+          height: showForm ? FORM_HEIGHT : 36,
+          borderRadius: showForm ? 14 : 9999,
+          position: showForm ? "absolute" : "relative",
+          top: showForm ? 44 : 0,
+          right: showForm ? 0 : "auto",
         }}
         transition={{
           type: "spring",
@@ -261,7 +264,7 @@ export function MorphPanel() {
 function DockBar() {
   const { showForm, triggerOpen } = useFormContext()
   return (
-    <footer className="mt-auto flex h-[44px] items-center justify-center whitespace-nowrap select-none">
+    <footer className="mt-auto flex h-[36px] items-center justify-center whitespace-nowrap select-none">
       <div className="flex items-center justify-center gap-2 px-3 max-sm:h-10 max-sm:px-2">
         <div className="flex w-fit items-center gap-2">
           <AnimatePresence mode="wait">
