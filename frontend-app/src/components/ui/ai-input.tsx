@@ -7,8 +7,9 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
-import { VoiceButton } from "@/components/voice/VoiceButton"
 import { Mic } from "lucide-react"
+import AILoader from "@/components/ui/ai-loader"
+import { transcribeAudio } from "@/services/voice"
 
 interface OrbProps {
   dimension?: string
@@ -187,166 +188,87 @@ interface ContextShape {
   triggerClose: () => void
 }
 
-const FormContext = React.createContext({} as ContextShape)
-const useFormContext = () => React.useContext(FormContext)
-
 export function MorphPanel() {
-  const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
-
-  const [showForm, setShowForm] = React.useState(false)
-  const [successFlag, setSuccessFlag] = React.useState(false)
-
-  const triggerClose = React.useCallback(() => {
-    setShowForm(false)
-    textareaRef.current?.blur()
-  }, [])
-
-  const triggerOpen = React.useCallback(() => {
-    setShowForm(true)
-    setTimeout(() => {
-      textareaRef.current?.focus()
-    })
-  }, [])
-
-  const handleSuccess = React.useCallback(() => {
-    triggerClose()
-    setSuccessFlag(true)
-    setTimeout(() => setSuccessFlag(false), 1500)
-  }, [triggerClose])
-
-  React.useEffect(() => {
-    function clickOutsideHandler(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node) && showForm) {
-        triggerClose()
-      }
-    }
-    document.addEventListener("mousedown", clickOutsideHandler)
-    return () => document.removeEventListener("mousedown", clickOutsideHandler)
-  }, [showForm, triggerClose])
-
-  const ctx = React.useMemo(
-    () => ({ showForm, successFlag, triggerOpen, triggerClose }),
-    [showForm, successFlag, triggerOpen, triggerClose]
-  )
-
-  return (
-    <div className="relative flex items-center justify-center h-10 w-[110px]">
-      <motion.div
-        ref={wrapperRef}
-        data-panel
-        className={cx(
-          "bg-white border border-slate-200/85 shadow-2xs flex flex-col items-center overflow-hidden z-50"
-        )}
-        initial={false}
-        animate={{
-          width: showForm ? FORM_WIDTH : 110,
-          height: showForm ? FORM_HEIGHT : 36,
-          borderRadius: showForm ? 14 : 9999,
-          position: showForm ? "absolute" : "relative",
-          top: showForm ? 44 : 0,
-          right: showForm ? 0 : "auto",
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 550 / SPEED_FACTOR,
-          damping: 45,
-          mass: 0.7,
-          delay: showForm ? 0 : 0.08,
-        }}
-      >
-        <FormContext.Provider value={ctx}>
-          <DockBar />
-          <VoiceInputForm />
-        </FormContext.Provider>
-      </motion.div>
-    </div>
-  )
-}
-
-function DockBar() {
-  const { showForm, triggerOpen } = useFormContext()
-  return (
-    <footer className="mt-auto flex h-[36px] items-center justify-center whitespace-nowrap select-none">
-      <div className="flex items-center justify-center gap-2 px-3 max-sm:h-10 max-sm:px-2">
-        <div className="flex w-fit items-center gap-2">
-          <AnimatePresence mode="wait">
-            {showForm ? (
-              <motion.div
-                key="blank"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0 }}
-                exit={{ opacity: 0 }}
-                className="h-5 w-5"
-              />
-            ) : (
-              <motion.div
-                key="orb"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ColorOrb dimension="24px" tones={{ base: "oklch(22.64% 0 0)" }} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <Button
-          type="button"
-          className="flex h-fit flex-1 justify-end items-center gap-1 rounded-full px-2 !py-0.5 text-xs text-slate-700 font-semibold"
-          variant="ghost"
-          onClick={triggerOpen}
-        >
-          <Mic className="h-3.5 w-3.5 text-blue-600 animate-pulse" />
-          <span className="truncate">Voice AI</span>
-        </Button>
-      </div>
-    </footer>
-  )
-}
-
-const FORM_WIDTH = 360
-const FORM_HEIGHT = 120
-
-function VoiceInputForm() {
-  const { triggerClose, showForm } = useFormContext()
+  const [isRecording, setIsRecording] = React.useState(false)
+  const [isTranscribing, setIsTranscribing] = React.useState(false)
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null)
+  const audioChunksRef = React.useRef<Blob[]>([])
   const navigate = useNavigate()
 
-  const handleTranscribe = (text: string) => {
-    navigate("/search");
-    setTimeout(() => {
-      const event = new CustomEvent("trigger-search", { detail: { query: text } });
-      document.dispatchEvent(event);
-    }, 200);
-    triggerClose();
-  };
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data)
+        }
+      }
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
+        stream.getTracks().forEach((track) => track.stop())
+        await handleTranscribe(audioBlob)
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch (err) {
+      console.error("Mic access error:", err)
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+    }
+  }
+
+  const handleTranscribe = async (audioBlob: Blob) => {
+    setIsTranscribing(true)
+    try {
+      const text = await transcribeAudio(audioBlob, "auto")
+      if (text && text.trim()) {
+        navigate("/search")
+        setTimeout(() => {
+          const event = new CustomEvent("trigger-search", { detail: { query: text } });
+          document.dispatchEvent(event);
+        }, 200)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsTranscribing(false)
+    }
+  }
 
   return (
-    <div
-      className="absolute bottom-0 flex flex-col items-center justify-center p-3"
-      style={{ width: FORM_WIDTH, height: FORM_HEIGHT, pointerEvents: showForm ? "all" : "none" }}
-    >
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 550 / SPEED_FACTOR, damping: 45 }}
-            className="flex flex-col items-center justify-center h-full w-full space-y-2.5"
-          >
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-              Multilingual Voice AI
-            </span>
-            <VoiceButton
-              showLanguageSelect={true}
-              onTranscribe={handleTranscribe}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <>
+      <Button
+        type="button"
+        className="flex items-center gap-1.5 rounded-full px-3 h-9 bg-neutral-50 hover:bg-neutral-100 border border-slate-200 text-xs text-slate-700 font-semibold transition-all select-none shadow-3xs"
+        onClick={startRecording}
+      >
+        <ColorOrb dimension="16px" tones={{ base: "oklch(22.64% 0 0)" }} />
+        <Mic className="h-3.5 w-3.5 text-blue-600 animate-pulse" />
+        <span>Voice AI</span>
+      </Button>
+
+      {/* When recording (Listening), show full screen loader overlay. User can click overlay to stop. */}
+      {isRecording && (
+        <div onClick={stopRecording} className="cursor-pointer">
+          <AILoader text="Listening" />
+        </div>
+      )}
+
+      {/* When transcribing, show full screen loader overlay */}
+      {isTranscribing && (
+        <AILoader text="Transcribing" />
+      )}
+    </>
   )
 }
