@@ -23,13 +23,17 @@ class SarvamOCRProvider(BaseOCRProvider):
     OCR provider using Sarvam Document Intelligence.
     """
     async def perform_ocr(self, image_bytes: bytes) -> str:
+        if not image_bytes:
+            logger.warning("Sarvam OCR called with no image bytes — skipping.")
+            return ""
         try:
             from app.services.sarvam.document import DocumentIntelligenceManager
-            # The vision extract API generally expects a file. 
-            # We will pass the bytes as a mock file payload.
-            res = await DocumentIntelligenceManager.parse(
+            # DocumentIntelligenceManager exposes `extract_document`, not `parse` — this
+            # call previously always raised AttributeError and silently produced
+            # "[OCR Error]" text for every scanned page, regardless of image quality.
+            res = await DocumentIntelligenceManager.extract_document(
                 file_bytes=image_bytes,
-                filename="scanned_page.pdf"
+                filename="scanned_page.png"
             )
             if res.get("status") == "success":
                 return res.get("content", "")
@@ -133,8 +137,12 @@ class PDFService:
                 # Scanned page detection
                 if run_ocr and len(page_text.strip()) < 50:
                     logger.warning(f"Scanned page detected on page {page_num} of {file_path}. Running OCR fallback.")
-                    # Mocking page image extraction to execute provider
-                    ocr_text = await self.ocr_service.ocr_page(b"")
+                    # Rasterize the actual page to a PNG for OCR — this previously sent
+                    # an empty placeholder buffer instead of the real page image, so OCR
+                    # could never succeed regardless of the scan's quality.
+                    pixmap = page.get_pixmap(dpi=200)
+                    image_bytes = pixmap.tobytes("png")
+                    ocr_text = await self.ocr_service.ocr_page(image_bytes)
                     page_text += "\n" + ocr_text
 
                 pages.append({

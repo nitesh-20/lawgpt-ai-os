@@ -60,7 +60,11 @@ function mapAnalysisResults(id: string, title: string, type: string, results: an
       id: `t${i}`,
       date: t.date || "Unspecified",
       label: t.event ? `${t.type ? `[${t.type}] ` : ""}${t.event}` : "Timeline event"
-    }))
+    })),
+    missingInformation: results.missing_information || [],
+    suggestions: results.suggestions || [],
+    completenessScore: typeof results.completeness_score === "number" ? results.completeness_score : null,
+    completenessStatus: results.completeness_status || null
   };
 }
 

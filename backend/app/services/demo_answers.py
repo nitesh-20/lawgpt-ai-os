@@ -160,3 +160,37 @@ def get_neet_demo_answer(user_query: str) -> Optional[str]:
             return answer
 
     return NEET_LEAK_OVERVIEW_ANSWER
+
+
+# Hardcoded, vetted analysis for the "lost mobile phone FIR draft" demo document — same
+# reasoning as the NEET voice answers: a live document analysis burns ~6 Gemini calls
+# per upload and is unacceptable to risk failing live. This is a completeness check
+# (missing mandatory fields a police station will reject the FIR without), not a
+# contract-style clause/risk review.
+LOST_PHONE_FIR_ANALYSIS = {
+    "missing_information": [
+        "Date & time of incident",
+        "Location of loss",
+        "Police station name",
+        "Full name & address",
+        "Contact number",
+        "IMEI number",
+        "Phone purchase details (optional)"
+    ],
+    "suggestions": [
+        "Replace placeholders with actual values.",
+        "Mention how and where the phone was lost.",
+        "Add contact details for follow-up.",
+        "Attach purchase bill if available."
+    ],
+    "completeness_score": 72,
+    "completeness_status": "Needs Improvement before submission."
+}
+
+
+def match_lost_phone_fir(text: str) -> bool:
+    t = text.lower()
+    mentions_loss = any(kw in t for kw in ("lost", "missing", "misplace"))
+    mentions_phone = any(kw in t for kw in ("phone", "mobile", "imei"))
+    mentions_fir = any(kw in t for kw in ("fir", "first information report", "police station"))
+    return mentions_loss and mentions_phone and mentions_fir

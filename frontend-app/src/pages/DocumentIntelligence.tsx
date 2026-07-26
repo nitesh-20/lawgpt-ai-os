@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, FileText, Users, Scale, Sparkles, Languages, Loader2, Download } from "lucide-react";
+import { ArrowLeft, FileText, Users, Scale, Sparkles, Languages, Loader2, Download, AlertTriangle, Pin, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -192,6 +192,55 @@ const DocumentIntelligence = () => {
           </Button>
         </div>
       </div>
+
+      {/* Completeness Check — shown for draft/FIR-style documents reviewed for missing fields */}
+      {doc.completenessScore !== null && (
+        <div className="glass-card p-6 space-y-5 border-l-4 border-amber-400">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span className="text-xs font-bold uppercase tracking-wide text-neutral-800">Missing Information</span>
+              </div>
+              <ul className="space-y-1.5">
+                {doc.missingInformation.map((item, i) => (
+                  <li key={i} className="text-xs text-neutral-700 flex items-start gap-2">
+                    <span className="text-amber-500">•</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Pin className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold uppercase tracking-wide text-neutral-800">Suggestions</span>
+              </div>
+              <ul className="space-y-1.5">
+                {doc.suggestions.map((item, i) => (
+                  <li key={i} className="text-xs text-neutral-700 flex items-start gap-2">
+                    <span className="text-primary">•</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <span className="text-xs font-bold uppercase tracking-wide text-neutral-800">AI Verdict</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-neutral-600">
+                Completeness Score: <span className="font-bold text-neutral-900">{doc.completenessScore}%</span>
+              </span>
+              <Badge variant="outline" className="text-[9px] font-mono uppercase bg-amber-50 text-amber-700 border-amber-200">
+                {doc.completenessStatus}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Split Pane View */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6 items-start">

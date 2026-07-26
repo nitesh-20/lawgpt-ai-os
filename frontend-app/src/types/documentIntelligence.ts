@@ -49,4 +49,9 @@ export interface DocumentDetail {
   relatedJudgments: RelatedJudgment[];
   timeline: TimelineEvent[];
   aiNotes: AINote[];
+  /** Completeness-check fields (e.g. FIR draft review) — empty for contract-style docs. */
+  missingInformation: string[];
+  suggestions: string[];
+  completenessScore: number | null;
+  completenessStatus: string | null;
 }
