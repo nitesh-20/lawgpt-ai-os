@@ -448,24 +448,24 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
           <Button
             onClick={handleNewResearch}
             variant="outline"
-            className="w-full h-10 rounded-none border-neutral-200 flex items-center gap-2 text-xs font-semibold hover:bg-neutral-50"
+            className="w-full h-10 rounded-xl border-white/5 bg-[#101010] text-slate-300 flex items-center gap-2 text-xs font-semibold hover:bg-[#151515]"
           >
             <Plus className="h-4 w-4" />
             New Research
           </Button>
 
           {/* Search Box inside left sidebar */}
-          <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
-            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Console Query Input</span>
+          <div className="border border-white/5 bg-[#101010] p-4 space-y-3 rounded-xl shadow-3xs">
+            <span className="text-[10px] font-mono text-slate-500 uppercase font-bold block">Console Query Input</span>
             <form onSubmit={handleSearchSubmit} className="space-y-3">
               <div className="relative">
-                <SearchIcon className="absolute left-3 top-3 h-4.5 w-4.5 text-neutral-450" />
+                <SearchIcon className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500" />
                 <textarea
                   placeholder="Type or paste query..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   rows={2}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-9 pr-2 py-2 text-xs text-slate-900 placeholder:text-neutral-400/80 rounded-none resize-none leading-relaxed"
+                  className="w-full bg-[#151515] border border-white/5 focus:border-[#7C5CFF] focus:outline-none pl-9 pr-2 py-2 text-xs text-white placeholder:text-slate-600 rounded-xl resize-none leading-relaxed"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -479,7 +479,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="bg-white border border-neutral-200 text-3xs font-mono py-1 px-1 focus:outline-none focus:border-emerald-600 cursor-pointer rounded-none"
+                    className="bg-[#151515] border border-white/5 text-3xs font-mono py-1 px-1.5 focus:outline-none focus:border-[#7C5CFF] cursor-pointer rounded-lg text-white"
                   >
                     <option value="en">EN</option>
                     <option value="hi-IN">HI</option>
@@ -491,7 +491,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 <Button
                   type="submit"
                   disabled={isSearching || !query.trim()}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none h-7 px-3 text-xs font-semibold"
+                  className="bg-[#7C5CFF] hover:bg-[#9B87FF] text-white rounded-lg h-7 px-3 text-xs font-semibold border border-[#7C5CFF]/30"
                 >
                   {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Run"}
                 </Button>
@@ -500,23 +500,23 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
           </div>
 
           {/* Filters panel */}
-          <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none">
-            <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
-              <Filter className="h-3.5 w-3.5 text-emerald-600" />
+          <div className="border border-white/5 bg-[#101010] p-4 space-y-4 rounded-xl shadow-3xs">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+              <Filter className="h-3.5 w-3.5 text-[#9B87FF]" />
               <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Filters</h3>
             </div>
 
             {/* Scope select */}
             <div className="space-y-2">
-              <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Scope</span>
+              <span className="text-[10px] font-mono text-slate-500 uppercase block font-bold">Scope</span>
               <div className="grid grid-cols-2 gap-1.5">
                 {(["all", "cases", "statutes", "articles"] as ResearchContentType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => setContentType(type)}
-                    className={`h-8 border text-3xs font-mono uppercase tracking-wider transition-all rounded-none ${contentType === type
-                        ? "bg-slate-800 border-slate-850 text-white font-bold"
-                        : "bg-white border-neutral-200 text-slate-600 hover:bg-neutral-50"
+                    className={`h-8 border text-3xs font-mono uppercase tracking-wider transition-all rounded-lg ${contentType === type
+                        ? "bg-[#7C5CFF] border-[#7C5CFF]/30 text-white font-bold"
+                        : "bg-[#151515] border-white/5 text-slate-400 hover:bg-[#1C1C1C] hover:text-white"
                       }`}
                   >
                     {type}
@@ -527,13 +527,13 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
             {/* Jurisdiction Select */}
             <div className="space-y-2">
-              <label className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Jurisdiction</label>
+              <label className="text-[10px] font-mono text-slate-500 uppercase block font-bold">Jurisdiction</label>
               <div className="relative">
-                <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-405" />
+                <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
                 <select
                   value={jurisdiction}
                   onChange={(e) => setJurisdiction(e.target.value)}
-                  className="w-full bg-white border border-neutral-200 text-xs pl-8 pr-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer appearance-none"
+                  className="w-full bg-[#151515] border border-white/5 text-xs pl-8 pr-2 py-1.5 focus:outline-none focus:border-[#7C5CFF] rounded-lg cursor-pointer text-white appearance-none"
                 >
                   <option value="all">All Jurisdictions</option>
                   <option value="Supreme Court">Supreme Court</option>
@@ -547,14 +547,14 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
           {/* ChatGPT-style Recent searches */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
               <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-neutral-500" />
+                <Clock className="h-3.5 w-3.5 text-slate-500" />
                 <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Recent Searches</h3>
               </div>
             </div>
 
-            <div className="space-y-3.5 max-h-[250px] overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-[250px] overflow-y-auto pr-1 font-sans">
               {recentSearches.length > 0 ? (
                 recentSearches.map((h, idx) => {
                   const queryText = typeof h === "string" ? h : h.query || "";
@@ -567,22 +567,22 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     <button
                       key={idx}
                       onClick={() => handleSelectRecent(queryText)}
-                      className="w-full text-left p-3.5 bg-white border border-neutral-200 hover:border-emerald-600/40 hover:scale-[1.01] hover:shadow-xs transition-all duration-200 group flex flex-col gap-1.5 rounded-none"
+                      className="w-full text-left p-3.5 bg-[#101010] border border-white/5 hover:border-[#7C5CFF]/40 hover:scale-[1.01] hover:shadow-xs transition-all duration-200 group flex flex-col gap-1.5 rounded-xl"
                     >
                       <div className="flex items-start justify-between gap-2 w-full">
-                        <span className="font-sans font-semibold text-[11px] text-slate-800 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
+                        <span className="font-sans font-semibold text-[11px] text-white line-clamp-2 leading-snug group-hover:text-[#9B87FF] transition-colors">
                           {queryText}
                         </span>
                         {getSearchIcon(h)}
                       </div>
 
-                      <div className="flex items-center justify-between text-[9px] font-mono text-slate-450 w-full">
+                      <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 w-full">
                         <span>{formatRelativeTime(timestamp)}</span>
-                        <span className="text-emerald-600 font-bold">{cleanSource}</span>
+                        <span className="text-[#9B87FF] font-bold">{cleanSource}</span>
                       </div>
 
                       {preview && (
-                        <p className="text-[9px] text-slate-400 font-serif line-clamp-1 leading-normal border-t border-neutral-100/60 pt-1 w-full">
+                        <p className="text-[9px] text-slate-400 font-serif line-clamp-1 leading-normal border-t border-white/5 pt-1 w-full">
                           {preview}
                         </p>
                       )}
@@ -590,7 +590,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                   );
                 })
               ) : (
-                <div className="text-center py-6 text-neutral-450 text-3xs border border-dashed border-neutral-200 bg-white">No query logs recorded.</div>
+                <div className="text-center py-6 text-slate-500 text-3xs border border-dashed border-white/5 bg-[#101010] rounded-xl">No query logs recorded.</div>
               )}
             </div>
           </div>
@@ -629,20 +629,20 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         <main className="xl:col-span-6 space-y-6">
 
           {/* SEARCH BAR PANEL (WIDE & CENTERED AT TOP OF MAIN WORKSPACE) */}
-          <div className="border border-neutral-200 bg-white p-5 rounded-none">
+          <div className="border border-white/5 bg-[#101010] p-5 rounded-xl shadow-3xs">
             <form onSubmit={handleSearchSubmit} className="space-y-2">
-              <div className="relative">
-                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-neutral-400" />
+              <div className="relative font-sans">
+                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-500" />
                 <input
                   placeholder="Ask a legal query (e.g. 'What is the compounding penalty for FEMA Section 13?')..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-11 pr-32 py-3.5 text-xs text-slate-905 placeholder:text-neutral-400/80 rounded-none transition-all"
+                  className="w-full bg-[#151515] border border-white/5 focus:border-[#7C5CFF] focus:outline-none pl-11 pr-32 py-3.5 text-xs text-white placeholder:text-slate-650 rounded-lg transition-all"
                 />
 
                 {/* Voice, Language select & Shortcut hints */}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  <span className="hidden sm:inline text-[9px] font-mono text-neutral-400 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5">
+                  <span className="hidden sm:inline text-[9px] font-mono text-slate-500 bg-neutral-900 border border-white/5 px-1.5 py-0.5 rounded">
                     ↵ Search
                   </span>
                   <VoiceButton
@@ -654,7 +654,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                   <Button
                     type="submit"
                     disabled={isSearching || !query.trim()}
-                    className="h-8 px-4 rounded-none bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
+                    className="h-8 px-4 rounded-lg bg-[#7C5CFF] hover:bg-[#9B87FF] text-white font-semibold text-xs border border-[#7C5CFF]/30"
                   >
                     {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Analyze"}
                   </Button>
@@ -665,16 +665,16 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
           {/* DYNAMIC PIPELINE INGESTION STAGES ANIMATION */}
           {isSearching && (
-            <div className="border border-neutral-200 bg-white p-12 text-center space-y-8 rounded-none">
+            <div className="border border-white/5 bg-[#101010] p-12 text-center space-y-8 rounded-xl">
               <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
-                <div className="w-12 h-12 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-                <div className="absolute w-6 h-6 bg-emerald-50 rounded-full animate-pulse" />
+                <div className="w-12 h-12 border-2 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+                <div className="absolute w-6 h-6 bg-[#7C5CFF]/15 rounded-full animate-pulse" />
               </div>
               <div className="space-y-2">
-                <h3 className="font-sans font-semibold text-sm text-slate-800">
+                <h3 className="font-sans font-semibold text-sm text-white">
                   {loadingStages[loadingStage]}
                 </h3>
-                <p className="font-mono text-3xs text-slate-400 uppercase tracking-widest">
+                <p className="font-mono text-3xs text-slate-500 uppercase tracking-widest">
                   Processing Legal Analysis Pipeline
                 </p>
               </div>
@@ -683,7 +683,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 {loadingStages.map((_, idx) => (
                   <div
                     key={idx}
-                    className={`h-1 flex-1 transition-all duration-300 ${idx <= loadingStage ? "bg-emerald-600" : "bg-slate-100"
+                    className={`h-1 flex-1 transition-all duration-300 ${idx <= loadingStage ? "bg-[#7C5CFF]" : "bg-neutral-800"
                       }`}
                   />
                 ))}
@@ -693,13 +693,13 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
           {/* NO RESULTS INITIAL SCREEN (AESTHETIC LAW BRIEF PREVIEW) */}
           {!isSearching && results.length === 0 && (
-            <div className="border border-neutral-200 bg-white p-10 text-center space-y-8 rounded-none">
+            <div className="border border-white/5 bg-[#101010] p-10 text-center space-y-8 rounded-xl shadow-3xs">
               <div className="max-w-md mx-auto space-y-3">
-                <div className="w-12 h-12 mx-auto bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                  <Scale className="h-6 w-6 text-emerald-600 animate-pulse" />
+                <div className="w-12 h-12 mx-auto bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 flex items-center justify-center rounded-xl">
+                  <Scale className="h-6 w-6 text-[#9B87FF] animate-pulse" />
                 </div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight font-sans">Enterprise Legal Intelligence Console</h2>
-                <p className="text-xs text-neutral-500 leading-relaxed font-serif">
+                <h2 className="text-base font-bold text-white tracking-tight font-serif">Enterprise Legal Intelligence Console</h2>
+                <p className="text-xs text-slate-400 leading-relaxed font-serif">
                   Search across Indian legislation, SEBI compliance briefs, FEMA guidelines, and high court rulings. Grounded legal reports will render as official, structured legal research documents.
                 </p>
               </div>
@@ -731,13 +731,13 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                   <button
                     key={idx}
                     onClick={() => { setQuery(s.q); executeSearch(s.q); }}
-                    className="p-4 border border-neutral-200 hover:border-emerald-600/30 hover:bg-neutral-50/50 transition-all text-left space-y-1.5 rounded-none"
+                    className="p-4 border border-white/5 hover:border-[#7C5CFF]/30 hover:bg-[#151515] transition-all text-left space-y-1.5 rounded-xl bg-[#151515]/30 font-sans"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-sans font-semibold text-xs text-slate-800">{s.title}</span>
-                      <ArrowRight className="h-3 w-3 text-slate-400" />
+                      <span className="font-semibold text-xs text-white">{s.title}</span>
+                      <ArrowRight className="h-3 w-3 text-slate-500" />
                     </div>
-                    <p className="text-3xs text-neutral-500 font-serif leading-normal">{s.desc}</p>
+                    <p className="text-3xs text-slate-400 font-serif leading-normal">{s.desc}</p>
                   </button>
                 ))}
               </div>
@@ -748,21 +748,21 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
           {!isSearching && results.length > 0 && activeResult && (
             <div
               id="premium-report-workspace"
-              className="border border-neutral-200 bg-white p-8 space-y-8 rounded-none"
+              className="border border-white/5 bg-[#101010] p-8 space-y-8 rounded-xl shadow-3xs"
             >
 
               {/* Document Header Metadata */}
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3">
-                  <Badge className="text-3xs font-mono uppercase bg-emerald-600 hover:bg-emerald-700 text-white rounded-none border-none">
+              <div className="space-y-4 font-sans">
+                <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-3">
+                  <Badge className="text-3xs font-mono uppercase bg-[#7C5CFF] hover:bg-[#9B87FF] text-white rounded-lg border-none">
                     {activeResult.type || "AI Analysis"}
                   </Badge>
-                  <span className="text-neutral-400 font-mono text-3xs">·</span>
-                  <span className="text-neutral-500 font-sans text-3xs font-semibold uppercase">{activeResult.date}</span>
+                  <span className="text-slate-650 font-mono text-3xs">·</span>
+                  <span className="text-slate-400 text-3xs font-semibold uppercase">{activeResult.date}</span>
                   {activeResult.court && (
                     <>
-                      <span className="text-neutral-400 font-mono text-3xs">·</span>
-                      <span className="text-neutral-550 font-mono text-3xs uppercase font-semibold">{activeResult.court}</span>
+                      <span className="text-slate-650 font-mono text-3xs">·</span>
+                      <span className="text-slate-405 font-mono text-3xs uppercase font-semibold">{activeResult.court}</span>
                     </>
                   )}
                 </div>
@@ -1037,16 +1037,16 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
           {/* Multiple Ref Switchers */}
           {!isSearching && results.length > 1 && (
-            <div className="border border-neutral-200 bg-white p-3 rounded-none flex items-center justify-between">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400 font-bold">retrieved sets ({results.length})</span>
+            <div className="border border-white/5 bg-[#101010] p-3 rounded-xl flex items-center justify-between shadow-3xs font-mono">
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">retrieved sets ({results.length})</span>
               <div className="flex gap-1.5">
                 {results.map((r, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveIndex(idx)}
-                    className={`px-2.5 py-1 border text-3xs font-mono uppercase tracking-wider rounded-none ${activeIndex === idx
-                        ? "bg-slate-800 text-white border-slate-800 font-bold"
-                        : "bg-white text-slate-500 border-neutral-200 hover:bg-neutral-50"
+                    className={`px-2.5 py-1 border text-3xs uppercase tracking-wider rounded-lg transition-colors ${activeIndex === idx
+                        ? "bg-[#7C5CFF] text-white border-[#7C5CFF]/30 font-bold"
+                        : "bg-[#151515] text-slate-450 border-white/5 hover:bg-[#1C1C1C] hover:text-white"
                       }`}
                   >
                     set {idx + 1}
@@ -1059,49 +1059,49 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         </main>
 
         {/* RIGHT SIDEBAR: Knowledge Source, Confidence, Cited acts, quick actions */}
-        <aside className="xl:col-span-3 space-y-6 xl:sticky xl:top-28">
+        <aside className="xl:col-span-3 space-y-6 xl:sticky xl:top-28 font-sans">
 
           {activeResult && (
             <>
               {/* Grounding Info Panel */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+              <div className="border border-white/5 bg-[#101010] p-4 space-y-4 rounded-xl shadow-3xs">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
                   <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Grounding Verification</h3>
                 </div>
 
                 <div className="space-y-3.5 text-xs">
                   <div>
-                    <span className="text-slate-400 text-3xs font-mono block uppercase">Knowledge Source</span>
-                    <span className="text-slate-800 font-semibold mt-0.5 block">
+                    <span className="text-slate-500 text-3xs font-mono block uppercase font-bold">Knowledge Source</span>
+                    <span className="text-white font-semibold mt-0.5 block">
                       {activeResult.is_context_grounded ? "✓ PDF Knowledge Base" : "✓ Gemini General Knowledge"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 text-3xs font-mono block uppercase">Confidence Rating</span>
-                    <span className={`font-semibold mt-0.5 block ${activeResult.confidence === 'High' ? 'text-emerald-700' : 'text-amber-700'
+                    <span className="text-slate-500 text-3xs font-mono block uppercase font-bold">Confidence Rating</span>
+                    <span className={`font-semibold mt-0.5 block ${activeResult.confidence === 'High' ? 'text-emerald-400' : 'text-amber-400'
                       }`}>
                       {activeResult.confidence || 'High'} ({activeResult.matchScore || 95}% score)
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 text-3xs font-mono block uppercase">PDFs Used</span>
-                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                    <span className="text-slate-500 text-3xs font-mono block uppercase font-bold">PDFs Used</span>
+                    <span className="text-white font-semibold mt-0.5 block font-mono">
                       {activeResult.is_context_grounded ? `${sourceDocs.length} unique files` : "None"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 text-3xs font-mono block uppercase">Pages Used</span>
-                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                    <span className="text-slate-500 text-3xs font-mono block uppercase font-bold">Pages Used</span>
+                    <span className="text-white font-semibold mt-0.5 block font-mono">
                       {activeResult.is_context_grounded ? `${totalPagesCount} pages` : "None"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 text-3xs font-mono block uppercase">Retrieval Score</span>
-                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                    <span className="text-slate-500 text-3xs font-mono block uppercase font-bold">Retrieval Score</span>
+                    <span className="text-white font-semibold mt-0.5 block font-mono">
                       {activeResult.matchScore || 95}% matching
                     </span>
                   </div>
@@ -1109,9 +1109,9 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               </div>
 
               {/* Cited Acts & Regulations */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
-                <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
-                  <Scale className="h-3.5 w-3.5 text-neutral-500" />
+              <div className="border border-white/5 bg-[#101010] p-4 space-y-3 rounded-xl shadow-3xs">
+                <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                  <Scale className="h-3.5 w-3.5 text-slate-500" />
                   <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Related Acts</h3>
                 </div>
 
@@ -1120,22 +1120,22 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     activeResult.applicable_law.map((law: any, idx: number) => {
                       const actName = typeof law === 'object' ? law.act_name : String(law);
                       return (
-                        <div key={idx} className="flex items-center gap-2 p-2 bg-neutral-50 border border-neutral-200 text-3xs font-mono text-slate-650 rounded-none">
-                          <Scale className="h-3 w-3 text-emerald-600 shrink-0" />
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-[#151515] border border-white/5 text-3xs font-mono text-slate-350 rounded-lg">
+                          <Scale className="h-3 w-3 text-[#7C5CFF] shrink-0" />
                           <span className="truncate" title={actName}>{actName}</span>
                         </div>
                       );
                     })
                   ) : (
-                    <span className="text-3xs text-slate-400 italic">No specific act citations parsed.</span>
+                    <span className="text-3xs text-slate-500 italic font-serif">No specific act citations parsed.</span>
                   )}
                 </div>
               </div>
 
               {/* Related Inquiries */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
-                <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
-                  <HelpCircle className="h-3.5 w-3.5 text-neutral-500" />
+              <div className="border border-white/5 bg-[#101010] p-4 space-y-3 rounded-xl shadow-3xs">
+                <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                  <HelpCircle className="h-3.5 w-3.5 text-slate-500" />
                   <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Related Questions</h3>
                 </div>
 
@@ -1144,84 +1144,84 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     <button
                       key={idx}
                       onClick={() => { setQuery(q); executeSearch(q); }}
-                      className="text-left p-2.5 border border-neutral-200 bg-white hover:border-emerald-600/30 hover:bg-neutral-50/50 text-[10px] font-sans text-slate-600 hover:text-slate-900 transition-all flex items-center justify-between rounded-none leading-relaxed"
+                      className="text-left p-2.5 border border-white/5 bg-[#151515] hover:border-[#7C5CFF]/30 hover:bg-[#1C1C1C] text-[10px] font-sans text-slate-300 hover:text-white transition-all flex items-center justify-between rounded-lg leading-relaxed shadow-3xs"
                     >
                       <span className="line-clamp-2">{q}</span>
-                      <ArrowRight className="h-3 w-3 text-slate-400 shrink-0 ml-2" />
+                      <ArrowRight className="h-3 w-3 text-slate-500 shrink-0 ml-2" />
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Quick Actions grid block */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none text-xs">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+              <div className="border border-white/5 bg-[#101010] p-4 space-y-4 rounded-xl text-xs shadow-3xs">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
                   <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Quick Actions</h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-xs font-sans">
                   {/* Copy */}
                   <button
                     onClick={handleCopy}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white"
+                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-white/5 hover:bg-[#151515] text-[10px] font-semibold text-slate-300 transition-all rounded-lg bg-[#151515]/50 hover:text-white"
                   >
-                    <Copy className="h-3.5 w-3.5 text-slate-400" />
+                    <Copy className="h-3.5 w-3.5 text-slate-500" />
                     Copy Text
                   </button>
 
                   {/* Export PDF */}
                   <button
                     onClick={handlePrint}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white"
+                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-white/5 hover:bg-[#151515] text-[10px] font-semibold text-slate-300 transition-all rounded-lg bg-[#151515]/50 hover:text-white"
                   >
-                    <FileDown className="h-3.5 w-3.5 text-slate-400" />
+                    <FileDown className="h-3.5 w-3.5 text-slate-500" />
                     Export PDF
                   </button>
 
                   {/* Download JSON */}
                   <button
                     onClick={handleDownload}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white"
+                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-white/5 hover:bg-[#151515] text-[10px] font-semibold text-slate-300 transition-all rounded-lg bg-[#151515]/50 hover:text-white"
                   >
-                    <Download className="h-3.5 w-3.5 text-slate-400" />
+                    <Download className="h-3.5 w-3.5 text-slate-500" />
                     JSON Data
                   </button>
 
                   {/* Narration */}
-                  <div className="flex items-center justify-center border border-neutral-200 bg-white hover:bg-neutral-50 h-full w-full">
+                  <div className="flex items-center justify-center border border-white/5 bg-[#151515]/50 hover:bg-[#151515] h-full w-full rounded-lg">
                     <AudioPlaybackButton
                       text={translatedSummary || activeResult.summary || activeResult.direct_answer || ""}
-                      className="border-none hover:bg-transparent h-full w-full rounded-none flex items-center justify-center gap-1.5 text-[10px] font-sans font-semibold text-slate-700"
+                      className="border-none bg-transparent hover:bg-transparent h-full w-full rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-semibold text-slate-300 hover:text-white"
                     />
                   </div>
 
                   {/* Translation Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white col-span-2">
+                      <button className="flex items-center justify-center gap-1.5 py-2 px-2 border border-white/5 hover:bg-[#151515] text-[10px] font-semibold text-slate-300 transition-all rounded-lg bg-[#151515]/50 hover:text-white col-span-2">
                         {isTranslating ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600 mr-1 animate-spin" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#9B87FF] mr-1" />
                         ) : (
-                          <Languages className="h-3.5 w-3.5 text-slate-400" />
+                          <Languages className="h-3.5 w-3.5 text-slate-500" />
                         )}
                         Translate Report
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white border border-neutral-200 text-slate-900 rounded-none">
-                      <DropdownMenuItem onClick={() => handleTranslate("en")} className="focus:bg-neutral-50 text-[11px] cursor-pointer rounded-none">English (Default)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleTranslate("hi-IN")} className="focus:bg-neutral-50 text-[11px] cursor-pointer rounded-none">Hindi (हिंदी)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleTranslate("ta-IN")} className="focus:bg-neutral-50 text-[11px] cursor-pointer rounded-none">Tamil (தமிழ்)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleTranslate("te-IN")} className="focus:bg-slate-50 text-[11px] cursor-pointer rounded-none">Telugu (తెలుగు)</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleTranslate("bn-IN")} className="focus:bg-neutral-50 text-[11px] cursor-pointer rounded-none">Bengali (বাংলা)</DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="bg-[#101010] border border-white/5 text-white rounded-xl shadow-md p-1">
+                      <DropdownMenuItem onClick={() => handleTranslate("en")} className="focus:bg-[#151515] focus:text-white text-[11px] cursor-pointer rounded-lg">English (Default)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleTranslate("hi-IN")} className="focus:bg-[#151515] focus:text-white text-[11px] cursor-pointer rounded-lg">Hindi (हिंदी)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleTranslate("ta-IN")} className="focus:bg-[#151515] focus:text-white text-[11px] cursor-pointer rounded-lg">Tamil (தமிழ்)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleTranslate("te-IN")} className="focus:bg-[#151515] focus:text-white text-[11px] cursor-pointer rounded-lg">Telugu (తెలుగు)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleTranslate("bn-IN")} className="focus:bg-[#151515] focus:text-white text-[11px] cursor-pointer rounded-lg">Bengali (বাংলা)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {/* Share Link */}
                   <button
                     onClick={handleShare}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white col-span-2"
+                    className="flex items-center justify-center gap-1.5 py-2 px-2 border border-white/5 hover:bg-[#151515] text-[10px] font-semibold text-slate-300 transition-all rounded-lg bg-[#151515]/50 hover:text-white col-span-2"
                   >
-                    <Share2 className="h-3.5 w-3.5 text-slate-400" />
+                    <Share2 className="h-3.5 w-3.5 text-slate-500" />
                     Share Brief
                   </button>
                 </div>
@@ -1231,25 +1231,25 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
           {/* Search Statistics */}
           {stats && (
-            <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none text-xs">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+            <div className="border border-white/5 bg-[#101010] p-4 space-y-4 rounded-xl text-xs shadow-3xs">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
                 <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Statistics</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-none">
-                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Total Queries</span>
-                  <span className="font-mono text-sm text-slate-800 font-bold">{stats.total_queries || 0}</span>
+              <div className="grid grid-cols-2 gap-2 text-xs font-sans">
+                <div className="p-3 bg-[#151515] border border-white/5 rounded-lg">
+                  <span className="text-[9px] text-slate-500 block font-mono uppercase font-bold">Total Queries</span>
+                  <span className="font-mono text-sm text-white font-bold">{stats.total_queries || 0}</span>
                 </div>
-                <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-none">
-                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Avg Confidence</span>
-                  <span className="font-mono text-sm text-slate-800 font-bold">
+                <div className="p-3 bg-[#151515] border border-white/5 rounded-lg">
+                  <span className="text-[9px] text-slate-500 block font-mono uppercase font-bold">Avg Confidence</span>
+                  <span className="font-mono text-sm text-white font-bold">
                     {stats.average_confidence ? `${Math.round(stats.average_confidence * 100)}%` : "0%"}
                   </span>
                 </div>
-                <div className="p-3 bg-neutral-50 border border-neutral-200 col-span-2 rounded-none">
-                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Avg Ingestion Latency</span>
-                  <span className="font-mono text-xs text-slate-800 font-bold mt-0.5 block">{stats.average_execution_time_sec || 0} seconds</span>
+                <div className="p-3 bg-[#151515] border border-white/5 col-span-2 rounded-lg">
+                  <span className="text-[9px] text-slate-500 block font-mono uppercase font-bold">Avg Ingestion Latency</span>
+                  <span className="font-mono text-xs text-white font-bold mt-0.5 block">{stats.average_execution_time_sec || 0} seconds</span>
                 </div>
               </div>
             </div>
