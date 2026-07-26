@@ -17,6 +17,7 @@ from app.agents.drafting_agent.reviewer import DocumentReviewer
 from app.agents.drafting_agent.redline import RedlineEngine
 from app.agents.drafting_agent.version import VersionManager
 from app.agents.drafting_agent.quality import QualityChecker
+from app.core.config import settings
 
 
 class DraftingAgent(BaseAgent):
@@ -36,7 +37,7 @@ class DraftingAgent(BaseAgent):
         self.version_manager = VersionManager()
         self.quality_checker = QualityChecker()
         
-        self.history_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/drafting_history.json")
+        self.history_file = settings.BASE_DIR / "data" / "drafting_history.json"
         self.collection_name = "drafting_history"
 
     @property

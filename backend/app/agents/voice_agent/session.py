@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from loguru import logger
 from app.database.firestore import get_firestore_client
+from app.core.config import settings
 
 
 class ConversationManager:
@@ -35,7 +36,7 @@ class VoiceSessionManager:
     Manages multi-session lifecycle, recovery, status, and state persistence.
     """
     def __init__(self, data_dir: Path | None = None) -> None:
-        self.data_dir = data_dir or Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/voice_sessions")
+        self.data_dir = data_dir or settings.BASE_DIR / "data" / "voice_sessions"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.active_sessions: Dict[str, Dict[str, Any]] = {}
         self.collection_name = "voice_sessions"

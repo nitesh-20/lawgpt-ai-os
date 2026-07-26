@@ -5,13 +5,15 @@ from pathlib import Path
 from typing import Any
 from loguru import logger
 
+from app.core.config import settings
+
 
 class ManifestLoader:
     """
     Loads document ingestion parameters from the knowledge manifest.
     """
     @staticmethod
-    def load(manifest_path: str = "/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/knowledge_manifest.json") -> list[dict[str, Any]]:
+    def load(manifest_path: str = str(settings.BASE_DIR / "data" / "knowledge_manifest.json")) -> list[dict[str, Any]]:
         path = Path(manifest_path)
         if not path.exists():
             logger.warning(f"Manifest file not found: {manifest_path}")
@@ -29,7 +31,7 @@ class MetadataLoader:
     Loads legal metadata attributes from the metadata registry.
     """
     @staticmethod
-    def load(metadata_path: str = "/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/document_metadata.json") -> list[dict[str, Any]]:
+    def load(metadata_path: str = str(settings.BASE_DIR / "data" / "document_metadata.json")) -> list[dict[str, Any]]:
         path = Path(metadata_path)
         if not path.exists():
             logger.warning(f"Metadata registry not found: {metadata_path}")
@@ -47,8 +49,8 @@ class ValidationService:
     Validates document eligibility before pipeline indexing.
     """
     def __init__(self, manifest_path: str = None, metadata_path: str = None) -> None:
-        self.manifest_path = manifest_path or "/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/knowledge_manifest.json"
-        self.metadata_path = metadata_path or "/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/document_metadata.json"
+        self.manifest_path = manifest_path or str(settings.BASE_DIR / "data" / "knowledge_manifest.json")
+        self.metadata_path = metadata_path or str(settings.BASE_DIR / "data" / "document_metadata.json")
 
     def calculate_sha256(self, file_path: Path) -> str:
         hash_sha = hashlib.sha256()
@@ -80,7 +82,7 @@ class ValidationService:
 
         # 4. Check physical existence
         rel_path = manifest_item["path"]
-        abs_path = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os") / rel_path
+        abs_path = settings.BASE_DIR.parent / rel_path
         if not abs_path.exists():
             return {"valid": False, "reason": f"File does not exist physically at path: {rel_path}"}
 

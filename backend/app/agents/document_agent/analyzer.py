@@ -51,7 +51,7 @@ class DocumentAnalyzer:
         self.timeline_extractor = TimelineExtractor()
         self.comparison_engine = ComparisonEngine()
 
-        self.analysis_store_path = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/local_analysis_store.json")
+        self.analysis_store_path = settings.BASE_DIR / "data" / "local_analysis_store.json"
         self.collection_name = "document_analyses"
 
     def _get_firestore_client(self):
@@ -180,7 +180,7 @@ class DocumentAnalyzer:
                         text = await self.pdf_service.extract_text(file_path)
                 else:
                     # Save to temp file to parse via pdf_service fallback hierarchy
-                    temp_dir = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/temp")
+                    temp_dir = settings.BASE_DIR / "temp"
                     temp_dir.mkdir(exist_ok=True)
                     temp_file = temp_dir / f"{doc_id}.pdf"
                     with open(temp_file, "wb") as f:
@@ -330,7 +330,7 @@ class DocumentAnalyzer:
                 name_1 = "document1.txt"
             ext1 = name_1.split(".")[-1].lower()
             if ext1 == "pdf":
-                temp_dir = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/temp")
+                temp_dir = settings.BASE_DIR / "temp"
                 temp_dir.mkdir(exist_ok=True)
                 temp_file = temp_dir / f"compare_1_{int(time.time())}.pdf"
                 with open(temp_file, "wb") as f:
@@ -350,7 +350,7 @@ class DocumentAnalyzer:
                 name_2 = "document2.txt"
             ext2 = name_2.split(".")[-1].lower()
             if ext2 == "pdf":
-                temp_dir = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/temp")
+                temp_dir = settings.BASE_DIR / "temp"
                 temp_dir.mkdir(exist_ok=True)
                 temp_file = temp_dir / f"compare_2_{int(time.time())}.pdf"
                 with open(temp_file, "wb") as f:

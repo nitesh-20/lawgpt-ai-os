@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MorphPanel } from "@/components/ui/ai-input";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
@@ -75,13 +76,16 @@ const Header = ({ isOnline = true, collapsed = false }: HeaderProps) => {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Online/Offline Status Indicator */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_#22c55e]' : 'bg-destructive'}`} />
-            <span className="text-slate-450 font-mono text-2xs uppercase tracking-wider font-bold">
-              {isOnline ? "Sync Active" : "Offline Mode"}
-            </span>
-          </div>
+          {!isOnline && (
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+              <span className="text-slate-450 font-mono text-2xs uppercase tracking-wider font-bold">
+                Offline Mode
+              </span>
+            </div>
+          )}
+
+          {isOnline && <MorphPanel />}
 
           {/* Notifications */}
           <DropdownMenu>

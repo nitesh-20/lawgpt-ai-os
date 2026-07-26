@@ -9,6 +9,7 @@ from loguru import logger
 from app.agents.base import BaseAgent
 from app.agents.compliance_agent.engine import ComplianceEngine
 from app.database.firestore import get_firestore_client
+from app.core.config import settings
 
 
 class ComplianceAgent(BaseAgent):
@@ -20,7 +21,7 @@ class ComplianceAgent(BaseAgent):
     def __init__(self) -> None:
         self._initialized = False
         self.engine: ComplianceEngine | None = None
-        self.history_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/compliance_history.json")
+        self.history_file = settings.BASE_DIR / "data" / "compliance_history.json"
         self.collection_name = "compliance_history"
 
     @property

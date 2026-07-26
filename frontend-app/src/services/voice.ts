@@ -55,6 +55,39 @@ export async function translateText(text: string, targetLanguageCode: string): P
   throw new Error("Failed to translate text");
 }
 
+export interface VoiceChatResult {
+  transcript: string;
+  detected_language: string;
+  response_text: string;
+  response_audio: string;
+  citations: any[];
+  context: any[];
+  metrics: Record<string, any>;
+}
+
+/**
+ * Full voice-conversation turn: uploads recorded audio, transcribes it (Sarvam Saaras v3,
+ * with local fallback), routes the query through the orchestrator, translates back to the
+ * spoken language if needed, and returns synthesized speech (Sarvam Bulbul v3) for playback.
+ */
+export async function voiceChat(
+  audioBlob: Blob,
+  sessionId: string = "default_voice_session",
+  languageCode?: string
+): Promise<VoiceChatResult> {
+  const formData = new FormData();
+  formData.append("file", audioBlob, "voice-query.wav");
+  formData.append("session_id", sessionId);
+  if (languageCode) {
+    formData.append("language_code", languageCode);
+  }
+  const res = await apiClient.postMultipart("/voice/chat", formData);
+  if (res && res.status === "success" && res.data) {
+    return res.data as VoiceChatResult;
+  }
+  throw new Error("Failed to complete voice chat turn");
+}
+
 export async function getVoiceSessionHistory(sessionId: string): Promise<VoiceSession> {
   const res = await apiClient.get(`/voice/session/${sessionId}`);
   if (res && res.status === "success" && res.data) {

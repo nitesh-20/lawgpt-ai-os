@@ -11,6 +11,7 @@ from app.services.pdf.validator import ValidationService, ManifestLoader, Metada
 from app.services.rag.chunker import ChunkingService
 from app.services.embeddings.embeddings import EmbeddingService
 from app.services.rag.vector_store import get_vector_store
+from app.core.config import settings
 
 
 class KnowledgeIndexer:
@@ -24,7 +25,7 @@ class KnowledgeIndexer:
         self.chunker = ChunkingService()
         self.embedding_service = EmbeddingService()
         self.vector_store = get_vector_store()
-        self.status_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/indexing_status.json")
+        self.status_file = settings.BASE_DIR / "data" / "indexing_status.json"
         self._init_status()
 
     def _init_status(self) -> None:

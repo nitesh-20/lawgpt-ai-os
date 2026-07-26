@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from app.agents.compliance_agent.compliance_agent import ComplianceAgent
 from app.database.firestore import get_firestore_client
+from app.core.config import settings
 
 router = APIRouter(prefix="/compliance")
 compliance_agent = ComplianceAgent()
@@ -130,7 +131,7 @@ async def list_compliance_history() -> list[dict[str, Any]]:
             pass
 
     # 2. Local Fallback
-    local_path = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/compliance_history.json")
+    local_path = settings.BASE_DIR / "data" / "compliance_history.json"
     if local_path.exists():
         try:
             with open(local_path, "r") as f:
