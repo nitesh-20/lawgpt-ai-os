@@ -1,26 +1,11 @@
 import { useEffect, useState } from "react";
-import { 
-  Bot, 
-  Play, 
-  Cpu, 
-  CheckCircle, 
-  Clock, 
-  BarChart3, 
-  HelpCircle, 
-  ShieldAlert, 
-  Loader2,
-  Network,
-  Activity,
-  ArrowRight,
-  Workflow
-} from "lucide-react";
+import { Bot, Play, Cpu, CheckCircle, Clock, BarChart3, HelpCircle, ShieldAlert, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { listAgents } from "@/services/agents";
+import { listAgents, runAgentExecution } from "@/services/agents";
 import { apiClient } from "@/utils/apiClient";
 import type { Agent, AgentStatus, ExecutionStep } from "@/types/agents";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
 
 const STEP_DELAY_MS = 550;
 
@@ -125,171 +110,137 @@ const AgentDashboard = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
-      
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
+    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <Cpu className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
+            <div className="w-9 h-9 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Cpu className="h-4.5 w-4.5 text-primary" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Multi-Agent Console</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900">AI Agents</h1>
           </div>
           <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
-            Monitor autonomous orchestrator handshakes, telemetry streams, and response latencies
+            Multi-agent execution tracking and sub-agent orchestration
           </p>
         </div>
-
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] rounded uppercase font-bold py-1.5 px-3">
-          Agent Mesh: Active
-        </Badge>
       </div>
 
-      {/* Main Grid: Query planner & graphs vs Registry metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-start">
-        
-        {/* LEFT WORKSPACE: Query inputs, parallel sequence graph */}
+      {/* Grid: Main Query Planner vs Central Health Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
         <div className="space-y-6">
-          <div className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm space-y-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[180px] h-[180px] bg-primary/5 rounded-full blur-[50px] pointer-events-none" />
-            
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-              <span className="text-[10px] font-mono text-emerald-600 uppercase font-bold">Query Planner Telemetry</span>
-            </div>
-
+          {/* Query input panel */}
+          <div className="glass-card p-6 space-y-4">
+            <span className="text-[10px] font-mono text-primary uppercase">Query Planner Input</span>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Describe your research/compliance target to orchestrate..."
+                placeholder="Describe what you need the agents to plan or execute..."
                 disabled={isRunning}
-                className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-3.5 py-2 text-xs text-slate-800 placeholder:text-slate-400 rounded-lg"
+                className="input-premium flex-1 text-xs"
               />
               <div className="flex gap-2 shrink-0">
-                <Button onClick={handleCreatePlanOnly} disabled={isRunning || !query.trim()} variant="outline" className="border-neutral-200 h-9 font-mono text-[10px] uppercase font-bold">
+                <Button onClick={handleCreatePlanOnly} disabled={isRunning || !query.trim()} className="btn-secondary text-xs">
                   Create Plan
                 </Button>
-                <Button onClick={runExecution} disabled={isRunning || !query.trim()} className="btn-primary h-9 font-mono text-[10px] uppercase font-bold px-4">
-                  <Play className="h-3 w-3 mr-1 shrink-0" />
-                  Execute Mesh
+                <Button onClick={runExecution} disabled={isRunning || !query.trim()} className="btn-primary text-xs">
+                  <Play className="h-3 w-3 mr-1" />
+                  Execute
                 </Button>
               </div>
             </div>
 
-            {/* Generated intent mappings details */}
-            <AnimatePresence>
-              {planTopology && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-neutral-50/50 border border-neutral-200/40 rounded-xl text-xs space-y-2 mt-4"
-                >
-                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 font-bold uppercase">
-                    <span>Generated Topology Map</span>
-                    <span className="text-emerald-600">Formulated</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Parallelizable:</span>
-                      <span className="font-semibold text-slate-700">{planTopology.parallelizable ? "YES" : "NO"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Detected Intents:</span>
-                      <span className="font-semibold text-slate-700">{planTopology.intents_detected?.join(", ") || "General Inquiry"}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            {/* Plan Topology details */}
+            {planTopology && (
+              <div className="p-4 bg-neutral-50 border border-border rounded text-2xs space-y-2 mt-4">
+                <p className="font-semibold text-neutral-800 font-mono text-[9px] uppercase text-primary">Generated Topology Map:</p>
+                <p><span className="font-semibold">Parallelizable Steps:</span> {planTopology.parallelizable ? "YES" : "NO"}</p>
+                <p><span className="font-semibold">Intents Classified:</span> {planTopology.intents_detected?.join(", ") || "General query"}</p>
+              </div>
+            )}
 
-          {/* ANIMATED EXECUTION SEQUENCE NODES */}
-          <AnimatePresence>
+            {/* Steps log */}
             {steps.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm space-y-4"
-              >
-                <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                  <Workflow className="h-4.5 w-4.5 text-emerald-600" />
-                  <span className="text-[10px] font-mono text-slate-805 font-bold uppercase">Sequence Execution Graph</span>
-                </div>
-
-                <div className="space-y-3">
+              <div className="space-y-3 pt-4 border-t border-border">
+                <span className="text-[9px] font-mono text-neutral-400 uppercase">Execution Sequence Nodes:</span>
+                <div className="space-y-2">
                   {steps.map((step, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3.5 bg-neutral-50/50 border border-neutral-200/40 rounded-xl text-xs hover:scale-[1.01] transition-transform shadow-3xs">
-                      <div className="flex items-center gap-3">
-                        {step.status === "done" && <CheckCircle className="h-4.5 w-4.5 text-emerald-600 shrink-0" />}
-                        {step.status === "running" && <Loader2 className="h-4.5 w-4.5 text-emerald-600 animate-spin shrink-0" />}
-                        {step.status === "idle" && <Clock className="h-4.5 w-4.5 text-slate-400 shrink-0" />}
-                        <span className="font-bold text-slate-800">{step.label}</span>
+                    <div key={idx} className="flex items-center justify-between p-3 rounded bg-neutral-50 border border-border text-2xs">
+                      <div className="flex items-center gap-2">
+                        {step.status === "done" && <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />}
+                        {step.status === "running" && <Loader2 className="h-4 w-4 text-primary animate-spin shrink-0" />}
+                        {step.status === "idle" && <Clock className="h-4 w-4 text-neutral-400 shrink-0" />}
+                        <span className="font-semibold text-neutral-800">{step.label}</span>
                       </div>
-                      <span className="font-mono text-[10px] text-slate-400 uppercase font-bold">{step.detail}</span>
+                      <span className="font-mono text-3xs text-neutral-400 uppercase">{step.detail}</span>
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
+
+          {/* Metrics panel */}
+          <div className="glass-card p-6 space-y-4">
+            <div className="flex items-center gap-2 border-b border-border pb-3">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              <h2 className="text-xs font-mono uppercase text-neutral-800 tracking-wider">Operational Metrics Log</h2>
+            </div>
+            {orchestratorMetrics.length > 0 ? (
+              <div className="space-y-3 text-xs">
+                {orchestratorMetrics.map((met, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1.5 border-b border-border/50">
+                    <span className="font-semibold text-neutral-700">{met.metric_name || "Task Performance"}</span>
+                    <span className="font-mono text-primary font-bold">{met.value ? `${met.value}ms` : "N/A"}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-xs text-neutral-400">No performance metrics recorded yet.</div>
+            )}
+          </div>
         </div>
 
-        {/* RIGHT PANEL: Subsystem metrics, coordinator handshakes */}
+        {/* Right side: Coordinator Health */}
         <div className="space-y-6">
-          <div className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm space-y-6">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Orchestration Ticker Status</span>
-            
+          <div className="bg-white border border-neutral-200 p-5 rounded-2xl shadow-3xs space-y-4">
+            <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">Coordinator Status</span>
+            <h3 className="text-xs font-semibold text-neutral-805 uppercase font-mono tracking-wider border-b border-neutral-100 pb-2.5">System Orchestration</h3>
+
             {healthStatus ? (
-              <div className="space-y-4 text-xs font-sans border-b border-neutral-100 pb-4">
+              <div className="space-y-4 text-xs font-sans">
                 <div>
-                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Coordinator Health:</span>
+                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Coordinator State:</span>
                   <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-mono uppercase mt-1.5 font-bold py-0.5 px-2">
                     {healthStatus.status || "Operational"}
                   </Badge>
                 </div>
                 <div>
-                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Connected Sub-Agents:</span>
-                  <span className="font-semibold text-slate-800 mt-1 block">{healthStatus.connected_agents?.join(", ") || "All active specialists linked"}</span>
+                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Sub-agent Handshakes:</span>
+                  <span className="font-semibold text-slate-805 mt-1 block">{healthStatus.connected_agents?.join(", ") || "All connected"}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Orchestrator Confidence Index:</span>
-                  <span className="font-semibold text-slate-800 mt-1 block">{healthStatus.model_confidence || "High (96.5%)"}</span>
+                  <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Confidence Level:</span>
+                  <span className="font-semibold text-slate-850 mt-1 block">{healthStatus.model_confidence || "High (96.5%)"}</span>
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-slate-400 py-4 text-center font-serif">Awaiting coordinator telemetry link...</div>
+              <div className="text-xs text-neutral-500 py-4 text-center font-serif">Failed to fetch orchestration status.</div>
             )}
-
-            {/* Metrics logs */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-emerald-600" />
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">Subtask Response Buffers</span>
-              </div>
-              
-              <div className="space-y-2 text-xs font-semibold">
-                {orchestratorMetrics.map((met, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-2 border-b border-neutral-100">
-                    <span className="text-slate-700">{met.metric_name || "Task Latency"}</span>
-                    <span className="font-mono text-emerald-600 font-bold">{met.value ? `${met.value}ms` : "N/A"}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* Specialists registry lists */}
+          {/* Operational Agents Registry */}
           <div className="space-y-3">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Connected AI Specialists</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Specialist Agents</span>
             <div className="space-y-2.5">
               {agents.map((agent) => (
-                <div key={agent.key} className="p-3.5 bg-white border border-neutral-200 rounded-xl flex justify-between items-center text-xs shadow-3xs hover:border-emerald-650 transition-colors">
+                <div key={agent.key} className="p-3.5 bg-white border border-neutral-200 rounded-xl flex justify-between items-center text-xs shadow-3xs hover:border-emerald-650/40 transition-colors">
                   <div>
                     <p className="font-bold text-slate-800 font-sans tracking-tight">{agent.name}</p>
                     <p className="text-[10px] text-slate-450 truncate max-w-[180px] font-serif leading-none pt-1">{agent.activity}</p>
                   </div>
-                  <Badge variant="outline" className="text-[9px] font-mono uppercase bg-neutral-50 text-slate-500 font-bold border-neutral-250 py-0.5">
+                  <Badge variant="outline" className="text-[9px] font-mono uppercase bg-neutral-50 text-slate-500 border-neutral-250 py-0.5 rounded">
                     {agent.status}
                   </Badge>
                 </div>
@@ -297,7 +248,6 @@ const AgentDashboard = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

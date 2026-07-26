@@ -1,20 +1,5 @@
 import { useEffect, useState } from "react";
-import { 
-  Shield, 
-  TriangleAlert, 
-  ShieldCheck, 
-  Lightbulb, 
-  History, 
-  Download, 
-  Play, 
-  FileText, 
-  CheckCircle2, 
-  Loader2,
-  FileDown,
-  ArrowRight,
-  TrendingUp,
-  Volume2
-} from "lucide-react";
+import { Shield, TriangleAlert, ShieldCheck, Lightbulb, History, Download, Play, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ComplianceChecker = () => {
   const [snapshot, setSnapshot] = useState<ComplianceSnapshot>({
@@ -137,225 +121,181 @@ const ComplianceChecker = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
-      
-      {/* Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
+    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-6">
+      {/* Title */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-border">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <Shield className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
+            <div className="w-9 h-9 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Shield className="h-4.5 w-4.5 text-primary" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Compliance Control Cabin</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Compliance Audit</h1>
           </div>
           <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
-            Audit portfolio risks, verify regulatory bounds, and generate downloadable reports
+            Portfolio posture across {snapshot.documentsReviewed || documents.length} reviewed files
           </p>
         </div>
-
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] rounded uppercase font-bold py-1.5 px-3">
-          Index active across {snapshot.documentsReviewed || documents.length} files
-        </Badge>
       </div>
 
-      {/* Hero Overview metrics */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {[
-          { title: "Compliance Posture Index", value: `${snapshot.complianceScore || 100}%`, icon: ShieldCheck, color: "text-emerald-600", desc: "Average posture across active files" },
-          { title: "Portfolio Risk Factor", value: `${snapshot.riskScore || 0}%`, icon: TriangleAlert, color: "text-amber-500", desc: "Unmitigated contract vulnerabilities" },
-          { title: "Vault Files Audited", value: snapshot.documentsReviewed || documents.length, icon: FileText, color: "text-slate-700", desc: "Total vectorized target references" }
+          { title: "Compliance Index", value: `${snapshot.complianceScore || 100}%`, icon: ShieldCheck, color: "text-emerald-600" },
+          { title: "Portfolio Risk Factor", value: `${snapshot.riskScore || 0}%`, icon: TriangleAlert, color: "text-red-500" },
+          { title: "Indexed Documents", value: snapshot.documentsReviewed || documents.length, icon: Shield, color: "text-primary" }
         ].map((item, idx) => (
-          <div key={idx} className="bg-white border border-neutral-200/60 p-5 rounded-xl shadow-3xs flex justify-between items-center hover:scale-[1.01] hover:shadow-2xs transition-all duration-200">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-bold">{item.title}</span>
-              <p className="text-2xl font-bold text-slate-900 font-sans tracking-tight">{item.value}</p>
-              <p className="text-[10px] text-slate-400 font-serif leading-none pt-1">{item.desc}</p>
+          <div key={idx} className="glass-card p-5 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">{item.title}</span>
+              <p className={`text-xl font-bold mt-1 text-neutral-900`}>{item.value}</p>
             </div>
-            <div className="w-10 h-10 rounded bg-neutral-50 border border-neutral-200/50 flex items-center justify-center shrink-0 ml-4">
-              <item.icon className={`h-5 w-5 ${item.color}`} />
+            <div className="w-8 h-8 rounded bg-neutral-50 flex items-center justify-center border border-border">
+              <item.icon className={`h-4.5 w-4.5 ${item.color}`} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Main Split Cockpit layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-start">
-        
-        {/* LEFT WORKSPACE: Trigger audits & detailed findings */}
-        <div className="space-y-6">
-          <div className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[180px] h-[180px] bg-primary/5 rounded-full blur-[50px] pointer-events-none" />
-            
-            <div className="flex items-center gap-2 border-b border-neutral-100 pb-3 mb-5">
-              <span className="text-[10px] font-mono text-emerald-600 uppercase font-bold">Trigger In-Depth Audit</span>
+      {/* Audit Planner vs Recharts metrics */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
+        {/* Compliance checker form */}
+        <div className="glass-card p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <span className="text-[10px] font-mono text-primary uppercase">Trigger Compliance Check</span>
+          </div>
+
+          <div className="space-y-4 text-xs">
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-mono text-neutral-500 uppercase">Operational workflow query to audit:</label>
+              <textarea
+                value={auditQuery}
+                onChange={(e) => setAuditQuery(e.target.value)}
+                placeholder="e.g. Verify if sharing employee identifiers violates the personal privacy norms under the DPDP Act..."
+                className="w-full input-premium min-h-[70px] text-xs py-2"
+              />
             </div>
 
-            <div className="space-y-4 text-xs font-sans">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono text-slate-400 uppercase font-bold">Operational query or checklist scope:</label>
-                <textarea
-                  value={auditQuery}
-                  onChange={(e) => setAuditQuery(e.target.value)}
-                  placeholder="Describe your compliance check (e.g. Verify if sharing employee identifiers violates the personal privacy norms under the DPDP Act...)"
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-900 placeholder:text-neutral-400 rounded-lg resize-none leading-relaxed min-h-[90px]"
+                <label className="text-[9px] font-mono text-neutral-500 uppercase">Audit Target File:</label>
+                <select
+                  value={auditDocId}
+                  onChange={(e) => setAuditDocId(e.target.value)}
+                  className="w-full input-premium text-xs"
+                >
+                  <option value="">Choose document context...</option>
+                  {documents.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-mono text-neutral-500 uppercase">Regulation IDs (Comma Separated):</label>
+                <input
+                  type="text"
+                  value={auditRegs}
+                  onChange={(e) => setAuditRegs(e.target.value)}
+                  placeholder="e.g. sebi_regulations, dpdp"
+                  className="w-full input-premium text-xs"
                 />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono text-slate-400 uppercase font-bold">Audit Target Document Context:</label>
-                  <select
-                    value={auditDocId}
-                    onChange={(e) => setAuditDocId(e.target.value)}
-                    className="w-full bg-white border border-neutral-200 text-xs px-3 py-2 focus:outline-none focus:border-emerald-600 rounded cursor-pointer"
-                  >
-                    <option value="">Select target file from vault...</option>
-                    {documents.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono text-slate-400 uppercase font-bold">Regulation IDs (Comma Separated):</label>
-                  <input
-                    type="text"
-                    value={auditRegs}
-                    onChange={(e) => setAuditRegs(e.target.value)}
-                    placeholder="e.g. sebi_regulations, dpdp"
-                    className="w-full bg-white border border-neutral-200 text-xs px-3 py-2 focus:outline-none focus:border-emerald-600 rounded"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                <Button 
-                  onClick={handleAudit} 
-                  disabled={isAuditing} 
-                  className="btn-primary flex-1 py-4 text-xs font-mono font-bold uppercase tracking-wider h-10"
-                >
-                  {isAuditing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Scanning regulations...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-3.5 w-3.5 mr-2 shrink-0" />
-                      Execute Compliance Check
-                    </>
-                  )}
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleAudit} disabled={isAuditing} className="flex-1 btn-primary">
+                {isAuditing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Play className="h-3.5 w-3.5 mr-2" />}
+                Run Live Compliance Audit
+              </Button>
+              {auditResult && (
+                <Button onClick={handleDownloadMarkdownReport} className="btn-secondary">
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Report MD
                 </Button>
-                
-                {auditResult && (
-                  <Button onClick={handleDownloadMarkdownReport} variant="outline" className="border-neutral-200 bg-white hover:bg-neutral-50 font-mono text-xs font-bold uppercase tracking-wider h-10 px-5 text-slate-700">
-                    <Download className="h-4 w-4 mr-1.5 text-slate-400 shrink-0" />
-                    Report Markdown
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* DYNAMIC AUDIT RESULTS HUD PANEL */}
-          <AnimatePresence>
-            {auditResult && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm space-y-4"
-              >
-                <div className="flex justify-between items-center border-b border-neutral-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600" />
-                    <span className="text-[10px] font-mono text-slate-800 font-bold uppercase">Audit Summary Output</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[9px] font-mono bg-neutral-100 text-slate-500 border border-neutral-200 px-2 py-0.5 rounded-sm">
-                    <Volume2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    <AudioPlaybackButton text={auditResult.executive_summary || auditResult.message || ""} />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="p-4 bg-neutral-50/50 border border-neutral-200/40 rounded-xl space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-450">
-                      <span>AUDIT RESULT ID: {auditResult.id || "CURRENT_SCAN"}</span>
-                      <span className="text-emerald-600 font-bold">SUCCESS</span>
-                    </div>
-                    <p className="text-xs text-slate-700 font-serif leading-relaxed whitespace-pre-line">
-                      {auditResult.executive_summary || auditResult.message || "Audit completed successfully."}
-                    </p>
-                  </div>
-
-                  {/* Violation gaps */}
-                  {auditResult.compliance_gaps && auditResult.compliance_gaps.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-[9px] font-mono text-red-500 uppercase tracking-wider block font-bold">Identified Vulnerabilities:</span>
-                      <div className="space-y-2.5">
-                        {auditResult.compliance_gaps.map((gap: any, idx: number) => (
-                          <div key={idx} className="p-3.5 bg-red-50/40 border border-red-150 rounded-xl text-xs text-red-950 font-sans space-y-1">
-                            <div className="flex justify-between items-center text-[10px] font-mono text-red-600 font-bold">
-                              <span>RULE EXCEPTION: {gap.rule_id || "Gap detected"}</span>
-                              <span>SECTOR: {gap.regulatory_section || "General"}</span>
-                            </div>
-                            <p className="leading-relaxed font-serif text-slate-800">{gap.findings}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* RIGHT PANEL: Compliance by Category Graph & Posture scores */}
-        <div className="space-y-6">
-          <div className="bg-white border border-neutral-200/80 p-6 rounded-2xl shadow-sm space-y-6">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Posture By Code Category</span>
-            
-            <div className="h-60 w-full font-mono">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={snapshot.categoryScores} margin={{ top: 10, right: 10, left: -32, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.03)" />
-                  <XAxis dataKey="category" stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} />
-                  <YAxis domain={[0, 100]} stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{ fill: "rgba(0,0,0,0.01)" }} contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '9px' }} />
-                  <Bar dataKey="score" fill="#059669" radius={[3, 3, 0, 0]} barSize={16} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Audit History Logs Ticker */}
-          <div className="space-y-3">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Historical Audit Logs</span>
-            <div className="space-y-3.5 max-h-[350px] overflow-y-auto pr-1">
-              {historyLogs.length > 0 ? (
-                historyLogs.map((log, idx) => (
-                  <div key={idx} className="bg-white border border-neutral-200 p-4 rounded-xl shadow-3xs hover:border-emerald-650 transition-colors space-y-2 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-center text-[9px] font-mono text-slate-400 mb-1.5">
-                        <span>POSTURE LOG</span>
-                        <span>{log.timestamp ? new Date(log.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "Just Now"}</span>
-                      </div>
-                      <p className="font-semibold text-2xs text-slate-805 leading-relaxed font-serif line-clamp-3">"{log.executive_summary || "Audit log record"}"</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-2 border-t border-neutral-100/60 mt-1">
-                      <Badge variant="outline" className="text-[9px] font-mono bg-emerald-50 text-emerald-700 border-emerald-200 uppercase font-bold py-0.5">
-                        SCORE: {log.metrics?.overall_compliance_score || 100}%
-                      </Badge>
-                      <span className="text-[9px] font-mono text-slate-450 ml-auto uppercase font-bold">RISK: {log.metrics?.risk_level || "LOW"}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-slate-400 text-3xs border border-dashed border-neutral-200 bg-white">No historical audit logs compiled.</div>
               )}
             </div>
           </div>
+
+          {auditResult && (
+            <div className="pt-4 border-t border-border space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-mono text-primary uppercase">Audit Results:</span>
+                <AudioPlaybackButton text={auditResult.executive_summary || auditResult.message || "Audit parsed successfully."} />
+              </div>
+              <div className="p-3.5 bg-neutral-50 border border-border rounded text-2xs space-y-2 max-h-[250px] overflow-y-auto">
+                <p className="font-semibold text-neutral-800">Status: {auditResult.status || "Completed"}</p>
+                <p className="leading-relaxed text-neutral-600">{auditResult.executive_summary || auditResult.message || "Audit parsed successfully."}</p>
+
+                {auditResult.compliance_gaps && auditResult.compliance_gaps.map((gap: any, idx: number) => (
+                  <div key={idx} className="p-2.5 bg-red-50 border border-red-100 rounded text-red-900 mt-2">
+                    <p className="font-semibold">{gap.rule_id || "Gap detected"}:</p>
+                    <p className="mt-0.5">{gap.findings}</p>
+                    <p className="mt-1 font-mono text-[9px] text-red-500">Section: {gap.regulatory_section}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Recharts chart */}
+        <div className="glass-card p-6">
+          <h2 className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase mb-6">Compliance By Rule Category</h2>
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={snapshot.categoryScores} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="rgba(0,0,0,0.04)" />
+                <XAxis
+                  dataKey="category"
+                  stroke="#888888"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  stroke="#888888"
+                  fontSize={9}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(0,0,0,0.01)" }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '4px', fontSize: '10px' }}
+                />
+                <Bar dataKey="score" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Audit Logs list */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <History className="h-4 w-4 text-primary" />
+          <h2 className="text-xs font-mono uppercase text-neutral-800 tracking-wider">Audit History Logs</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {historyLogs.length > 0 ? (
+            historyLogs.map((log, idx) => (
+              <div key={idx} className="glass-card p-4 space-y-2">
+                <div className="flex justify-between items-center text-[9px] font-mono text-neutral-400">
+                  <span>SCAN COMPLETED</span>
+                  <span>{log.timestamp ? new Date(log.timestamp).toLocaleString() : "Just Now"}</span>
+                </div>
+                <p className="font-semibold text-xs text-neutral-900 leading-snug line-clamp-2">{log.executive_summary || "Audit log entry"}</p>
+                <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                  <Badge variant="outline" className="text-3xs font-mono bg-emerald-50 text-emerald-600 border-emerald-200">
+                    SCORE: {log.metrics?.overall_compliance_score || 100}%
+                  </Badge>
+                  <span className="text-3xs font-mono text-neutral-400 ml-auto">RISK: {log.metrics?.risk_level || "LOW"}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-2 text-center py-8 text-xs text-neutral-400">No previous audits found. Run an audit to log entries.</div>
+          )}
+        </div>
       </div>
     </div>
   );
