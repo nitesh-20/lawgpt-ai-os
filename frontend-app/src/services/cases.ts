@@ -16,6 +16,12 @@ function mapBackendToFrontend(b: any): Case {
     created_at: b.created_at || new Date().toISOString(),
     updated_at: b.updated_at || new Date().toISOString(),
     hearings: b.hearings || [],
+    priority: b.priority || "medium",
+    assigned_lawyer: b.assigned_lawyer || "Unassigned",
+    documents: b.documents || [],
+    ai_notes: b.ai_notes || "",
+    compliance_status: b.compliance_status || "",
+    recent_activity: b.recent_activity || [],
   };
 }
 

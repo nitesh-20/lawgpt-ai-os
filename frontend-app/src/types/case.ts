@@ -15,6 +15,12 @@ export interface Case {
   filing_date?: string; // Added filing_date property
   jurisdiction?: string; // Added jurisdiction as it seems to be used
   case_type?: string; // Added case_type as it seems to be used
+  priority?: string;
+  assigned_lawyer?: string;
+  documents?: string[];
+  ai_notes?: string;
+  compliance_status?: string;
+  recent_activity?: { date: string; activity: string }[];
 }
 
 export interface Hearing {
