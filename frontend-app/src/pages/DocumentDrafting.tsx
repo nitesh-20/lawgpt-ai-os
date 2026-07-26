@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { VoiceButton } from "@/components/voice/VoiceButton";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 import { GradientCard } from "@/components/ui/gradient-card";
+import { HighlightCard } from "@/components/ui/highlight-card";
 import { 
   generateDraft, 
   reviewDraft, 
@@ -718,52 +719,19 @@ Additional contract clauses to inject: ${additionalClauses}
 
             {/* Visual template cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTemplates.map((tpl) => {
-                const getGradientType = (cat: string) => {
-                  switch (cat) {
-                    case "Confidentiality": return "orange" as const;
-                    case "Employment": return "purple" as const;
-                    case "Corporate": return "gray" as const;
-                    case "Commercial": return "green" as const;
-                    default: return "gray" as const;
-                  }
-                };
-
-                const getBadgeColor = (cat: string) => {
-                  switch (cat) {
-                    case "Confidentiality": return "#F59E0B"; // Amber
-                    case "Employment": return "#8B5CF6"; // Purple
-                    case "Corporate": return "#4B5563"; // Gray
-                    case "Commercial": return "#10B981"; // Green
-                    default: return "#6B7280"; // Slate
-                  }
-                };
-
-                const getOverlayImage = (id: string) => {
-                  const hash = (id.charCodeAt(0) + id.charCodeAt(id.length - 1)) % 4;
-                  switch (hash) {
-                    case 0: return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=320&q=75";
-                    case 1: return "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=320&q=75";
-                    case 2: return "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=320&q=75";
-                    default: return "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=320&q=75";
-                  }
-                };
-
-                return (
-                  <GradientCard
-                    key={tpl.id}
-                    gradient={getGradientType(tpl.category)}
-                    badgeText={tpl.popular ? `${tpl.category} • POPULAR` : tpl.category}
-                    badgeColor={getBadgeColor(tpl.category)}
-                    title={tpl.name}
-                    description={tpl.description}
-                    ctaText={`Draft Template (${tpl.draftTime})`}
-                    ctaHref="#"
-                    imageUrl={getOverlayImage(tpl.id)}
-                    onClick={() => handleSelectTemplate(tpl)}
-                  />
-                );
-              })}
+              {filteredTemplates.map((tpl) => (
+                <HighlightCard
+                  key={tpl.id}
+                  title={tpl.name}
+                  description={[
+                    tpl.description,
+                    `Use Case: ${tpl.useCase}`,
+                    `Latency: ${tpl.draftTime}`
+                  ]}
+                  icon={getTemplateIcon(tpl.category)}
+                  onClick={() => handleSelectTemplate(tpl)}
+                />
+              ))}
             </div>
           </motion.div>
         )}
