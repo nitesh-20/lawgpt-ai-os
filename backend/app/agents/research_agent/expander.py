@@ -59,6 +59,33 @@ class QueryExpander:
         if detected_acts:
             expanded_query += " " + " ".join(detected_acts)
 
+        # Semantic synonym expansions
+        synonym_expansions = [
+            (r"\b(right to speech|freedom of speech|freedom of expression|right to speak|article 19)\b", 
+             "Constitution of India Article 19(1)(a) Freedom of Speech and Expression"),
+            (r"\b(right to life|personal liberty|article 21|right to privacy|privacy right)\b", 
+             "Constitution of India Article 21 Right to Life and Personal Liberty"),
+            (r"\b(right to equality|equality before law|article 14)\b", 
+             "Constitution of India Article 14 Equality Before Law"),
+            (r"\b(insider trading|connected person|upsi|sebi pit)\b", 
+             "SEBI Prohibition of Insider Trading PIT Regulations connected persons UPSI"),
+            (r"\b(fema section 13|compounding|fema penalty|fema compound)\b", 
+             "FEMA Foreign Exchange Management Act Section 13 compounding options penalties RBI"),
+        ]
+        
+        for regex, expansion in synonym_expansions:
+            if re.search(regex, query, re.IGNORECASE):
+                expanded_query += " " + expansion
+                # Extract act or articles if matched
+                if "Constitution of India" in expansion and "Constitution of India" not in detected_acts:
+                    detected_acts.append("Constitution of India")
+                if "19" in expansion and "19" not in detected_articles:
+                    detected_articles.append("19")
+                if "21" in expansion and "21" not in detected_articles:
+                    detected_articles.append("21")
+                if "14" in expansion and "14" not in detected_articles:
+                    detected_articles.append("14")
+
         return {
             "expanded_query": expanded_query.strip(),
             "detected_acts": list(set(detected_acts)),

@@ -49,22 +49,27 @@ class LegalReasoner:
         Synthesizes a response using retrieved chunks. Utilizes Gemini if configured,
         otherwise defaults to the local syntactic reasoner.
         """
-        # Determine relevance and source attribution
-        top_score = ranked_chunks[0].get("score", 0.0) if ranked_chunks else 0.0
-        has_pdf_context = len(ranked_chunks) > 0 and top_score >= 0.50
-        
-        default_source = "✓ PDF Knowledge Base"
-        default_is_grounded = True if has_pdf_context else False
-
         # Print retrieved chunks
         print("\n=== STEP 1: RETRIEVED CHUNKS ===")
         print(f"Total chunks retrieved: {len(ranked_chunks)}")
         for i, chunk in enumerate(ranked_chunks):
             print(f"  Chunk [{i}]: document_id={chunk.get('document_id')}, score={chunk.get('score')}, text_preview={chunk.get('text', '')[:100]}...")
 
+        # Filter chunks by semantic relevance (threshold 0.60)
+        threshold = 0.60
+        highly_relevant_chunks = [c for c in ranked_chunks if c.get("score", 0.0) >= threshold]
+        
+        # Keep only Top 3 highly relevant chunks
+        final_chunks = highly_relevant_chunks[:3]
+        
+        has_pdf_context = len(final_chunks) > 0
+        top_score = final_chunks[0].get("score", 0.0) if has_pdf_context else 0.0
+        
+        default_source = final_chunks[0].get("document_id", "Unknown Document").replace("_", " ").title() if has_pdf_context else "Generated using Gemini General Legal Knowledge"
+
         # Format context for reasoning (limit to top 3 for optimal token limits)
         context_blocks = []
-        for idx, chunk in enumerate(ranked_chunks[:3], 1):
+        for idx, chunk in enumerate(final_chunks, 1):
             doc_id = chunk.get("document_id", "Unknown")
             sec = chunk.get("section", "N/A")
             text = chunk.get("text", "")[:1200] + "..." if len(chunk.get("text", "")) > 1200 else chunk.get("text", "")
@@ -79,11 +84,11 @@ class LegalReasoner:
             "KNOWLEDGE SOURCE MODE RULES:\n"
             "1. If retrieved context is sufficient, use the provided PDF context chunks.\n"
             "2. If retrieved context is insufficient or missing, you MUST answer from general Indian legal knowledge, "
-            "and set 'is_context_grounded' to false and 'source' to 'General Legal Knowledge'.\n\n"
+            "and set 'is_context_grounded' to false and 'source' to 'Generated using Gemini General Legal Knowledge' and set 'executive_summary' to 'No directly matching legal provision was found in the indexed legal database.'.\n\n"
             "Your output JSON object MUST contain exactly these keys:\n"
             "{\n"
             "  \"direct_answer\": \"Concise AI Legal Summary (120-180 words) in professional legal language. Do not dump raw paragraphs.\",\n"
-            "  \"executive_summary\": \"Relevant extract from the source PDF context (exactly 3-8 relevant lines, trimmed, keywords highlighted/preserved). If no PDF context exists, leave this empty.\",\n"
+            "  \"executive_summary\": \"Relevant extract from the source PDF context (exactly 3-8 relevant lines, trimmed, keywords highlighted/preserved). If no PDF context exists, set to 'No directly matching legal provision was found in the indexed legal database.'.\",\n"
             "  \"applicable_law\": [{\"act_name\": \"...\", \"sections\": \"...\"}],\n"
             "  \"legal_analysis\": {\"interpretation\": \"...\", \"implications\": \"...\", \"exceptions\": \"...\"},\n"
             "  \"compliance_requirements\": [\"...\"],\n"
@@ -142,7 +147,7 @@ class LegalReasoner:
 
         # Fallback 1: Local reasoning (RAG context based)
         try:
-            return self._local_reasoning(query, ranked_chunks, citations, has_pdf_context, default_source)
+            return self._local_reasoning(query, final_chunks, citations, has_pdf_context, default_source)
         except Exception as e:
             logger.error(f"Local reasoning failed: {e}. Falling back to clean empty response.")
             return self._recover_text_to_dict("No direct answer text was generated.", query)
@@ -177,7 +182,7 @@ class LegalReasoner:
             
         return {
             "direct_answer": direct_ans,
-            "executive_summary": exec_sum,
+            "executive_summary": exec_sum or "No directly matching legal provision was found in the indexed legal database.",
             "applicable_law": [],
             "legal_analysis": {"interpretation": direct_ans, "implications": "N/A", "exceptions": "N/A"},
             "compliance_requirements": [],
@@ -203,7 +208,7 @@ class LegalReasoner:
         # Format extract to exactly 3-8 lines
         extract_lines = sentences[:5]
         extract_text = ". ".join(extract_lines) + "." if extract_lines else ""
-        summary = "No relevant legal context found in the database." if not extract_text else extract_text
+        summary = "No directly matching legal provision was found in the indexed legal database." if (not extract_text or not has_pdf_context) else extract_text
 
         detailed_explanation = ""
         paragraphs = []
@@ -215,18 +220,18 @@ class LegalReasoner:
             if sec:
                 ref_prefix += f" (Section {sec})"
             paragraphs.append(f"{ref_prefix}: \"{text}\"")
-        detailed_explanation = "\n\n".join(paragraphs) if paragraphs else "No matching indexed document was found."
+        detailed_explanation = "\n\n".join(paragraphs) if (paragraphs and has_pdf_context) else "No matching indexed document was found."
 
         return {
             "direct_answer": detailed_explanation[:300] + "..." if len(detailed_explanation) > 300 else detailed_explanation,
             "executive_summary": summary,
-            "applicable_law": [{"act_name": cit.get("document_name", "N/A"), "sections": cit.get("section", "N/A")} for cit in citations] if citations else [],
+            "applicable_law": [{"act_name": cit.get("document_name", "N/A"), "sections": cit.get("section", "N/A")} for cit in citations] if (citations and has_pdf_context) else [],
             "legal_analysis": {"interpretation": detailed_explanation, "implications": "N/A", "exceptions": "N/A"},
             "compliance_requirements": ["Verify compliance against uploaded acts."],
             "risks": [],
             "recommendations": ["Review source documents carefully."],
             "case_references": [],
-            "citations": [cit.get("citation_text", "") for cit in citations if cit.get("citation_text")],
+            "citations": [cit.get("citation_text", "") for cit in citations if cit.get("citation_text")] if has_pdf_context else [],
             "confidence": "94%",
             "source": default_source,
             "is_context_grounded": has_pdf_context
