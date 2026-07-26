@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Dict, List
+from app.core.config import settings
 
 
 class TemplateManager:
@@ -9,7 +10,7 @@ class TemplateManager:
     Manages loading, retrieval, and storage of legal document templates.
     """
     def __init__(self, templates_dir: Path | None = None) -> None:
-        self.templates_dir = templates_dir or Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/templates")
+        self.templates_dir = templates_dir or settings.BASE_DIR / "data" / "templates"
         self.templates_dir.mkdir(parents=True, exist_ok=True)
         self._initialize_default_templates()
 

@@ -17,6 +17,7 @@ from app.services.sarvam.speech import SpeechToTextManager
 from app.services.sarvam.tts import TextToSpeechManager
 from app.services.sarvam.translate import TranslationManager
 from app.services.sarvam.config import SarvamConfig
+from app.core.config import settings
 class VoiceAgent(BaseAgent):
     """
     Voice Agent coordinates Speech-to-Text transcription, language translation,
@@ -31,7 +32,7 @@ class VoiceAgent(BaseAgent):
         self.session_manager = VoiceSessionManager()
         self.processor = AudioProcessor()
         
-        self.history_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/voice_history.json")
+        self.history_file = settings.BASE_DIR / "data" / "voice_history.json"
         self.collection_name = "voice_history"
 
     @property

@@ -13,6 +13,7 @@ from app.agents.research_agent.ranking import RankingEngine
 from app.agents.research_agent.citations import CitationEngine
 from app.agents.research_agent.reasoner import LegalReasoner
 from app.agents.research_agent.formatter import ResultFormatter
+from app.core.config import settings
 
 
 class ResearchAgent(BaseAgent):
@@ -30,7 +31,7 @@ class ResearchAgent(BaseAgent):
         self.citation_engine = CitationEngine()
         self.reasoner = LegalReasoner()
         self.formatter = ResultFormatter()
-        self.history_file = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/research_history.json")
+        self.history_file = settings.BASE_DIR / "data" / "research_history.json"
 
     @property
     def metadata(self) -> dict[str, Any]:

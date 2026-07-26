@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 from loguru import logger
 from app.database.firestore import get_firestore_client
+from app.core.config import settings
 
 
 class BaseVectorStore:
@@ -37,7 +38,7 @@ class FirestoreVectorStore(BaseVectorStore):
     """
     def __init__(self) -> None:
         self.collection_name = "knowledge_chunks"
-        self.local_fallback = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/local_vector_store.json")
+        self.local_fallback = settings.BASE_DIR / "data" / "local_vector_store.json"
 
     def _get_client(self):
         try:

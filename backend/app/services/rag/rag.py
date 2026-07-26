@@ -5,6 +5,7 @@ from typing import Any
 from loguru import logger
 from app.services.rag.vector_store import get_vector_store
 from app.services.embeddings.embeddings import EmbeddingService
+from app.core.config import settings
 
 
 class RAGService:
@@ -15,7 +16,7 @@ class RAGService:
     """
 
     def __init__(self) -> None:
-        self.metadata_path = Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/document_metadata.json")
+        self.metadata_path = settings.BASE_DIR / "data" / "document_metadata.json"
         self.placeholder_ids: set[str] = set()
         self._load_placeholder_registry()
         self.vector_store = get_vector_store()

@@ -11,6 +11,10 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
+    # Absolute path to the backend project root (.../lawgpt-ai-os/backend),
+    # used instead of hardcoded developer-machine paths for data/temp storage.
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
+
     # General Settings
     APP_NAME: str = Field(default="LawGPT AI OS")
     APP_VERSION: str = Field(default="0.1.0")

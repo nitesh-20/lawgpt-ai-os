@@ -2,6 +2,7 @@ import time
 from typing import Any
 from loguru import logger
 
+from app.core.config import settings
 from app.agents.base import BaseAgent
 from app.agents.orchestrator.intent import IntentClassifier, TaskPlanner
 from app.agents.orchestrator.router import AgentRegistry, AgentRouter
@@ -84,7 +85,7 @@ class OrchestratorAgent(BaseAgent):
         if "legal_research" in intents:
             logger.info("Orchestrator querying RAG context database...")
             # Search our vector stores or read the local JSON vectors if available
-            local_store = "/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/local_vector_store.json"
+            local_store = str(settings.BASE_DIR / "data" / "local_vector_store.json")
             import os
             import json
             if os.path.exists(local_store):

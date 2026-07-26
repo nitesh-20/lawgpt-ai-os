@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 from loguru import logger
 from app.database.firestore import get_firestore_client
+from app.core.config import settings
 
 
 class VersionManager:
@@ -12,7 +13,7 @@ class VersionManager:
     or falling back to a local files store.
     """
     def __init__(self, data_dir: Path | None = None) -> None:
-        self.data_dir = data_dir or Path("/Users/niteshsahu/Desktop/lawgpt-ai-os/backend/data/versions")
+        self.data_dir = data_dir or settings.BASE_DIR / "data" / "versions"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.collection_name = "drafting_versions"
 
