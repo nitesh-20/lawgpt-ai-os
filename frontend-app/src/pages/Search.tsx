@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Search as SearchIcon, 
   Filter, 
@@ -64,6 +64,14 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [stats, setStats] = useState<any | null>(null);
+  
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [results, isSearching]);
   
   // Collapsible sections
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -178,8 +186,9 @@ const Search = () => {
         contentType,
         jurisdiction: jurisdiction === "all" ? undefined : jurisdiction
       });
-      setResults(searchResults);
-      setActiveIndex(0);
+      const mapped = searchResults.map(res => ({ ...res, queryText: searchTerm }));
+      setResults(prev => [...prev, ...mapped]);
+      setActiveIndex(results.length);
       toast({
         title: "Search Pipeline Complete",
         description: `Retrieved and analyzed ${searchResults.length} references.`,
@@ -280,9 +289,9 @@ const Search = () => {
     return Array.from(docsMap.values());
   };
 
-  const handleCopy = () => {
-    if (results.length === 0) return;
-    const activeResult = results[activeIndex];
+  const handleCopy = (resItem?: ResearchResult) => {
+    const activeResult = resItem || (results.length > 0 ? results[activeIndex] : null);
+    if (!activeResult) return;
     const text = `
 # ${activeResult.title}
 Date: ${activeResult.date}
@@ -409,16 +418,16 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
   const sourceDocs = compileSourceDocs(activeResult?.citations);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-0 py-8 space-y-8 min-h-[calc(100vh-120px)] flex flex-col justify-start font-sans">
+    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50 font-sans">
       <style>{`
         @media print {
           body * {
             visibility: hidden;
           }
-          #premium-answer-workspace, #premium-answer-workspace * {
+          .assistant-chat-card, .assistant-chat-card * {
             visibility: visible;
           }
-          #premium-answer-workspace {
+          .assistant-chat-card {
             position: absolute;
             left: 0;
             top: 0;
@@ -431,47 +440,47 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         }
       `}</style>
 
-      {/* Page Title Header */}
-      <div className="text-center space-y-3 py-4">
-        <h1 className="text-[28px] font-bold tracking-tight text-slate-900">Legal Search</h1>
-        <p className="text-sm text-slate-500 max-w-md mx-auto">
-          Query central acts, precedents, and compliance regulations grounded in your legal database
-        </p>
+      {/* HEADER BAR */}
+      <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-2xs z-10">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 bg-blue-600/10 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+            <Scale className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-md font-bold text-slate-900 leading-tight">Legal Search</h1>
+            <p className="text-[10px] text-slate-400 font-mono">Grounded Indic Legal Reasoning Subsystem</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {results.length > 0 && (
+            <Button
+              onClick={handleNewResearch}
+              variant="outline"
+              size="sm"
+              className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs rounded-xl h-8 px-3 font-semibold border-slate-200"
+            >
+              Clear Chat
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* PERSISTENT SEARCH CONSOLE */}
-      <div className="w-full max-w-3xl mx-auto">
-        <VercelV0Chat
-          value={query}
-          onChange={setQuery}
-          onSubmit={() => executeSearch(query)}
-          isSearching={isSearching}
-          language={language}
-          setLanguage={setLanguage}
-          voiceComponent={
-            <VoiceButton
-              showLanguageSelect={false}
-              onTranscribe={(t) => {
-                setQuery(t);
-                executeSearch(t);
-              }}
-            />
-          }
-        />
-      </div>
+      {/* CONVERSATION AREA */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-8 md:px-8 space-y-8 scroll-smooth"
+      >
+        {results.length === 0 && !isSearching ? (
+          /* EMPTY STATE (ChatGPT style centered suggestion list) */
+          <div className="max-w-2xl mx-auto py-16 space-y-8 text-center my-auto">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-slate-800 tracking-tight">How can I assist your legal research today?</h2>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
+                Ask compliance queries, review draft liabilities, check compounding options, or search constitutional precedents.
+              </p>
+            </div>
 
-      <AnimatePresence mode="wait">
-        {/* EMPTY STATE */}
-        {!isSearching && results.length === 0 ? (
-          <motion.div
-            key="empty-state"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="w-full max-w-2xl mx-auto space-y-4 pt-4"
-          >
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block text-center">Suggested Prompts</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
               {[
                 { text: "Explain obligations under DPDP Act", val: "What are the obligations under DPDP Act?" },
                 { text: "Review NDA liabilities and termination clauses", val: "Review NDA liabilities and termination clauses" },
@@ -481,157 +490,189 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 <button
                   key={idx}
                   onClick={() => handleSelectRecent(item.val)}
-                  className="p-4 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-2xl transition-all duration-150 text-sm font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
+                  className="p-4 text-left bg-white border border-slate-200 hover:border-blue-500/30 hover:bg-slate-50/50 rounded-2xl transition-all duration-200 text-sm font-semibold text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
                 >
                   <span>{item.text}</span>
                   <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
                 </button>
               ))}
             </div>
-          </motion.div>
-        ) : isSearching ? (
-          /* LOADING STATE */
-          <motion.div
-            key="searching-state"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full max-w-2xl mx-auto py-8 space-y-8"
-          >
-            <div className="space-y-4">
-              <div className="h-4.5 bg-slate-200 rounded-md w-3/4 animate-pulse" />
-              <div className="h-4 bg-slate-100 rounded-md w-full animate-pulse" />
-              <div className="h-4 bg-slate-100 rounded-md w-5/6 animate-pulse" />
-              <div className="h-4 bg-slate-100 rounded-md w-4/5 animate-pulse" />
-            </div>
-
-            <div className="border border-slate-200 bg-white p-6 rounded-2xl shadow-3xs text-center space-y-5">
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                <span className="text-sm font-semibold text-slate-700">
-                  {loadingStage === 0 && "Searching legal database..."}
-                  {loadingStage === 1 && "Finding precedents..."}
-                  {loadingStage >= 2 && "Generating grounded answer..."}
-                </span>
-              </div>
-
-              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-blue-600 transition-all duration-500 rounded-full" 
-                  style={{ width: `${((loadingStage + 1) / loadingStages.length) * 100}%` }} 
-                />
-              </div>
-            </div>
-          </motion.div>
+          </div>
         ) : (
-          /* RESULT STATE: Hybrid Summary + Source Extract + Citation Card Layout */
-          <motion.div
-            key="results-layout"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-3xl mx-auto space-y-6"
-          >
-            <div id="premium-answer-workspace" className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm space-y-8 font-sans">
-              
-              {/* Question Header */}
-              <div className="border-b border-slate-100 pb-5">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Question</span>
-                <h2 className="text-lg font-bold text-slate-900 leading-snug">
-                  "{query}"
-                </h2>
-              </div>
-
-              {/* AI Legal Summary */}
-              <div className="space-y-3">
-                <h3 className="text-base font-bold text-slate-900">AI Legal Summary</h3>
-                <div className="text-[18px] leading-relaxed text-slate-800 space-y-4 whitespace-pre-line font-normal">
-                  {translatedAnswer || 
-                   activeResult?.direct_answer || 
-                   "No direct answer text was generated. Please review applicable law sections below."}
-                </div>
-              </div>
-
-              {/* Relevant Extract */}
-              <div className="space-y-3 pt-2">
-                <h3 className="text-base font-bold text-slate-900">Relevant Extract</h3>
-                {activeResult?.is_context_grounded ? (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl font-serif text-[15px] leading-relaxed text-slate-700 whitespace-pre-line italic">
-                    "{activeResult?.executive_summary || activeResult?.summary}"
-                  </div>
-                ) : (
-                  <div className="text-sm text-slate-500 italic bg-slate-50 px-4 py-3 border border-slate-100 rounded-xl">
-                    No matching legal document found in the knowledge base.
-                  </div>
-                )}
-              </div>
-
-              {/* Source Card */}
-              <div className="pt-5 border-t border-slate-100 space-y-3">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block font-bold">Source</span>
-                
-                {activeResult?.is_context_grounded && activeResult?.citations && activeResult.citations.length > 0 ? (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 max-w-sm">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-                      <span>📄</span>
-                      <span className="truncate">{activeResult.source || "Grounded PDF Document"}</span>
+          <div className="max-w-3xl mx-auto space-y-8">
+            <AnimatePresence initial={false}>
+              {results.map((res, idx) => {
+                const docList = compileSourceDocs(res.citations);
+                return (
+                  <motion.div
+                    key={res.id || idx}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="space-y-6"
+                  >
+                    {/* User Bubble */}
+                    <div className="flex justify-end">
+                      <div className="bg-blue-600 text-white rounded-2xl rounded-tr-xs px-5 py-3 max-w-[85%] text-sm font-medium shadow-sm leading-relaxed">
+                        {res.queryText || query}
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                      <span>Page: {compileSourceDocs(activeResult.citations)[0]?.pages.join(", ") || "General"}</span>
-                      <span>Confidence: {activeResult.confidence || "96%"}</span>
+
+                    {/* Assistant Bubble */}
+                    <div className="flex justify-start">
+                      <div className="assistant-chat-card bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-6 md:p-8 w-full shadow-xs space-y-6 transition-all duration-200">
+                        {/* AI Legal Summary */}
+                        <div className="space-y-2.5">
+                          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider text-xs text-blue-600">
+                            <Sparkles className="h-4 w-4" />
+                            AI Legal Summary
+                          </h3>
+                          <div className="text-[16px] leading-relaxed text-slate-800 whitespace-pre-line font-normal">
+                            {translatedAnswer && idx === activeIndex ? translatedAnswer : (res.direct_answer || "No direct answer text was generated.")}
+                          </div>
+                        </div>
+
+                        {/* Applicable Law Badges (if present) */}
+                        {res.applicable_law && res.applicable_law.length > 0 && (
+                          <div className="space-y-2 pt-2.5 border-t border-slate-100">
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Applicable Law</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {res.applicable_law.map((law: any, lIdx: number) => (
+                                <div key={lIdx} className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 text-xs px-2.5 py-1 rounded-lg border border-slate-200/50 font-semibold">
+                                  <span>⚖️</span>
+                                  <span>{law.act_name || law}</span>
+                                  {law.sections && <span className="text-[10px] text-slate-500 font-mono ml-0.5">(Section {law.sections})</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Relevant / Supporting Extract */}
+                        <div className="space-y-2.5 pt-2.5 border-t border-slate-100">
+                          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Supporting Legal Extract</h3>
+                          {res.is_context_grounded ? (
+                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl font-serif text-sm leading-relaxed text-slate-700 italic">
+                              "{res.executive_summary || res.summary}"
+                            </div>
+                          ) : (
+                            <div className="text-xs text-slate-500 italic bg-slate-50 px-4 py-3 border border-slate-100 rounded-xl">
+                              No matching legal document found in the knowledge base.
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Source Card & Action Row */}
+                        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          {/* Source Card */}
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Source</span>
+                            {res.is_context_grounded && res.citations && res.citations.length > 0 ? (
+                              <div className="inline-flex flex-col gap-0.5 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl max-w-xs shadow-3xs">
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                                  <span>📄</span>
+                                  <span className="truncate max-w-[150px]">{res.source || "Grounded PDF Document"}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
+                                  <span>Page: {docList[0]?.pages.join(", ") || "General"}</span>
+                                  <span className="h-2.5 w-[1px] bg-slate-200" />
+                                  <span>Similarity: {res.confidence || "96%"}</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs font-semibold text-slate-500 italic">General Legal Knowledge</span>
+                            )}
+                          </div>
+
+                          {/* Actions (copy, tts, translate) */}
+                          <div className="flex items-center flex-wrap gap-2.5">
+                            <Button onClick={() => handleCopy(res)} variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900 gap-1.5 text-xs h-8 px-2.5 rounded-lg hover:bg-slate-100">
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy
+                            </Button>
+                            <Button onClick={() => handlePrint()} variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900 gap-1.5 text-xs h-8 px-2.5 rounded-lg hover:bg-slate-100">
+                              <FileDown className="h-3.5 w-3.5" />
+                              Export PDF
+                            </Button>
+                            <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
+                            <AudioPlaybackButton text={res.direct_answer || ""} />
+                            <select
+                              value={idx === activeIndex ? activeLanguage : "en"}
+                              onChange={(e) => {
+                                setActiveIndex(idx);
+                                handleTranslate(e.target.value);
+                              }}
+                              className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1 px-2.5 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase h-8"
+                            >
+                              <option value="en">EN</option>
+                              <option value="hi">HI</option>
+                              <option value="ta">TA</option>
+                              <option value="te">TE</option>
+                              <option value="bn">BN</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-[10px] font-semibold text-blue-600 bg-blue-50/50 px-2 py-0.5 rounded inline-block">
-                      Retrieved from Firebase RAG
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1 max-w-sm text-xs text-slate-500">
-                    <span className="font-semibold block text-slate-700">Generated using Gemini General Legal Knowledge</span>
-                    <span className="text-[10px] font-mono text-slate-400">Retrieved from general parameters</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* BOTTOM ACTIONS BAR */}
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 px-6 py-3.5 rounded-2xl shadow-3xs">
-              <div className="flex items-center gap-2">
-                <Button onClick={handleCopy} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs">
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
-                </Button>
-                <Button onClick={handlePrint} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs">
-                  <FileDown className="h-3.5 w-3.5" />
-                  Export PDF
-                </Button>
-                <div className="flex items-center gap-1 text-slate-600 border-l border-slate-200 pl-2">
-                  <AudioPlaybackButton text={translatedAnswer || activeResult?.direct_answer || ""} />
-                </div>
-              </div>
-
-              {/* Translation Selection Trigger */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-sans">Translate:</span>
-                <select
-                  value={activeLanguage}
-                  onChange={(e) => handleTranslate(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1 px-2.5 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
-                >
-                  <option value="en">English (EN)</option>
-                  <option value="hi">Hindi (HI)</option>
-                  <option value="ta">Tamil (TA)</option>
-                  <option value="te">Telugu (TE)</option>
-                  <option value="bn">Bengali (BN)</option>
-                </select>
-
-                <Button onClick={handleShare} variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 gap-1.5 text-xs border-l border-slate-200 pl-2">
-                  <Share2 className="h-3.5 w-3.5" />
-                  Share
-                </Button>
-              </div>
-            </div>
-          </motion.div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         )}
-      </AnimatePresence>
+
+        {/* Loading / Searching Bubble */}
+        {isSearching && (
+          <div className="space-y-6 max-w-3xl mx-auto animate-pulse">
+            <div className="flex justify-end">
+              <div className="bg-blue-600/70 text-white rounded-2xl rounded-tr-xs px-5 py-3 max-w-[80%] text-sm font-medium">
+                {query}
+              </div>
+            </div>
+            <div className="flex justify-start">
+              <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-6 md:p-8 w-full max-w-full shadow-xs space-y-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span>
+                    {loadingStage === 0 && "Searching legal database..."}
+                    {loadingStage === 1 && "Finding precedents..."}
+                    {loadingStage >= 2 && "Generating grounded answer..."}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-600 transition-all duration-500 rounded-full" 
+                    style={{ width: `${((loadingStage + 1) / loadingStages.length) * 100}%` }} 
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* STICKY BOTTOM INPUT COMPOSER */}
+      <div className="flex-shrink-0 bg-white border-t border-slate-200 p-4 md:p-6 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10">
+        <div className="max-w-3xl mx-auto">
+          <VercelV0Chat
+            value={query}
+            onChange={setQuery}
+            onSubmit={() => executeSearch(query)}
+            isSearching={isSearching}
+            language={language}
+            setLanguage={setLanguage}
+            voiceComponent={
+              <VoiceButton
+                showLanguageSelect={false}
+                onTranscribe={(t) => {
+                  setQuery(t);
+                  executeSearch(t);
+                }}
+              />
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 };
