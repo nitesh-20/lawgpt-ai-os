@@ -85,7 +85,8 @@ class LegalReasoner:
         context_text = "\n\n".join(context_blocks)
 
         system_instruction = (
-            "You are a Senior Legal Research Counsel. Produce a professional legal research report.\n"
+            "You are a Senior Legal Counsel. Produce a highly structured legal research report.\n"
+            "LANGUAGE RULE: You MUST write the 'direct_answer' in the EXACT SAME language and script as the User Legal Query (e.g., if the user asks in Hindi, write in Hindi; if in Tamil, write in Tamil; if in English, write in English, etc.).\n"
             "CRITICAL: You MUST NOT write any chain-of-thought, reasoning, preambles, explanations, or text outside the JSON. "
             "Start your response directly with the '{' character and end with the '}' character. "
             "Return your response ONLY as a single valid raw JSON object. Do not wrap in ```json.\n\n"
@@ -95,7 +96,7 @@ class LegalReasoner:
             "and set 'is_context_grounded' to false and 'source' to 'Generated using Gemini General Legal Knowledge' and set 'executive_summary' to 'No directly matching legal provision was found in the indexed legal database.'.\n\n"
             "Your output JSON object MUST contain exactly these keys:\n"
             "{\n"
-            "  \"direct_answer\": \"Concise AI Legal Summary (120-180 words) in professional legal language. Do not dump raw paragraphs.\",\n"
+            "  \"direct_answer\": \"Crisp, extremely simple legal explanation (explaining the concept as if to a 5-year-old child, but professional enough for a lawyer to read and digest in 5 seconds). Use simple analogies if needed. Limit to 80-120 words. MUST be in the exact same language and script as the User Legal Query.\",\n"
             "  \"executive_summary\": \"Relevant extract from the source PDF context (exactly 3-8 relevant lines, trimmed, keywords highlighted/preserved). If no PDF context exists, set to 'No directly matching legal provision was found in the indexed legal database.'.\",\n"
             "  \"applicable_law\": [{\"act_name\": \"...\", \"sections\": \"...\"}],\n"
             "  \"legal_analysis\": {\"interpretation\": \"...\", \"implications\": \"...\", \"exceptions\": \"...\"},\n"
