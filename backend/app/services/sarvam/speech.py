@@ -34,8 +34,14 @@ class SpeechToTextManager:
         # Sarvam speech-to-text-translate endpoint
         endpoint = "/speech-to-text-translate"
         
+        mime_type = "audio/wav"
+        if filename.endswith(".webm"):
+            mime_type = "audio/webm"
+        elif filename.endswith(".mp3"):
+            mime_type = "audio/mpeg"
+            
         files = {
-            "file": (filename, audio_bytes, "audio/wav")
+            "file": (filename, audio_bytes, mime_type)
         }
         
         data = {

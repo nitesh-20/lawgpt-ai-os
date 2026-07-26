@@ -76,7 +76,7 @@ export async function voiceChat(
   languageCode?: string
 ): Promise<VoiceChatResult> {
   const formData = new FormData();
-  formData.append("file", audioBlob, "voice-query.wav");
+  formData.append("file", audioBlob, "voice-query.webm");
   formData.append("session_id", sessionId);
   if (languageCode) {
     formData.append("language_code", languageCode);

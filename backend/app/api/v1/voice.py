@@ -55,6 +55,7 @@ async def chat_voice(
         task_input = {
             "action": "chat",
             "audio_bytes": audio_bytes,
+            "filename": file.filename,
             "session_id": session_id,
             "language_code": language_code,
             "orchestrator": orchestrator

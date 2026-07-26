@@ -138,6 +138,8 @@ class VoiceAgent(BaseAgent):
         if not audio_bytes:
             raise ValueError("No audio payload was provided for voice chat.")
 
+        filename = task_input.get("filename", "audio.wav")
+
         # 1. Audio check
         audio_meta = self.processor.extract_metadata(audio_bytes)
         
@@ -147,7 +149,7 @@ class VoiceAgent(BaseAgent):
         # Try Sarvam STT first if enabled
         stt_res = None
         if SarvamConfig.is_enabled():
-            stt_res = await SpeechToTextManager.transcribe(audio_bytes, language_code=language_code or "hi-IN")
+            stt_res = await SpeechToTextManager.transcribe(audio_bytes, filename=filename, language_code=language_code or "hi-IN")
             if stt_res.get("status") == "error":
                 stt_res = None
                 
@@ -155,6 +157,7 @@ class VoiceAgent(BaseAgent):
         if not stt_res:
             stt_res = await self.recognizer.transcribe(
                 audio_bytes=audio_bytes,
+                filename=filename,
                 language_code=language_code or "en-IN"
             )
             

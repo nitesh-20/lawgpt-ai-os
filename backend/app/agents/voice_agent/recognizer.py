@@ -31,8 +31,14 @@ class SpeechRecognizer:
             headers = {
                 "api-subscription-key": self.api_key
             }
+            mime_type = "audio/wav"
+            if filename.endswith(".webm"):
+                mime_type = "audio/webm"
+            elif filename.endswith(".mp3"):
+                mime_type = "audio/mpeg"
+                
             files = {
-                "file": (filename, audio_bytes, "audio/wav")
+                "file": (filename, audio_bytes, mime_type)
             }
             data = {
                 "model": model,
