@@ -718,19 +718,63 @@ Additional contract clauses to inject: ${additionalClauses}
             </div>
 
             {/* Visual template cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTemplates.map((tpl) => (
-                <HighlightCard
+                <motion.div
                   key={tpl.id}
-                  title={tpl.name}
-                  description={[
-                    tpl.description,
-                    `Use Case: ${tpl.useCase}`,
-                    `Latency: ${tpl.draftTime}`
-                  ]}
-                  icon={getTemplateIcon(tpl.category)}
+                  whileHover={{ y: -6, scale: 1.015 }}
                   onClick={() => handleSelectTemplate(tpl)}
-                />
+                  className="group cursor-pointer bg-white border border-neutral-200 hover:border-emerald-600/40 rounded-2xl p-5 flex flex-col justify-between shadow-3xs hover:shadow-2xs transition-all duration-300 relative overflow-hidden"
+                >
+                  <div className="space-y-4">
+                    {/* Top row: Icon & Badges */}
+                    <div className="flex items-start justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                        {getTemplateIcon(tpl.category)}
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <Badge variant="outline" className="text-[9px] font-mono bg-neutral-50 text-slate-500 border-neutral-200 uppercase font-bold py-0.5 px-2">
+                          {tpl.category}
+                        </Badge>
+                        {tpl.popular && (
+                          <Badge className="text-[9px] font-mono bg-emerald-600 hover:bg-emerald-600 text-white uppercase font-bold py-0.5 px-2 tracking-wide">
+                            🔥 Popular
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Preview Thumbnail */}
+                    <div className="h-24 bg-slate-50/50 border border-neutral-200/50 rounded-xl p-3 flex flex-col gap-1.5 overflow-hidden relative">
+                      <div className="w-1/2 h-2.5 bg-neutral-200 rounded" />
+                      <div className="w-5/6 h-2 bg-neutral-100 rounded" />
+                      <div className="w-4/5 h-2 bg-neutral-100 rounded" />
+                      <div className="w-3/4 h-2 bg-neutral-150 rounded" />
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-50/80 to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-slate-900 group-hover:text-emerald-700 text-sm font-sans tracking-tight transition-colors">
+                        {tpl.name}
+                      </h3>
+                      <p className="text-2xs text-slate-400 font-serif leading-relaxed line-clamp-2">
+                        {tpl.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-neutral-100/60 mt-4 flex items-center justify-between">
+                    <span className="text-[9px] font-mono text-slate-450 flex items-center gap-1 uppercase font-bold">
+                      <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+                      {tpl.draftTime || "3 min draft"}
+                    </span>
+                    <button className="text-[10px] font-mono uppercase text-emerald-705 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      Use Template
+                      <ArrowRight className="h-3 w-3 shrink-0" />
+                    </button>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>

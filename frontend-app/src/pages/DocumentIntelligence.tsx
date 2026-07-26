@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, FileText, Users, Scale, Sparkles, Languages, Loader2, Download } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -156,38 +157,62 @@ const DocumentIntelligence = () => {
 
   if (!doc) return null;
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 85,
+        damping: 15,
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-6">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-8 max-w-5xl mx-auto px-4 md:px-6 pb-12"
+    >
       {/* Back button */}
       <div>
         <Link
           to="/documents"
-          className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-mono uppercase font-bold tracking-wider transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-4 w-4 shrink-0" />
           Back to Documents
         </Link>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <FileText className="h-4.5 w-4.5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100/80 flex items-center justify-center shadow-3xs">
+              <FileText className="h-5 w-5 text-emerald-600 animate-pulse" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900">{doc.title}</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">{doc.title}</h1>
           </div>
-          <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">{doc.type} · Document ID {id}</p>
+          <p className="text-xs text-slate-550 font-mono uppercase tracking-wider font-bold">{doc.type} · Document ID {id}</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button onClick={handleDownloadAnalysis} className="btn-secondary flex items-center gap-1.5 h-8 text-2xs">
-            <Download size={13} />
-            Download Analysis JSON
+        <div className="flex items-center gap-2 font-mono">
+          <Button onClick={handleDownloadAnalysis} className="bg-white border border-neutral-200 hover:bg-neutral-50 text-slate-700 text-[10px] font-bold uppercase tracking-wider h-9 rounded-lg shadow-3xs">
+            <Download size={13} className="mr-1.5 shrink-0" />
+            Download Analysis
           </Button>
-          <Button onClick={handleReSummarize} disabled={isSummarizing} className="btn-primary flex items-center gap-1.5 h-8 text-2xs">
-            {isSummarizing ? <Loader2 className="h-3 w-3 animate-spin mr-1 text-white" /> : null}
+          <Button onClick={handleReSummarize} disabled={isSummarizing} className="bg-emerald-650 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider h-9 rounded-lg">
+            {isSummarizing ? <Loader2 className="h-3 w-3 animate-spin mr-1.5 text-white shrink-0" /> : null}
             Trigger Re-Summary
           </Button>
         </div>
@@ -196,21 +221,21 @@ const DocumentIntelligence = () => {
       {/* Split Pane View */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6 items-start">
         {/* Left Side: Document Clause Highlights */}
-        <div className="glass-card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-neutral-50">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Clause Viewer</span>
-            <Badge variant="outline" className="text-[9px] font-mono bg-emerald-50 text-emerald-600 border-emerald-200">Reviewed</Badge>
+        <div className="bg-white border border-neutral-200 rounded-2xl shadow-3xs overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-100 bg-neutral-50/50">
+            <span className="text-[10px] font-mono text-slate-450 uppercase font-bold">Clause Viewer</span>
+            <Badge variant="outline" className="text-[9px] font-mono bg-emerald-50 text-emerald-700 border-emerald-250 uppercase font-bold py-0.5 rounded px-2">Reviewed</Badge>
           </div>
-          <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+          <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto pr-1 font-sans">
             {doc.clauses.map((clause) => (
               <button
                 key={clause.id}
                 type="button"
                 onClick={() => handleClauseClick(clause.id)}
-                className={`block w-full text-left rounded p-3 transition-all duration-200 ${RISK_STYLE[clause.risk]} ${selectedClauseId === clause.id ? "ring-1 ring-primary" : ""}`}
+                className={`block w-full text-left rounded-xl p-3.5 border transition-all duration-200 ${RISK_STYLE[clause.risk]} ${selectedClauseId === clause.id ? "border-emerald-600 shadow-3xs ring-1 ring-emerald-600/30" : "border-neutral-200/60"}`}
               >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[9px] font-mono uppercase text-primary font-semibold">{clause.label}</span>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[9px] font-mono uppercase text-emerald-700 font-bold">{clause.label}</span>
                   {clause.risk !== 'low' && (
                     <span className={`text-[8px] font-mono uppercase px-1 bg-white border rounded text-inherit`}>{clause.risk} risk</span>
                   )}
@@ -348,7 +373,7 @@ const DocumentIntelligence = () => {
           </Tabs>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

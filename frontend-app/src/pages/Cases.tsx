@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Search, Scale, FilterIcon, Calendar, Clipboard, Users, Clock, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -267,23 +268,49 @@ const Cases = () => {
     );
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 85,
+        damping: 15,
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-6">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-8 max-w-7xl mx-auto px-4 md:px-6 pb-12"
+    >
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Scale className="h-4.5 w-4.5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100/80 flex items-center justify-center shadow-3xs">
+              <Scale className="h-5 w-5 text-emerald-600 animate-pulse" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900">Cases Registry</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 font-sans">Cases Registry</h1>
           </div>
-          <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">Manage dossiers, hearing schedules, and client files</p>
+          <p className="text-xs text-slate-500 font-mono uppercase tracking-wider font-bold">Manage dossiers, hearing schedules, and client files</p>
         </div>
-        <Button onClick={() => setShowNewCaseDialog(true)} className="btn-primary">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Register Case
-        </Button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button onClick={() => setShowNewCaseDialog(true)} className="bg-emerald-650 hover:bg-emerald-700 text-white font-mono text-2xs font-bold uppercase tracking-wider py-5 px-5 rounded-xl h-10 shadow-2xs">
+            <PlusCircle className="mr-2 h-4 w-4 shrink-0" />
+            Register Case
+          </Button>
+        </motion.div>
       </div>
 
       {/* Stats Cards */}
@@ -294,56 +321,62 @@ const Cases = () => {
           { title: "Pending Audits", value: caseStatistics.pending, icon: Clock },
           { title: "Upcoming hearings", value: cases.filter(c => c.next_date).length, icon: Calendar }
         ].map((item, idx) => (
-          <div key={idx} className="glass-card p-5 flex items-center justify-between">
+          <motion.div 
+            variants={itemVariants}
+            whileHover={{ scale: 1.015, y: -2 }}
+            key={idx} 
+            className="bg-white border border-neutral-200/60 p-5 rounded-2xl shadow-3xs flex items-center justify-between hover:shadow-2xs transition-all duration-200 relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/10" />
             <div>
-              <span className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">{item.title}</span>
-              <p className="text-xl font-bold text-neutral-900 mt-1">{item.value}</p>
+              <span className="text-[10px] font-mono tracking-wider text-slate-450 uppercase font-bold block">{item.title}</span>
+              <p className="text-xl font-bold text-slate-905 mt-1 font-sans tracking-tight">{item.value}</p>
             </div>
-            <div className="w-8 h-8 rounded bg-neutral-50 flex items-center justify-center border border-border">
-              <item.icon className="h-4 w-4 text-primary" />
+            <div className="w-9 h-9 rounded-xl bg-neutral-50 flex items-center justify-center border border-neutral-200/50">
+              <item.icon className="h-4.5 w-4.5 text-slate-650" />
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Controls Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             placeholder="Search dossiers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input-premium pl-10 w-full text-xs"
+            className="bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-10 pr-4 py-2 text-xs text-slate-900 placeholder:text-neutral-450 rounded-lg w-full shadow-3xs"
           />
         </div>
         
         <div className="flex flex-wrap gap-2 items-center">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px] bg-white border border-border text-xs">
+            <SelectTrigger className="w-[180px] bg-white border border-neutral-200 text-xs px-2.5 py-1.5 focus:outline-none focus:border-emerald-600 rounded-lg cursor-pointer">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
-            <SelectContent className="bg-white border border-border text-neutral-900">
+            <SelectContent className="bg-white border border-neutral-200 text-neutral-900 rounded-xl shadow-md p-1">
               <SelectGroup>
-                <SelectLabel className="text-3xs text-neutral-400">Order</SelectLabel>
-                <SelectItem value="recent">Most Recent</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="name">Client Name (A-Z)</SelectItem>
+                <SelectLabel className="text-[10px] font-mono text-slate-400 uppercase font-bold">Order</SelectLabel>
+                <SelectItem value="recent" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Most Recent</SelectItem>
+                <SelectItem value="oldest" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Oldest First</SelectItem>
+                <SelectItem value="name" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Client Name (A-Z)</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="border-border text-xs hover:bg-neutral-50">
-                <FilterIcon className="mr-2 h-3.5 w-3.5 text-neutral-400" />
+              <Button variant="outline" className="bg-white border border-neutral-200 text-xs px-3 py-1.5 focus:outline-none rounded-lg text-slate-700 hover:bg-neutral-50 font-sans shadow-3xs h-9">
+                <FilterIcon className="mr-2 h-3.5 w-3.5 text-slate-400" />
                 Filter
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white border border-border text-neutral-900">
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs">Civil</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs">Criminal</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs">Corporate</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="bg-white border border-neutral-200 text-neutral-900 rounded-xl shadow-md p-1">
+              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Civil</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Criminal</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Corporate</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -351,15 +384,15 @@ const Cases = () => {
 
       {/* Navigation Tabs */}
       <div className="space-y-4">
-        <div className="flex border-b border-border gap-2 pb-px">
+        <div className="flex border-b border-neutral-100 gap-2 pb-px">
           {["all", "active", "pending", "closed"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-xs font-semibold tracking-wide uppercase border-b-2 transition-all duration-200 ${
+              className={`px-4 py-2.5 text-2xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all duration-200 ${
                 activeTab === tab 
-                  ? "border-primary text-primary" 
-                  : "border-transparent text-neutral-500 hover:text-neutral-900"
+                  ? "border-emerald-600 text-emerald-700" 
+                  : "border-transparent text-slate-400 hover:text-slate-900"
               }`}
             >
               {tab}
@@ -367,29 +400,29 @@ const Cases = () => {
           ))}
         </div>
 
-        <div className="glass-card overflow-hidden">
+        <div className="bg-white border border-neutral-200 rounded-2xl shadow-3xs overflow-hidden">
           <Table>
-            <TableHeader className="bg-neutral-50 border-b border-border">
+            <TableHeader className="bg-neutral-50 border-b border-neutral-100">
               <TableRow className="hover:bg-transparent border-b-0">
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Client</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Case</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Category</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Jurisdiction</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Status</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Priority</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Assigned Lawyer</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Next Hearing</TableHead>
-                <TableHead className="text-[10px] font-mono text-neutral-500 uppercase py-3.5">Last Updated</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Client</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Case</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Category</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Jurisdiction</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Status</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Priority</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Assigned Lawyer</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Next Hearing</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Last Updated</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-border">
+            <TableBody className="divide-y divide-neutral-100">
               {sortedCases.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-16 text-neutral-400">
+                  <TableCell colSpan={9} className="text-center py-16 text-slate-450">
                     <div className="flex flex-col items-center justify-center space-y-4">
-                      <Scale className="h-8 w-8 text-neutral-300" strokeWidth={1.5} />
-                      <p className="text-xs font-semibold text-neutral-800">No dossiers recorded</p>
-                      <p className="text-3xs text-neutral-500 max-w-xs leading-relaxed">Register a new case to begin mapping schedules.</p>
+                      <Scale className="h-8 w-8 text-slate-300 animate-pulse" strokeWidth={1.5} />
+                      <p className="text-xs font-semibold text-slate-700">No dossiers recorded</p>
+                      <p className="text-3xs text-slate-400 max-w-xs leading-relaxed font-serif">Register a new case to begin mapping schedules.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -397,17 +430,17 @@ const Cases = () => {
                 sortedCases.map((case_) => (
                   <TableRow
                     key={case_.id}
-                    className="cursor-pointer hover:bg-neutral-50/50 transition-colors"
+                    className="cursor-pointer hover:bg-neutral-50/30 transition-colors"
                     onClick={() => handleOpenDrawer(case_)}
                   >
-                    <TableCell className="font-semibold text-xs py-4 text-neutral-900">{case_.party_name}</TableCell>
-                    <TableCell className="text-xs text-neutral-600 font-semibold">{case_.case_number}</TableCell>
-                    <TableCell className="text-xs text-neutral-600">
-                      <span className="text-[10px] font-mono bg-neutral-100 text-slate-600 px-2 py-0.5 border border-neutral-200 uppercase">
+                    <TableCell className="font-semibold text-xs py-4 text-slate-805">{case_.party_name}</TableCell>
+                    <TableCell className="text-xs text-slate-600 font-semibold">{case_.case_number}</TableCell>
+                    <TableCell className="text-xs text-slate-600">
+                      <span className="text-[9px] font-mono bg-neutral-50 text-slate-500 px-2 py-0.5 border border-neutral-200 uppercase font-bold rounded">
                         {case_.case_type || "General"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-neutral-600">{case_.jurisdiction || 'India'}</TableCell>
+                    <TableCell className="text-xs text-slate-600 font-serif">{case_.jurisdiction || 'India'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={getStatusBadgeClass(case_.status)}>
                         {case_.status?.replace("_", " ") || 'active'}
@@ -418,18 +451,18 @@ const Cases = () => {
                         {case_.priority || 'medium'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-neutral-600">{case_.assigned_lawyer || "Unassigned"}</TableCell>
-                    <TableCell className="text-xs text-neutral-600">
+                    <TableCell className="text-xs text-slate-600 font-semibold">{case_.assigned_lawyer || "Unassigned"}</TableCell>
+                    <TableCell className="text-xs text-slate-600">
                       {case_.next_date ? (
-                        <div className="flex items-center gap-1.5 font-mono text-2xs">
-                          <Calendar className="h-3 w-3 text-primary" />
+                        <div className="flex items-center gap-1.5 font-mono text-2xs text-emerald-700 font-bold">
+                          <Calendar className="h-3 w-3 text-emerald-600" />
                           {new Date(case_.next_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </div>
                       ) : (
-                        <span className="text-neutral-400">—</span>
+                        <span className="text-slate-400">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs text-neutral-600 font-mono text-2xs">
+                    <TableCell className="text-xs text-slate-600 font-mono text-2xs">
                       {new Date(case_.updated_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                     </TableCell>
                   </TableRow>
@@ -562,7 +595,7 @@ const Cases = () => {
         onOpenChange={setShowNewCaseDialog}
         onSuccess={handleAddCase}
       />
-    </div>
+    </motion.div>
   );
 };
 

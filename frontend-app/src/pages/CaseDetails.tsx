@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { ArrowLeft, CalendarDays, Gavel, Clock, Trash2, FileText, TrendingUp, Users, Building, Scale, Plus } from "lucide-react";
 import { CaseHearing } from "@/components/cases/CaseHearing";
@@ -142,66 +143,93 @@ const CaseDetails = () => {
     name: stage,
     value: hearingsByStage[stage]
   }));
+  const containerVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 85,
+        damping: 15,
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto px-4 md:px-6">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-8 max-w-5xl mx-auto px-4 md:px-6 pb-12"
+    >
       {/* Back button and actions */}
       <div className="flex justify-between items-center">
         <Button 
           variant="ghost" 
           onClick={() => navigate('/cases')}
-          className="text-xs text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 rounded h-8"
+          className="text-2xs font-mono font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 hover:bg-neutral-100 rounded-lg h-9 px-4"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
           Back to Cases
         </Button>
         <Button 
           variant="destructive"
           onClick={() => setShowDeleteDialog(true)}
-          className="bg-red-50 hover:bg-red-100 text-red-500 border border-red-200 text-xs h-8"
+          className="bg-red-50 hover:bg-red-100 text-red-655 border border-red-200/60 text-2xs font-mono font-bold uppercase tracking-wider h-9 px-4 rounded-lg shadow-3xs"
         >
-          <Trash2 className="mr-2 h-4 w-4" />
+          <Trash2 className="mr-2 h-4 w-4 shrink-0" />
           Delete Case
         </Button>
       </div>
 
       {/* Hero Dossier Header */}
-      <div className="glass-card p-6 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <motion.div 
+        variants={itemVariants}
+        className="bg-white border border-neutral-200 p-6 rounded-2xl relative overflow-hidden shadow-3xs"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-            <Badge className="bg-primary/10 text-primary border-primary/20 text-3xs font-mono uppercase tracking-wider">
+            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-mono uppercase tracking-wider font-bold py-0.5 rounded">
               {caseData.case_type || 'Civil'}
             </Badge>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900">
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">
               {caseData.party_name}
             </h1>
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <Scale className="h-4 w-4 text-primary" />
-              <span>Case ID: <span className="font-mono text-2xs">{caseData.case_number}</span></span>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Scale className="h-4 w-4 text-emerald-600 animate-pulse" />
+              <span>Case ID: <span className="font-mono text-2xs font-bold">{caseData.case_number}</span></span>
             </div>
           </div>
           
           <div className="flex flex-col md:items-end gap-1.5">
-            <div className="px-3 py-1.5 rounded bg-neutral-50 border border-border inline-flex items-center gap-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${caseData.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-800 font-mono">{caseData.status || 'Active'}</span>
+            <div className="px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 inline-flex items-center gap-2 shadow-3xs">
+              <span className={`w-1.5 h-1.5 rounded-full ${caseData.status === 'active' ? 'bg-emerald-500 animate-ping' : 'bg-amber-500'}`} />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800 font-mono">{caseData.status || 'Active'}</span>
             </div>
-            <span className="text-3xs text-neutral-400 font-mono">UPDATED {new Date(caseData.updated_at).toLocaleDateString()}</span>
+            <span className="text-3xs text-slate-400 font-mono uppercase font-bold">UPDATED {new Date(caseData.updated_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabs */}
       <div className="space-y-6">
-        <div className="flex border-b border-border gap-2 pb-px">
+        <div className="flex border-b border-neutral-100 gap-2 pb-px">
           {["overview", "hearings", "timeline", "financials"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-xs font-semibold tracking-wide uppercase border-b-2 transition-all duration-200 ${
+              className={`px-4 py-2.5 text-2xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all duration-200 ${
                 activeTab === tab 
-                  ? "border-primary text-primary" 
-                  : "border-transparent text-neutral-500 hover:text-neutral-900"
+                  ? "border-emerald-600 text-emerald-700" 
+                  : "border-transparent text-slate-400 hover:text-slate-900"
               }`}
             >
               {tab}
@@ -212,11 +240,11 @@ const CaseDetails = () => {
         {/* Tab Contents */}
         <div className="min-h-[400px]">
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 animate-fade-in font-sans">
               <div className="space-y-6">
                 {/* Meta details */}
-                <div className="glass-card p-6">
-                  <h2 className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase mb-6">Case Parameters</h2>
+                <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-3xs">
+                  <h2 className="text-[10px] font-mono tracking-wider text-slate-400 uppercase mb-6 font-bold">Case Parameters</h2>
                   <div className="grid grid-cols-2 gap-6">
                     {[
                       { icon: Gavel, label: "Court", val: caseData.court_name },
@@ -225,12 +253,12 @@ const CaseDetails = () => {
                       { icon: Clock, label: "Stage", val: caseData.stage || 'Pre-trial' }
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="p-2 rounded bg-neutral-50 border border-border">
-                          <item.icon className="h-4.5 w-4.5 text-primary" />
+                        <div className="p-2 rounded-xl bg-neutral-50 border border-neutral-200/50 shadow-3xs">
+                          <item.icon className="h-4.5 w-4.5 text-emerald-605" />
                         </div>
                         <div>
-                          <p className="text-[9px] font-mono text-neutral-400 uppercase">{item.label}</p>
-                          <p className="text-xs font-semibold text-neutral-800 mt-0.5">{item.val}</p>
+                          <p className="text-[9px] font-mono text-slate-400 uppercase font-bold">{item.label}</p>
+                          <p className="text-xs font-semibold text-slate-805 mt-0.5">{item.val}</p>
                         </div>
                       </div>
                     ))}
@@ -238,23 +266,23 @@ const CaseDetails = () => {
                 </div>
 
                 {/* Recent activity hearings */}
-                <div className="glass-card p-6">
+                <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-3xs">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase">Recent Hearing Records</h2>
-                    <Button variant="ghost" size="sm" className="text-2xs text-primary hover:bg-primary/10 h-6 px-2" onClick={() => setActiveTab("hearings")}>
+                    <h2 className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-bold">Recent Hearing Records</h2>
+                    <Button variant="ghost" size="sm" className="text-[9px] font-mono uppercase text-emerald-700 font-bold hover:bg-emerald-50 h-6 px-2.5 rounded" onClick={() => setActiveTab("hearings")}>
                       Manage Hearings
                     </Button>
                   </div>
                   
                   <div className="space-y-3">
                     {(caseData.hearings || []).slice(0, 3).map((hearing: Hearing, idx: number) => (
-                      <div key={idx} className="p-4 rounded border border-border bg-neutral-50/50">
+                      <div key={idx} className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/30 shadow-3xs hover:border-emerald-600/30 transition-colors">
                         <div className="flex justify-between items-start gap-4">
                           <div>
-                            <h3 className="font-semibold text-xs text-neutral-800">{hearing.stage}</h3>
-                            <p className="text-2xs text-neutral-500 mt-1 leading-relaxed">{hearing.summary}</p>
+                            <h3 className="font-bold text-xs text-slate-800 font-sans">{hearing.stage}</h3>
+                            <p className="text-2xs text-slate-500 mt-1 leading-relaxed font-serif">{hearing.summary}</p>
                           </div>
-                          <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-mono text-3xs">
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] uppercase font-bold py-0.5 rounded shrink-0">
                             {new Date(hearing.date).toLocaleDateString()}
                           </Badge>
                         </div>
@@ -262,7 +290,7 @@ const CaseDetails = () => {
                     ))}
                     
                     {(caseData.hearings || []).length === 0 && (
-                      <div className="text-center py-8 text-xs text-neutral-400">
+                      <div className="text-center py-8 text-xs text-slate-400 font-serif italic bg-neutral-50/50 border border-neutral-200 rounded-xl">
                         No hearing records found.
                       </div>
                     )}
@@ -272,8 +300,8 @@ const CaseDetails = () => {
 
               {/* Sidebar stats panel */}
               <div className="space-y-6">
-                <div className="glass-card p-6">
-                  <h2 className="text-[10px] font-mono tracking-wider text-neutral-400 uppercase mb-6">Matter Summary</h2>
+                <div className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-3xs">
+                  <h2 className="text-[10px] font-mono tracking-wider text-slate-400 uppercase mb-6 font-bold">Matter Summary</h2>
                   <div className="space-y-4">
                     {[
                       { icon: CalendarDays, label: "Total Hearings", val: (caseData.hearings || []).length },
@@ -281,19 +309,19 @@ const CaseDetails = () => {
                       { icon: FileText, label: "Referenced Documents", val: 3 },
                       { icon: TrendingUp, label: "Settlement Value", val: `$${(caseData.hearings || []).reduce((sum: number, h: Hearing) => sum + (h.amount || 0), 0).toLocaleString()}` }
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded bg-neutral-50 border border-border">
+                      <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 shadow-3xs">
                         <div className="flex items-center gap-2">
-                          <item.icon className="h-4 w-4 text-primary" />
-                          <span className="text-xs text-neutral-500">{item.label}</span>
+                          <item.icon className="h-4.5 w-4.5 text-emerald-600" />
+                          <span className="text-xs text-slate-550 font-semibold">{item.label}</span>
                         </div>
-                        <span className="text-xs font-semibold text-neutral-800 font-mono">{item.val}</span>
+                        <span className="text-xs font-semibold text-slate-800 font-mono">{item.val}</span>
                       </div>
                     ))}
                   </div>
 
                   {pieChartData.length > 0 && (
-                    <div className="mt-8 border-t border-border pt-6">
-                      <h3 className="text-[10px] font-mono text-neutral-400 mb-4 uppercase">Hearings distribution</h3>
+                    <div className="mt-8 border-t border-neutral-100 pt-6">
+                      <h3 className="text-[10px] font-mono text-slate-400 mb-4 uppercase font-bold">Hearings distribution</h3>
                       <div className="h-[150px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -437,25 +465,25 @@ const CaseDetails = () => {
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-white border border-border text-neutral-900 shadow-xl">
+        <AlertDialogContent className="bg-white border border-neutral-200 text-neutral-900 shadow-xl rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-neutral-900">Delete this Dossier?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-500">
+            <AlertDialogTitle className="text-neutral-900 font-sans font-bold">Delete this Dossier?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-500 font-serif leading-relaxed">
               This action cannot be undone. It will permanently delete this case record and associated hearings from Firestore.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white border border-border hover:bg-neutral-50 text-neutral-800">Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="font-sans">
+            <AlertDialogCancel className="bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-800 rounded-lg">Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteCase}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-lg"
             >
               Delete Case
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 };
 
