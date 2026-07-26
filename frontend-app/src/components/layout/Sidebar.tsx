@@ -60,10 +60,10 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-5 left-5 z-50 p-2.5 bg-white border border-border rounded-lg shadow-sm hover:bg-neutral-50 transition-all duration-200"
+        className="fixed top-5 left-5 z-50 p-2.5 bg-neutral-950 border border-neutral-900 rounded-lg shadow-xl hover:bg-neutral-900 transition-all duration-200"
         aria-label="Open sidebar"
       >
-        <ChevronRight size={18} className="text-primary" />
+        <ChevronRight size={18} className="text-emerald-500" />
       </button>
     );
   }
@@ -71,20 +71,20 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   return (
     <>
       <aside
-        className={`fixed left-4 top-4 bottom-4 bg-white border border-border text-neutral-800 transition-all duration-300 rounded-lg shadow-sm
-          ${collapsed ? 'w-20' : 'w-60'} z-50 ${isMobile ? 'left-0 top-0 bottom-0 h-full rounded-none border-y-0 border-l-0' : ''}`}
+        className={`fixed left-4 top-4 bottom-4 bg-[#050505] border border-neutral-900/60 text-white transition-all duration-300 rounded-xl shadow-2xl
+          ${collapsed ? 'w-20' : 'w-60'} z-50 ${isMobile ? 'left-0 top-0 bottom-0 h-full rounded-none border-y-0 border-l-0 bg-[#050505]' : ''}`}
       >
-        <div className="flex h-20 items-center justify-between px-6 border-b border-border">
+        <div className="flex h-20 items-center justify-between px-6 border-b border-neutral-900/60">
           {!collapsed && (
             <div
               onClick={() => navigate('/')}
               className="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition-opacity"
             >
-              <div className="w-7 h-7 bg-primary rounded flex items-center justify-center shadow-sm">
+              <div className="w-7 h-7 bg-primary rounded flex items-center justify-center shadow-md">
                 <span className="text-white font-sans font-bold text-xs">L</span>
               </div>
-              <span className="text-sm font-sans font-bold text-neutral-900 tracking-tight">
-                LawGPT <span className="text-[10px] text-primary uppercase font-mono px-1.5 py-0.5 bg-primary/10 rounded ml-1">OS</span>
+              <span className="text-sm font-sans font-bold text-white tracking-tight">
+                LawGPT <span className="text-[10px] text-emerald-400 uppercase font-mono px-1.5 py-0.5 bg-emerald-500/10 rounded ml-1 font-bold">OS</span>
               </span>
             </div>
           )}
@@ -92,7 +92,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={toggleSidebar}
-              className="rounded p-1.5 hover:bg-neutral-50 text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="rounded p-1.5 hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -100,7 +100,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
             {isMobile && (
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded p-1.5 hover:bg-neutral-50 text-neutral-500 hover:text-neutral-900 transition-colors"
+                className="rounded p-1.5 hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
                 aria-label="Close sidebar"
               >
                 <X size={16} />
@@ -118,14 +118,14 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center ${collapsed ? 'justify-center' : 'px-4'} py-2 rounded transition-all duration-150 group
+                  className={`flex items-center ${collapsed ? 'justify-center' : 'px-4'} py-2 rounded-lg transition-all duration-150 group
                     ${isActive 
-                      ? 'bg-primary/10 text-primary font-medium' 
-                      : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900'}`}
+                      ? 'bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20' 
+                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'}`}
                 >
-                  <item.icon size={18} className={`${isActive ? 'text-primary' : 'text-neutral-400 group-hover:text-neutral-900'} transition-colors`} />
+                  <item.icon size={17} className={`${isActive ? 'text-emerald-400' : 'text-neutral-500 group-hover:text-white'} transition-colors`} />
                   {!collapsed && (
-                    <span className="ml-3 text-xs tracking-wide">
+                    <span className="ml-3 text-2xs uppercase tracking-wider font-mono font-bold">
                       {item.label}
                     </span>
                   )}
@@ -134,8 +134,8 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
             })}
           </div>
 
-          <div className={`mt-auto mb-4 border-t border-border pt-4 ${collapsed ? 'text-center' : 'px-3'}`}>
-            <div className="text-3xs text-neutral-400 font-mono space-y-2">
+          <div className={`mt-auto mb-4 border-t border-neutral-900/60 pt-4 ${collapsed ? 'text-center' : 'px-3'}`}>
+            <div className="text-[9px] font-mono text-neutral-500 space-y-2">
               {!collapsed && (
                 <div className="flex justify-between items-center">
                   <span>SYSTEM STATUS</span>
@@ -144,7 +144,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               )}
               <div className="flex items-center gap-2 justify-center py-1.5 px-2 bg-emerald-500/5 rounded border border-emerald-500/10">
                 <span className="inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 animate-pulse" />
-                {!collapsed && <span className="text-emerald-600 text-3xs font-semibold uppercase tracking-wider">Synchronized</span>}
+                {!collapsed && <span className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest font-mono">Synchronized</span>}
               </div>
             </div>
           </div>
@@ -154,7 +154,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       {/* Mobile Drawer Overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-900/20 backdrop-blur-xs z-40"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40"
           onClick={() => setIsOpen(false)}
           aria-label="Close sidebar overlay"
         />
