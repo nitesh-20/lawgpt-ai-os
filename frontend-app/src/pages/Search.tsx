@@ -418,7 +418,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
   const sourceDocs = compileSourceDocs(activeResult?.citations);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50 font-sans">
+    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-white font-sans">
       <style>{`
         @media print {
           body * {
@@ -652,7 +652,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
       </div>
 
       {/* STICKY BOTTOM INPUT COMPOSER */}
-      <div className="flex-shrink-0 bg-white border-t border-slate-200 p-4 md:p-6 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10">
+      <div className="flex-shrink-0 bg-white border-t border-slate-100 p-4 md:p-6 z-10">
         <div className="max-w-3xl mx-auto">
           <VercelV0Chat
             value={query}
