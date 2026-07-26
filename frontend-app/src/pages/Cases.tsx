@@ -295,18 +295,18 @@ const Cases = () => {
       className="space-y-8 max-w-7xl mx-auto px-4 md:px-6 pb-12"
     >
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-100">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-white/5">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100/80 flex items-center justify-center shadow-3xs">
-              <Scale className="h-5 w-5 text-emerald-600 animate-pulse" />
+            <div className="w-10 h-10 rounded-xl bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 flex items-center justify-center shadow-3xs">
+              <Scale className="h-5 w-5 text-[#9B87FF] animate-pulse" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 font-sans">Cases Registry</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-serif">Cases Registry</h1>
           </div>
-          <p className="text-xs text-slate-500 font-mono uppercase tracking-wider font-bold">Manage dossiers, hearing schedules, and client files</p>
+          <p className="text-xs text-slate-450 font-mono uppercase tracking-wider font-bold">Manage dossiers, hearing schedules, and client files</p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button onClick={() => setShowNewCaseDialog(true)} className="bg-emerald-650 hover:bg-emerald-700 text-white font-mono text-2xs font-bold uppercase tracking-wider py-5 px-5 rounded-xl h-10 shadow-2xs">
+          <Button onClick={() => setShowNewCaseDialog(true)} className="bg-[#7C5CFF] hover:bg-[#9B87FF] text-white font-mono text-2xs font-bold uppercase tracking-wider py-5 px-5 rounded-xl h-10 shadow-2xs border border-[#7C5CFF]/30">
             <PlusCircle className="mr-2 h-4 w-4 shrink-0" />
             Register Case
           </Button>
@@ -325,15 +325,15 @@ const Cases = () => {
             variants={itemVariants}
             whileHover={{ scale: 1.015, y: -2 }}
             key={idx} 
-            className="bg-white border border-neutral-200/60 p-5 rounded-2xl shadow-3xs flex items-center justify-between hover:shadow-2xs transition-all duration-200 relative overflow-hidden"
+            className="bg-[#101010] border border-white/5 p-5 rounded-2xl shadow-3xs flex items-center justify-between hover:shadow-2xs transition-all duration-200 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/10" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#7C5CFF]/10" />
             <div>
-              <span className="text-[10px] font-mono tracking-wider text-slate-450 uppercase font-bold block">{item.title}</span>
-              <p className="text-xl font-bold text-slate-905 mt-1 font-sans tracking-tight">{item.value}</p>
+              <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase font-bold block">{item.title}</span>
+              <p className="text-xl font-bold text-white mt-1 font-sans tracking-tight">{item.value}</p>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-neutral-50 flex items-center justify-center border border-neutral-200/50">
-              <item.icon className="h-4.5 w-4.5 text-slate-650" />
+            <div className="w-9 h-9 rounded-xl bg-[#151515] flex items-center justify-center border border-white/5">
+              <item.icon className="h-4.5 w-4.5 text-slate-400" />
             </div>
           </motion.div>
         ))}
@@ -347,52 +347,52 @@ const Cases = () => {
             placeholder="Search dossiers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-10 pr-4 py-2 text-xs text-slate-900 placeholder:text-neutral-450 rounded-lg w-full shadow-3xs"
+            className="bg-[#101010] border border-white/5 focus:border-[#7C5CFF] focus:outline-none pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 rounded-lg w-full shadow-3xs"
           />
         </div>
         
         <div className="flex flex-wrap gap-2 items-center">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px] bg-white border border-neutral-200 text-xs px-2.5 py-1.5 focus:outline-none focus:border-emerald-600 rounded-lg cursor-pointer">
+            <SelectTrigger className="w-[180px] bg-[#101010] border border-white/5 text-xs px-2.5 py-1.5 focus:outline-none focus:border-[#7C5CFF] rounded-lg cursor-pointer text-white">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
-            <SelectContent className="bg-white border border-neutral-200 text-neutral-900 rounded-xl shadow-md p-1">
+            <SelectContent className="bg-[#101010] border border-white/5 text-white rounded-xl shadow-md p-1">
               <SelectGroup>
-                <SelectLabel className="text-[10px] font-mono text-slate-400 uppercase font-bold">Order</SelectLabel>
-                <SelectItem value="recent" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Most Recent</SelectItem>
-                <SelectItem value="oldest" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Oldest First</SelectItem>
-                <SelectItem value="name" className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Client Name (A-Z)</SelectItem>
+                <SelectLabel className="text-[10px] font-mono text-slate-500 uppercase font-bold">Order</SelectLabel>
+                <SelectItem value="recent" className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Most Recent</SelectItem>
+                <SelectItem value="oldest" className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Oldest First</SelectItem>
+                <SelectItem value="name" className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Client Name (A-Z)</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-white border border-neutral-200 text-xs px-3 py-1.5 focus:outline-none rounded-lg text-slate-700 hover:bg-neutral-50 font-sans shadow-3xs h-9">
-                <FilterIcon className="mr-2 h-3.5 w-3.5 text-slate-400" />
+              <Button variant="outline" className="bg-[#101010] border border-white/5 text-xs px-3 py-1.5 focus:outline-none rounded-lg text-slate-300 hover:bg-[#151515] hover:text-white font-sans shadow-3xs h-9">
+                <FilterIcon className="mr-2 h-3.5 w-3.5 text-slate-450" />
                 Filter
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white border border-neutral-200 text-neutral-900 rounded-xl shadow-md p-1">
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Civil</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Criminal</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-neutral-50 text-xs cursor-pointer rounded-lg">Corporate</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="bg-[#101010] border border-white/5 text-white rounded-xl shadow-md p-1">
+              <DropdownMenuItem className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Civil</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Criminal</DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-[#151515] focus:text-white text-xs cursor-pointer rounded-lg">Corporate</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="space-y-4">
-        <div className="flex border-b border-neutral-100 gap-2 pb-px">
+      <div className="space-y-4 font-sans">
+        <div className="flex border-b border-white/5 gap-2 pb-px font-mono">
           {["all", "active", "pending", "closed"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-2xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all duration-200 ${
+              className={`px-4 py-2.5 text-2xs font-bold uppercase tracking-wider border-b-2 transition-all duration-200 ${
                 activeTab === tab 
-                  ? "border-emerald-600 text-emerald-700" 
-                  : "border-transparent text-slate-400 hover:text-slate-900"
+                  ? "border-[#7C5CFF] text-[#9B87FF]" 
+                  : "border-transparent text-slate-500 hover:text-white"
               }`}
             >
               {tab}
@@ -400,29 +400,29 @@ const Cases = () => {
           ))}
         </div>
 
-        <div className="bg-white border border-neutral-200 rounded-2xl shadow-3xs overflow-hidden">
+        <div className="bg-[#101010] border border-white/5 rounded-2xl shadow-3xs overflow-hidden">
           <Table>
-            <TableHeader className="bg-neutral-50 border-b border-neutral-100">
+            <TableHeader className="bg-[#151515]/50 border-b border-white/5">
               <TableRow className="hover:bg-transparent border-b-0">
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Client</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Case</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Category</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Jurisdiction</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Status</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Priority</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Assigned Lawyer</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Next Hearing</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-400 uppercase py-3.5 font-bold">Last Updated</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Client</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Case</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Category</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Jurisdiction</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Status</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Priority</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Assigned Lawyer</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Next Hearing</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 uppercase py-3.5 font-bold">Last Updated</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-neutral-100">
+            <TableBody className="divide-y divide-white/5">
               {sortedCases.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-16 text-slate-450">
+                  <TableCell colSpan={9} className="text-center py-16 text-slate-500">
                     <div className="flex flex-col items-center justify-center space-y-4">
-                      <Scale className="h-8 w-8 text-slate-300 animate-pulse" strokeWidth={1.5} />
-                      <p className="text-xs font-semibold text-slate-700">No dossiers recorded</p>
-                      <p className="text-3xs text-slate-400 max-w-xs leading-relaxed font-serif">Register a new case to begin mapping schedules.</p>
+                      <Scale className="h-8 w-8 text-slate-500 animate-pulse" strokeWidth={1.5} />
+                      <p className="text-xs font-semibold text-slate-300">No dossiers recorded</p>
+                      <p className="text-3xs text-slate-500 max-w-xs leading-relaxed font-serif">Register a new case to begin mapping schedules.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -430,17 +430,17 @@ const Cases = () => {
                 sortedCases.map((case_) => (
                   <TableRow
                     key={case_.id}
-                    className="cursor-pointer hover:bg-neutral-50/30 transition-colors"
+                    className="cursor-pointer hover:bg-[#151515]/60 transition-colors border-b border-white/5"
                     onClick={() => handleOpenDrawer(case_)}
                   >
-                    <TableCell className="font-semibold text-xs py-4 text-slate-805">{case_.party_name}</TableCell>
-                    <TableCell className="text-xs text-slate-600 font-semibold">{case_.case_number}</TableCell>
-                    <TableCell className="text-xs text-slate-600">
-                      <span className="text-[9px] font-mono bg-neutral-50 text-slate-500 px-2 py-0.5 border border-neutral-200 uppercase font-bold rounded">
+                    <TableCell className="font-semibold text-xs py-4 text-white">{case_.party_name}</TableCell>
+                    <TableCell className="text-xs text-slate-300 font-semibold">{case_.case_number}</TableCell>
+                    <TableCell className="text-xs text-slate-300">
+                      <span className="text-[9px] font-mono bg-[#151515] text-slate-300 px-2 py-0.5 border border-white/5 uppercase font-bold rounded">
                         {case_.case_type || "General"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 font-serif">{case_.jurisdiction || 'India'}</TableCell>
+                    <TableCell className="text-xs text-slate-400 font-serif">{case_.jurisdiction || 'India'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={getStatusBadgeClass(case_.status)}>
                         {case_.status?.replace("_", " ") || 'active'}
@@ -451,18 +451,18 @@ const Cases = () => {
                         {case_.priority || 'medium'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 font-semibold">{case_.assigned_lawyer || "Unassigned"}</TableCell>
-                    <TableCell className="text-xs text-slate-600">
+                    <TableCell className="text-xs text-slate-300 font-semibold">{case_.assigned_lawyer || "Unassigned"}</TableCell>
+                    <TableCell className="text-xs text-slate-350">
                       {case_.next_date ? (
-                        <div className="flex items-center gap-1.5 font-mono text-2xs text-emerald-700 font-bold">
-                          <Calendar className="h-3 w-3 text-emerald-600" />
+                        <div className="flex items-center gap-1.5 font-mono text-2xs text-[#9B87FF] font-bold">
+                          <Calendar className="h-3 w-3 text-[#7C5CFF]" />
                           {new Date(case_.next_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </div>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-slate-650">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 font-mono text-2xs">
+                    <TableCell className="text-xs text-slate-450 font-mono text-2xs">
                       {new Date(case_.updated_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                     </TableCell>
                   </TableRow>
@@ -475,10 +475,10 @@ const Cases = () => {
 
       {/* Case Details Drawer Modal */}
       <Sheet open={showDrawer} onOpenChange={setShowDrawer}>
-        <SheetContent className="bg-white border-l border-neutral-200 text-neutral-900 w-full sm:max-w-md overflow-y-auto p-6 space-y-6">
+        <SheetContent className="bg-[#101010] border-l border-white/5 text-white w-full sm:max-w-md overflow-y-auto p-6 space-y-6">
           {selectedCase && (
             <>
-              <SheetHeader className="border-b border-neutral-100 pb-4">
+              <SheetHeader className="border-b border-white/5 pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className={getStatusBadgeClass(selectedCase.status)}>
                     {selectedCase.status?.replace("_", " ")}
@@ -487,79 +487,79 @@ const Cases = () => {
                     {selectedCase.priority} Priority
                   </Badge>
                 </div>
-                <SheetTitle className="text-lg font-bold font-sans text-slate-900 tracking-tight leading-snug">
+                <SheetTitle className="text-lg font-bold font-serif text-white tracking-tight leading-snug">
                   {selectedCase.case_number}
                 </SheetTitle>
-                <p className="text-2xs font-mono uppercase tracking-wider text-slate-400 mt-1">Dossier ID: {selectedCase.id}</p>
+                <p className="text-2xs font-mono uppercase tracking-wider text-slate-500 mt-1">Dossier ID: {selectedCase.id}</p>
               </SheetHeader>
 
               {/* Case Summary */}
               <div className="space-y-2">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Case Summary</span>
-                <p className="text-xs text-slate-600 font-serif leading-relaxed bg-slate-50/50 p-3 border border-slate-100/50">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Case Summary</span>
+                <p className="text-xs text-slate-300 font-serif leading-relaxed bg-[#151515] p-3 border border-white/5 rounded-lg">
                   {selectedCase.stage}
                 </p>
               </div>
 
               {/* Client & Lawyer details */}
-              <div className="grid grid-cols-2 gap-4 text-xs font-sans border-b border-neutral-100 pb-4">
+              <div className="grid grid-cols-2 gap-4 text-xs font-sans border-b border-white/5 pb-4">
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Client</span>
-                  <span className="font-semibold text-slate-800">{selectedCase.party_name}</span>
+                  <span className="text-[9px] font-mono text-slate-500 uppercase block font-bold">Client</span>
+                  <span className="font-semibold text-white">{selectedCase.party_name}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Assigned Lawyer</span>
-                  <span className="font-semibold text-slate-800">{selectedCase.assigned_lawyer || "Unassigned"}</span>
+                  <span className="text-[9px] font-mono text-slate-500 uppercase block font-bold">Assigned Lawyer</span>
+                  <span className="font-semibold text-white">{selectedCase.assigned_lawyer || "Unassigned"}</span>
                 </div>
               </div>
 
               {/* Jurisdiction & Category info */}
-              <div className="grid grid-cols-2 gap-4 text-xs font-sans border-b border-neutral-100 pb-4">
+              <div className="grid grid-cols-2 gap-4 text-xs font-sans border-b border-white/5 pb-4">
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Jurisdiction</span>
-                  <span className="font-semibold text-slate-800">{selectedCase.jurisdiction || "India"}</span>
+                  <span className="text-[9px] font-mono text-slate-500 uppercase block font-bold">Jurisdiction</span>
+                  <span className="font-semibold text-white">{selectedCase.jurisdiction || "India"}</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Category</span>
-                  <span className="font-semibold text-slate-800">{selectedCase.case_type || "Compliance"}</span>
+                  <span className="text-[9px] font-mono text-slate-500 uppercase block font-bold">Category</span>
+                  <span className="font-semibold text-white">{selectedCase.case_type || "Compliance"}</span>
                 </div>
               </div>
 
               {/* Compliance Status */}
-              <div className="space-y-2 border-b border-neutral-100 pb-4">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Compliance Status</span>
-                <div className="flex items-center gap-2 text-xs font-sans text-slate-700 bg-emerald-50/40 p-2.5 border border-emerald-100/60">
-                  <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+              <div className="space-y-2 border-b border-white/5 pb-4">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Compliance Status</span>
+                <div className="flex items-center gap-2 text-xs font-sans text-slate-300 bg-[#7C5CFF]/10 p-2.5 border border-[#7C5CFF]/20 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-[#9B87FF] shrink-0" />
                   <span className="font-semibold">{selectedCase.compliance_status || "Standard Compliant"}</span>
                 </div>
               </div>
 
               {/* AI Notes */}
-              <div className="space-y-2 border-b border-neutral-100 pb-4">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">AI Notes</span>
-                <p className="text-xs font-serif leading-relaxed text-slate-650 italic bg-amber-50/30 p-3 border border-amber-100/40">
+              <div className="space-y-2 border-b border-white/5 pb-4">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">AI Notes</span>
+                <p className="text-xs font-serif leading-relaxed text-slate-300 italic bg-amber-500/10 p-3 border border-amber-500/25 rounded-lg">
                   "{selectedCase.ai_notes || "No AI briefing notes compiled for this matter."}"
                 </p>
               </div>
 
               {/* Associated Documents */}
-              <div className="space-y-2.5 border-b border-neutral-100 pb-4">
-                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-bold">Dossier Documents</span>
+              <div className="space-y-2.5 border-b border-white/5 pb-4">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Dossier Documents</span>
                 <div className="space-y-1.5 text-xs font-sans">
                   {selectedCase.documents && selectedCase.documents.length > 0 ? (
                     selectedCase.documents.map((doc, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-neutral-50 p-2 border border-neutral-200">
-                        <span className="font-semibold text-slate-700 truncate max-w-[200px]">📄 {doc}</span>
+                      <div key={idx} className="flex justify-between items-center bg-[#151515] p-2 border border-white/5 rounded-lg">
+                        <span className="font-semibold text-slate-300 truncate max-w-[200px]">📄 {doc}</span>
                         <button 
                           onClick={() => toast({ title: "Downloading File", description: `Fetching source payload for ${doc}...` })}
-                          className="text-[9px] font-mono uppercase text-emerald-700 font-bold hover:underline"
+                          className="text-[9px] font-mono uppercase text-[#9B87FF] font-bold hover:underline"
                         >
                           Download
                         </button>
                       </div>
                     ))
                   ) : (
-                    <span className="text-slate-400 italic">No documents attached.</span>
+                    <span className="text-slate-500 italic">No documents attached.</span>
                   )}
                 </div>
               </div>

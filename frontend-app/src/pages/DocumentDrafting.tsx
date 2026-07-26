@@ -679,22 +679,22 @@ Additional contract clauses to inject: ${additionalClauses}
               <span className="text-xs font-mono uppercase tracking-widest text-emerald-600 font-extrabold block">
                 Enterprise AI Contract Studio
               </span>
-              <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 font-sans sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-700 pb-2">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white font-serif sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-[#9B87FF] pb-2">
                 A4 Document Drafting Workspace
               </h1>
-              <p className="text-sm md:text-base text-neutral-500 font-serif max-w-xl mx-auto leading-relaxed">
+              <p className="text-sm md:text-base text-slate-400 font-serif max-w-xl mx-auto leading-relaxed">
                 Generate premium legal contract templates, perform automated audits, and optimize terms with side-by-side redlines.
               </p>
 
               {/* Large search input */}
-              <div className="pt-6 max-w-lg mx-auto flex items-center gap-2">
+              <div className="pt-6 max-w-lg mx-auto flex items-center gap-2 font-sans">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
                   <input
                     placeholder="Search 21 legal templates (e.g. Shareholders, DPA)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-12 pr-4 py-3 text-sm placeholder:text-neutral-400 rounded shadow-3xs transition-all"
+                    className="w-full bg-[#101010] border border-white/5 focus:border-[#7C5CFF] focus:outline-none pl-12 pr-4 py-3 text-sm placeholder:text-slate-500 rounded-xl shadow-3xs transition-all text-white"
                   />
                 </div>
               </div>
@@ -705,10 +705,10 @@ Additional contract clauses to inject: ${additionalClauses}
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-1.5 text-xs font-mono uppercase tracking-wider transition-all border rounded ${
+                    className={`px-4 py-1.5 text-xs font-mono uppercase tracking-wider transition-all border rounded-lg ${
                       selectedCategory === cat
-                        ? "bg-emerald-600 text-white border-emerald-600 font-bold"
-                        : "bg-white text-slate-500 border-neutral-200 hover:bg-neutral-50"
+                        ? "bg-[#7C5CFF] text-white border-[#7C5CFF]/30 font-bold"
+                        : "bg-[#101010] text-slate-400 border-white/5 hover:bg-[#151515] hover:text-white"
                     }`}
                   >
                     {cat}
@@ -724,20 +724,20 @@ Additional contract clauses to inject: ${additionalClauses}
                   key={tpl.id}
                   whileHover={{ y: -6, scale: 1.015 }}
                   onClick={() => handleSelectTemplate(tpl)}
-                  className="group cursor-pointer bg-white border border-neutral-200 hover:border-emerald-600/40 rounded-2xl p-5 flex flex-col justify-between shadow-3xs hover:shadow-2xs transition-all duration-300 relative overflow-hidden"
+                  className="group cursor-pointer bg-[#101010] border border-white/5 hover:border-[#7C5CFF]/40 rounded-2xl p-5 flex flex-col justify-between shadow-3xs hover:shadow-2xs transition-all duration-300 relative overflow-hidden"
                 >
                   <div className="space-y-4">
                     {/* Top row: Icon & Badges */}
                     <div className="flex items-start justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 flex items-center justify-center">
                         {getTemplateIcon(tpl.category)}
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
-                        <Badge variant="outline" className="text-[9px] font-mono bg-neutral-50 text-slate-500 border-neutral-200 uppercase font-bold py-0.5 px-2">
+                        <Badge variant="outline" className="text-[9px] font-mono bg-[#151515] text-slate-400 border-white/5 uppercase font-bold py-0.5 px-2">
                           {tpl.category}
                         </Badge>
                         {tpl.popular && (
-                          <Badge className="text-[9px] font-mono bg-emerald-600 hover:bg-emerald-600 text-white uppercase font-bold py-0.5 px-2 tracking-wide">
+                          <Badge className="text-[9px] font-mono bg-[#7C5CFF] hover:bg-[#9B87FF] text-white uppercase font-bold py-0.5 px-2 tracking-wide">
                             🔥 Popular
                           </Badge>
                         )}
@@ -745,17 +745,17 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
 
                     {/* Preview Thumbnail */}
-                    <div className="h-24 bg-slate-50/50 border border-neutral-200/50 rounded-xl p-3 flex flex-col gap-1.5 overflow-hidden relative">
-                      <div className="w-1/2 h-2.5 bg-neutral-200 rounded" />
-                      <div className="w-5/6 h-2 bg-neutral-100 rounded" />
-                      <div className="w-4/5 h-2 bg-neutral-100 rounded" />
-                      <div className="w-3/4 h-2 bg-neutral-150 rounded" />
-                      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-50/80 to-transparent pointer-events-none" />
+                    <div className="h-24 bg-[#151515] border border-white/5 rounded-xl p-3 flex flex-col gap-1.5 overflow-hidden relative">
+                      <div className="w-1/2 h-2.5 bg-neutral-800 rounded" />
+                      <div className="w-5/6 h-2 bg-neutral-900 rounded" />
+                      <div className="w-4/5 h-2 bg-neutral-900 rounded" />
+                      <div className="w-3/4 h-2 bg-neutral-950 rounded" />
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#151515]/80 to-transparent pointer-events-none" />
                     </div>
 
                     {/* Metadata */}
                     <div className="space-y-1">
-                      <h3 className="font-bold text-slate-900 group-hover:text-emerald-700 text-sm font-sans tracking-tight transition-colors">
+                      <h3 className="font-bold text-white group-hover:text-[#9B87FF] text-sm font-sans tracking-tight transition-colors">
                         {tpl.name}
                       </h3>
                       <p className="text-2xs text-slate-400 font-serif leading-relaxed line-clamp-2">
@@ -764,12 +764,12 @@ Additional contract clauses to inject: ${additionalClauses}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-neutral-100/60 mt-4 flex items-center justify-between">
+                  <div className="pt-4 border-t border-white/5 mt-4 flex items-center justify-between">
                     <span className="text-[9px] font-mono text-slate-450 flex items-center gap-1 uppercase font-bold">
-                      <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+                      <Clock className="h-3 w-3 text-slate-500 shrink-0" />
                       {tpl.draftTime || "3 min draft"}
                     </span>
-                    <button className="text-[10px] font-mono uppercase text-emerald-705 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <button className="text-[10px] font-mono uppercase text-[#9B87FF] font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                       Use Template
                       <ArrowRight className="h-3 w-3 shrink-0" />
                     </button>
@@ -790,10 +790,10 @@ Additional contract clauses to inject: ${additionalClauses}
             className="space-y-8"
           >
             {/* Notion style header block */}
-            <div className="border-b border-neutral-150 pb-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="border-b border-white/5 pb-5 flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block font-bold">Document Title</span>
-                <h2 className="text-base md:text-lg font-bold text-slate-905 font-sans flex items-center gap-2">
+                <span className="text-xs font-mono text-slate-500 uppercase tracking-widest block font-bold">Document Title</span>
+                <h2 className="text-base md:text-lg font-bold text-white font-serif flex items-center gap-2">
                   📄 {selectedTemplate.name}
                 </h2>
               </div>
@@ -817,10 +817,10 @@ Additional contract clauses to inject: ${additionalClauses}
             </div>
 
             {/* ChatGPT style large prompt editor */}
-            <div className="bg-neutral-50 border border-neutral-200 p-5 space-y-5 rounded shadow-3xs">
+            <div className="bg-[#101010] border border-white/5 p-5 space-y-5 rounded-2xl shadow-3xs">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-mono text-slate-450 uppercase font-bold flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                <span className="text-xs font-mono text-slate-500 uppercase font-bold flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-[#7C5CFF]" />
                   Drafting Instructions Prompt Console
                 </span>
                 <VoiceButton onTranscribe={(t) => setPromptInstructions(prev => prev + (prev ? " " : "") + t)} />
@@ -831,7 +831,7 @@ Additional contract clauses to inject: ${additionalClauses}
                 value={promptInstructions}
                 onChange={(e) => setPromptInstructions(e.target.value)}
                 rows={4}
-                className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-4 text-sm text-slate-900 placeholder:text-neutral-400/80 rounded resize-none leading-relaxed font-sans shadow-inner"
+                className="w-full bg-[#151515] border border-white/5 focus:border-[#7C5CFF] focus:outline-none p-4 text-sm text-white placeholder:text-slate-600 rounded-xl resize-none leading-relaxed font-sans shadow-inner"
               />
 
               {/* Suggestions quick tags */}
@@ -845,27 +845,27 @@ Additional contract clauses to inject: ${additionalClauses}
                   <button
                     key={idx}
                     onClick={() => setPromptInstructions(prev => prev + (prev ? " " : "") + s)}
-                    className="px-3 py-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-xs text-slate-500 rounded font-mono"
+                    className="px-3 py-1 border border-white/5 bg-[#151515] hover:bg-[#1C1C1C] text-xs text-slate-400 rounded-lg font-mono"
                   >
                     + {s}
                   </button>
                 ))}
               </div>
 
-              <div className="flex justify-between items-center border-t border-neutral-200 pt-4 flex-wrap gap-2">
+              <div className="flex justify-between items-center border-t border-white/5 pt-4 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <input
                     placeholder="Extra clauses (e.g. non-solicit)..."
                     value={additionalClauses}
                     onChange={(e) => setAdditionalClauses(e.target.value)}
-                    className="w-72 bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-3 py-1.5 text-xs placeholder:text-neutral-400 rounded font-sans"
+                    className="w-72 bg-[#151515] border border-white/5 focus:border-[#7C5CFF] focus:outline-none px-3 py-1.5 text-xs placeholder:text-slate-600 rounded-lg font-sans text-white"
                   />
                 </div>
 
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating} 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded px-8 h-10 text-xs font-semibold uppercase tracking-wider"
+                  className="bg-[#7C5CFF] hover:bg-[#9B87FF] text-white rounded-xl px-8 h-10 text-xs font-semibold uppercase tracking-wider border border-[#7C5CFF]/30"
                 >
                   {isGenerating ? (
                     <>
