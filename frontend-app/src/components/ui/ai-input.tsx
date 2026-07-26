@@ -406,6 +406,19 @@ function VoicePanel() {
       const { voiceChat } = await import("@/services/voice")
       const result = await voiceChat(audioBlob, sessionIdRef.current)
 
+      if (result.transcript) {
+        window.dispatchEvent(
+          new CustomEvent("voice-search-trigger", {
+            detail: {
+              query: result.transcript,
+              direct_answer: result.response_text,
+              response_audio: result.response_audio,
+              citations: result.citations || []
+            }
+          })
+        );
+      }
+
       if (result.response_audio) {
         setPhase("speaking")
         const audio = new Audio(`data:audio/wav;base64,${result.response_audio}`)

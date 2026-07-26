@@ -75,6 +75,33 @@ const Search = () => {
     }
   }, [results, isSearching]);
 
+  useEffect(() => {
+    const handleVoiceSearchTrigger = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail || !detail.query) return;
+
+      const newResult = {
+        id: crypto.randomUUID(),
+        queryText: detail.query,
+        direct_answer: detail.direct_answer,
+        citations: detail.citations || [],
+        is_context_grounded: detail.citations && detail.citations.length > 0,
+        confidence: "95%",
+        source: detail.citations && detail.citations.length > 0 ? detail.citations[0].source_name : undefined
+      };
+
+      setQuery(detail.query);
+      setResults(prev => [...prev, newResult]);
+      setActiveIndex(results.length);
+      loadSidePanels();
+    };
+
+    window.addEventListener("voice-search-trigger", handleVoiceSearchTrigger);
+    return () => {
+      window.removeEventListener("voice-search-trigger", handleVoiceSearchTrigger);
+    };
+  }, [results.length]);
+
   const getLanguageCodeForText = (t: string) => {
     const devanagariRegex = /[\u0900-\u097F]/;
     const bengaliRegex = /[\u0980-\u09FF]/;
