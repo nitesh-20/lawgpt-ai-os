@@ -430,7 +430,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         }
       `}</style>
 
-      {/* Page Title Header (centered or left, clean AI style) */}
+      {/* Page Title Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">Legal Search</h1>
         <p className="text-xs text-slate-500 font-sans">
@@ -438,88 +438,87 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         </p>
       </div>
 
+      {/* PERSISTENT SEARCH CONSOLE: Always visible at the top (ChatGPT Style) */}
+      <div className="w-full max-w-2xl mx-auto bg-white border border-slate-200 p-4 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
+        <form onSubmit={handleSearchSubmit} className="space-y-4">
+          <div className="relative">
+            <SearchIcon className="absolute left-3.5 top-4 h-4.5 w-4.5 text-slate-400" />
+            <textarea
+              placeholder="Describe your legal issue, act, or section query..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              rows={2}
+              className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 leading-relaxed resize-none font-sans"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (query.trim()) executeSearch(query);
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+            <div className="flex items-center gap-2">
+              <VoiceButton
+                onTranscribe={(t) => {
+                  setQuery(t);
+                  executeSearch(t);
+                }}
+              />
+              
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1.5 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
+              >
+                <option value="en">English (EN)</option>
+                <option value="hi-IN">Hindi (HI)</option>
+                <option value="ta-IN">Tamil (TA)</option>
+                <option value="te-IN">Telugu (TE)</option>
+                <option value="bn-IN">Bengali (BN)</option>
+              </select>
+            </div>
+
+            <Button 
+              type="submit" 
+              disabled={isSearching || !query.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center font-sans py-2 px-5 text-xs font-semibold shadow-sm transition-colors"
+            >
+              Search
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </form>
+      </div>
+
       <AnimatePresence mode="wait">
-        {/* EMPTY STATE: Centered search console (Harvey AI style) */}
+        {/* EMPTY STATE: Illustrative prompts (Only shown before any searches) */}
         {!isSearching && results.length === 0 ? (
           <motion.div
             key="empty-state"
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            className="flex-1 flex flex-col justify-center items-center py-8 space-y-8"
+            exit={{ opacity: 0, y: -8 }}
+            className="w-full max-w-xl mx-auto space-y-4 pt-4"
           >
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 shadow-sm animate-pulse">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-            </div>
-
-            {/* Central clean search console */}
-            <div className="w-full max-w-2xl bg-white border border-slate-200 p-4 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
-              <form onSubmit={handleSearchSubmit} className="space-y-4">
-                <div className="relative">
-                  <SearchIcon className="absolute left-3.5 top-4 h-4.5 w-4.5 text-slate-400" />
-                  <textarea
-                    placeholder="Describe your legal issue, act, or section query..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    rows={3}
-                    className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 leading-relaxed resize-none font-sans"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                  <div className="flex items-center gap-2">
-                    <VoiceButton
-                      onTranscribe={(t) => {
-                        setQuery(t);
-                        executeSearch(t);
-                      }}
-                    />
-                    
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 text-xs font-semibold py-1.5 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-lg text-slate-700 uppercase"
-                    >
-                      <option value="en">English (EN)</option>
-                      <option value="hi-IN">Hindi (HI)</option>
-                      <option value="ta-IN">Tamil (TA)</option>
-                      <option value="te-IN">Telugu (TE)</option>
-                      <option value="bn-IN">Bengali (BN)</option>
-                    </select>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    disabled={isSearching || !query.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center font-sans py-2 px-5 text-xs font-semibold shadow-sm transition-colors"
-                  >
-                    Search
-                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* Suggested prompt shortcuts */}
-            <div className="w-full max-w-xl space-y-3">
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block text-center font-bold">Suggested Prompts</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { text: "Explain obligations under DPDP Act", val: "What are the obligations under DPDP Act?" },
-                  { text: "Review NDA liabilities and termination clauses", val: "Review NDA liabilities and termination clauses" },
-                  { text: "Can an employer terminate employment without notice?", val: "Can an employer terminate employment without notice?" },
-                  { text: "Summarize major FEMA compounding penalties", val: "What are compounding options under FEMA Section 13?" }
-                ].map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelectRecent(item.val)}
-                    className="p-3.5 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-xl transition-all duration-150 text-xs font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
-                  >
-                    <span>{item.text}</span>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
-                  </button>
-                ))}
-              </div>
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block text-center font-bold">Suggested Prompts</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { text: "Explain obligations under DPDP Act", val: "What are the obligations under DPDP Act?" },
+                { text: "Review NDA liabilities and termination clauses", val: "Review NDA liabilities and termination clauses" },
+                { text: "Can an employer terminate employment without notice?", val: "Can an employer terminate employment without notice?" },
+                { text: "Summarize major FEMA compounding penalties", val: "What are compounding options under FEMA Section 13?" }
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectRecent(item.val)}
+                  className="p-3.5 text-left bg-white border border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 rounded-xl transition-all duration-150 text-xs font-medium text-slate-700 hover:text-blue-700 flex justify-between items-center group shadow-3xs"
+                >
+                  <span>{item.text}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0 ml-2" />
+                </button>
+              ))}
             </div>
           </motion.div>
         ) : isSearching ? (
@@ -529,10 +528,9 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full max-w-2xl mx-auto py-16 space-y-8"
+            className="w-full max-w-2xl mx-auto py-8 space-y-8"
           >
             <div className="space-y-4">
-              {/* Shimmering paragraphs */}
               <div className="h-4 bg-slate-200 rounded-md w-3/4 animate-pulse" />
               <div className="h-3.5 bg-slate-100 rounded-md w-full animate-pulse" />
               <div className="h-3.5 bg-slate-100 rounded-md w-5/6 animate-pulse" />
@@ -547,16 +545,11 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 </span>
               </div>
 
-              {/* Progress bar */}
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-600 transition-all duration-500 rounded-full" 
                   style={{ width: `${((loadingStage + 1) / loadingStages.length) * 100}%` }} 
                 />
-              </div>
-              <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                <span>Searching legal database...</span>
-                <span>Generating grounded response...</span>
               </div>
             </div>
           </motion.div>
@@ -568,16 +561,6 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-3xl mx-auto space-y-6"
           >
-            {/* New query trigger link to start over */}
-            <div className="flex justify-between items-center">
-              <button 
-                onClick={handleNewResearch} 
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
-              >
-                ← Back to search
-              </button>
-            </div>
-
             <div id="premium-answer-workspace" className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm space-y-8 font-sans">
               
               {/* Question Header */}
@@ -588,11 +571,15 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                 </h2>
               </div>
 
-              {/* Direct Answer */}
+              {/* Direct Answer (with fallback to executive_summary/summary/text if empty) */}
               <div className="space-y-3">
                 <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block font-bold">Direct Answer</span>
                 <div className="text-sm leading-relaxed text-slate-800 space-y-4 whitespace-pre-line font-normal">
-                  {translatedAnswer || activeResult?.direct_answer}
+                  {translatedAnswer || 
+                   activeResult?.direct_answer || 
+                   activeResult?.executive_summary || 
+                   activeResult?.summary || 
+                   "No direct answer text was generated. Please review applicable law sections below."}
                 </div>
               </div>
 
