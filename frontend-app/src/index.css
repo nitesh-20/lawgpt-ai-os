@@ -119,3 +119,103 @@
   opacity: 1;
   transition: opacity 150ms ease;
 }
+
+/* ==========================================
+   GLOBAL UTILITY OVERRIDES FOR DARK THEME
+   ========================================== */
+
+/* Overwrite light backgrounds */
+.bg-white, 
+[class*="bg-white"],
+.bg-slate-50,
+.bg-neutral-50,
+.bg-slate-100,
+.bg-neutral-100 {
+  background-color: #101010 !important;
+}
+
+/* Secondary dark backgrounds for inputs / cards */
+.bg-slate-50\/50,
+.bg-neutral-50\/40,
+.bg-slate-50\/40,
+.bg-\[\#f8fafc\],
+.bg-neutral-50\/30 {
+  background-color: #151515 !important;
+}
+
+/* Dark theme card default shadows and borders */
+.border-neutral-100,
+.border-neutral-200,
+.border-slate-100,
+.border-slate-200,
+.border-neutral-150,
+.border-slate-150 {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Font and text color overrides for white themes */
+.text-slate-900,
+.text-slate-905,
+.text-slate-800,
+.text-slate-805,
+.text-slate-700,
+.text-slate-705,
+.text-neutral-900,
+.text-neutral-800 {
+  color: #ffffff !important;
+}
+
+.text-slate-600,
+.text-slate-650,
+.text-slate-500,
+.text-slate-450,
+.text-slate-400,
+.text-neutral-500,
+.text-neutral-450,
+.text-slate-350 {
+  color: #94a3b8 !important; /* text-slate-400 */
+}
+
+/* Purple overrides for greens */
+.bg-emerald-50,
+.bg-emerald-50\/40,
+.bg-emerald-50\/10 {
+  background-color: rgba(124, 92, 255, 0.1) !important;
+  border-color: rgba(124, 92, 255, 0.2) !important;
+}
+
+.text-emerald-600,
+.text-emerald-700,
+.text-emerald-705,
+.text-emerald-800 {
+  color: #9b87ff !important;
+}
+
+.bg-emerald-600,
+.bg-emerald-650,
+.bg-emerald-700,
+.hover\:bg-emerald-700:hover,
+.hover\:bg-emerald-800:hover {
+  background-color: #7c5cff !important;
+}
+
+/* Hover overlays */
+.hover\:bg-neutral-50:hover,
+.hover\:bg-slate-50:hover,
+.hover\:bg-neutral-50\/30:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Rounded borders override for luxury dashboard look */
+.rounded-none {
+  border-radius: 0.75rem !important;
+}
+.rounded-2xl {
+  border-radius: 1rem !important;
+}
+
+/* Fix Sheet / Modals overlay background */
+.bg-background\/80 {
+  background-color: rgba(5, 5, 5, 0.8) !important;
+}
+
