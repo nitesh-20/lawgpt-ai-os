@@ -13,10 +13,9 @@ interface VoiceButtonProps {
 }
 
 const SUPPORTED_LANGUAGES = [
+  { code: "auto", label: "Auto Sense" },
   { code: "en-IN", label: "English (IN)" },
   { code: "hi-IN", label: "Hindi" },
-  { code: "ta-IN", label: "Tamil" },
-  { code: "te-IN", label: "Telugu" },
   { code: "bn-IN", label: "Bengali" }
 ];
 
@@ -27,7 +26,7 @@ export const VoiceButton = ({
   showLanguageSelect = true
 }: VoiceButtonProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingLanguage, setRecordingLanguage] = useState("en-IN");
+  const [recordingLanguage, setRecordingLanguage] = useState("auto");
   const [timer, setTimer] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const { toast } = useToast();

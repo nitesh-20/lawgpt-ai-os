@@ -97,6 +97,8 @@ class VoiceAgent(BaseAgent):
             }
 
     async def _handle_transcribe(self, task_input: dict[str, Any]) -> dict[str, Any]:
+        import asyncio
+        import re
         audio_bytes = task_input.get("audio_bytes", b"")
         filename = task_input.get("filename", "audio.wav")
         lang = task_input.get("language_code", "en-IN")
@@ -105,7 +107,42 @@ class VoiceAgent(BaseAgent):
             raise ValueError("Invalid or empty audio payload.")
 
         # Speech to text
-        res = await self.recognizer.transcribe(audio_bytes, filename, lang)
+        if lang == "auto":
+            # Concurrently transcribe using en-IN, hi-IN, and bn-IN
+            transcripts = await asyncio.gather(
+                self.recognizer.transcribe(audio_bytes, filename, "en-IN"),
+                self.recognizer.transcribe(audio_bytes, filename, "hi-IN"),
+                self.recognizer.transcribe(audio_bytes, filename, "bn-IN"),
+                return_exceptions=True
+            )
+            best_res = None
+            best_score = -1
+            
+            for i, r in enumerate(transcripts):
+                if isinstance(r, Exception) or not r or "transcript" not in r:
+                    continue
+                text = r["transcript"].strip()
+                if not text:
+                    continue
+                
+                score = len(text)
+                # Boost Devanagari script for Hindi and Bengali script for Bengali
+                if re.search(r"[\u0900-\u097F]", text):
+                    score += 150
+                if re.search(r"[\u0980-\u09FF]", text):
+                    score += 150
+                
+                if score > best_score:
+                    best_score = score
+                    best_res = r
+            
+            if best_res:
+                res = best_res
+            else:
+                res = {"transcript": "", "confidence": 0.0}
+        else:
+            res = await self.recognizer.transcribe(audio_bytes, filename, lang)
+            
         detected_lang = self.detector.detect_language(res["transcript"])
         
         return {
