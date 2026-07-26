@@ -167,7 +167,7 @@ const Hero = () => {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[2%] w-[92vw] max-w-[1700px] -translate-x-1/2"
+        className="pointer-events-none absolute left-1/2 top-[2%] w-[92vw] max-w-[1700px] -translate-x-1/2 overflow-hidden"
       >
         <motion.div
           ref={courtRef}
@@ -179,14 +179,21 @@ const Hero = () => {
             alt=""
             className="h-auto w-full select-none"
             style={{
-              opacity: 0.3,
-              filter: "blur(3px) saturate(75%) brightness(65%)",
-              mixBlendMode: "screen",
-              maskImage: "radial-gradient(ellipse 62% 58% at 50% 38%, black 35%, transparent 82%)",
-              WebkitMaskImage: "radial-gradient(ellipse 62% 58% at 50% 38%, black 35%, transparent 82%)",
+              opacity: 0.28,
+              filter: "blur(3px) saturate(75%) brightness(60%)",
             }}
           />
         </motion.div>
+        {/* Vignette fade to the section background — a plain gradient overlay instead of
+            CSS mask-image/mix-blend-mode, which some Chromium/GPU configs silently fail to
+            composite (renders the whole layer invisible rather than just less blended). */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 62% 58% at 50% 38%, transparent 0%, transparent 35%, #050506 82%)",
+          }}
+        />
       </div>
 
       <div
