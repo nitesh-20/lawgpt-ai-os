@@ -35,6 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { VercelV0Chat } from "@/components/ui/v0-ai-chat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -439,52 +440,23 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
       </div>
 
       {/* PERSISTENT SEARCH CONSOLE */}
-      <div className="w-full max-w-3xl mx-auto bg-white border border-slate-200 p-2 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
-          <div className="relative flex-1 flex items-center h-14">
-            <SearchIcon className="absolute left-4 h-5 w-5 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Ask a compliance or precedent query (e.g. 'Right to speech')..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{ paddingLeft: '48px', paddingRight: '16px' }}
-              className="w-full h-full bg-transparent border-0 focus:outline-none focus:ring-0 text-[15px] text-slate-800 placeholder:text-slate-400 font-sans"
+      <div className="w-full max-w-3xl mx-auto">
+        <VercelV0Chat
+          value={query}
+          onChange={setQuery}
+          onSubmit={() => executeSearch(query)}
+          isSearching={isSearching}
+          language={language}
+          setLanguage={setLanguage}
+          voiceComponent={
+            <VoiceButton
+              onTranscribe={(t) => {
+                setQuery(t);
+                executeSearch(t);
+              }}
             />
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="h-14 w-14 flex items-center justify-center border border-slate-100 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-              <VoiceButton
-                onTranscribe={(t) => {
-                  setQuery(t);
-                  executeSearch(t);
-                }}
-              />
-            </div>
-            
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-xs font-semibold h-14 px-4 focus:outline-none focus:border-blue-600 cursor-pointer rounded-xl text-slate-700 uppercase"
-            >
-              <option value="en">English (EN)</option>
-              <option value="hi-IN">Hindi (HI)</option>
-              <option value="ta-IN">Tamil (TA)</option>
-              <option value="te-IN">Telugu (TE)</option>
-              <option value="bn-IN">Bengali (BN)</option>
-            </select>
-
-            <Button 
-              type="submit" 
-              disabled={isSearching || !query.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center font-sans h-14 px-6 text-xs font-semibold shadow-sm transition-colors"
-            >
-              Search
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Button>
-          </div>
-        </form>
+          }
+        />
       </div>
 
       <AnimatePresence mode="wait">
