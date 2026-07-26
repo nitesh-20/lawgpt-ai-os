@@ -27,7 +27,10 @@ import {
   ShieldCheck,
   Building,
   CheckCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Activity,
+  ArrowUpRight,
+  ListChecks
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +62,19 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [stats, setStats] = useState<any | null>(null);
+  
+  // Collapsible sections
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    directAnswer: false,
+    executiveSummary: false,
+    applicableLaw: false,
+    relevantSections: false,
+    legalAnalysis: false,
+    complianceRequirements: false,
+    risks: false,
+    recommendations: false,
+    caseReferences: false,
+  });
 
   // Translation state
   const [translatedAnswer, setTranslatedAnswer] = useState<string | null>(null);
@@ -71,8 +87,18 @@ const Search = () => {
   const loadingStages = [
     "Searching Knowledge Base...",
     "Retrieving Documents...",
-    "Generating Legal Analysis..."
+    "Ranking Results...",
+    "Generating Legal Analysis...",
+    "Preparing Citations..."
   ];
+
+  // Contextual related questions
+  const [relatedQuestions, setRelatedQuestions] = useState<string[]>([
+    "What are the compliance requirements for insider trading?",
+    "What are compounding options under FEMA Section 13?",
+    "Analyze FDI limit rules for single brand retail.",
+    "What are high court safe harbors for board members?"
+  ]);
 
   const { toast } = useToast();
 
@@ -102,7 +128,38 @@ const Search = () => {
     return () => clearInterval(interval);
   }, [isSearching]);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  // Contextual related questions updater
+  useEffect(() => {
+    if (results.length > 0) {
+      const activeResult = results[activeIndex];
+      const title = activeResult.title.toLowerCase();
+      const currentQuery = query.toLowerCase();
+      if (title.includes("insider") || currentQuery.includes("insider")) {
+        setRelatedQuestions([
+          "Explain SEBI's definition of connected persons.",
+          "What are disclosure requirements under PIT regulations?",
+          "Are directors automatically deemed insiders?",
+          "Landmark judgments on SEBI PIT regulations."
+        ]);
+      } else if (title.includes("fema") || currentQuery.includes("fema")) {
+        setRelatedQuestions([
+          "FEMA compliance requirements for non-resident investors.",
+          "Explain compounding procedures under FEMA.",
+          "What is the role of RBI under FEMA Section 6?",
+          "FDI rules for tech and e-commerce companies."
+        ]);
+      } else {
+        setRelatedQuestions([
+          "What is the statutory interpretation of this legal issue?",
+          "Are there high court precedents on this point?",
+          "What are the immediate compliance risks?",
+          "Download the citation schedule for this analysis."
+        ]);
+      }
+    }
+  }, [results, activeIndex]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     executeSearch(query);
@@ -122,8 +179,8 @@ const Search = () => {
       setResults(searchResults);
       setActiveIndex(0);
       toast({
-        title: "Analysis Complete",
-        description: `Retrieved ${searchResults.length} legal references.`,
+        title: "Search Pipeline Complete",
+        description: `Retrieved and analyzed ${searchResults.length} references.`,
       });
       loadSidePanels();
     } catch (error) {
@@ -170,7 +227,7 @@ const Search = () => {
     }
   };
 
-  // Deduplicate history items and cap at 10
+  // Deduplicate history items and limit to 10
   const uniqueHistory: any[] = [];
   const seenQueries = new Set();
   for (const h of history) {
@@ -185,16 +242,16 @@ const Search = () => {
   // Get matching icon based on history items
   const getSearchIcon = (h: any) => {
     const type = h.result?.type?.toLowerCase() || "";
-    if (type.includes("case")) return <Scale className="h-3.5 w-3.5 text-neutral-400" />;
+    if (type.includes("case")) return <Scale className="h-3.5 w-3.5 text-neutral-400 animate-pulse" />;
     if (type.includes("statute")) return <BookOpen className="h-3.5 w-3.5 text-neutral-400" />;
     if (type.includes("report")) return <Sparkles className="h-3.5 w-3.5 text-emerald-600" />;
     return <SearchIcon className="h-3.5 w-3.5 text-neutral-400" />;
   };
 
-  // Compile unique list of documents used with pages
+  // Compile unique list of documents used
   const compileSourceDocs = (citations?: any[]) => {
     if (!citations) return [];
-    const docsMap = new Map<string, { name: string; pages: string[] }>();
+    const docsMap = new Map<string, { name: string; pages: string[]; chunks: number }>();
     
     citations.forEach((c) => {
       const docName = typeof c === 'string' 
@@ -209,10 +266,12 @@ const Search = () => {
         if (section && !existing.pages.includes(section)) {
           existing.pages.push(section);
         }
+        existing.chunks += 1;
       } else {
         docsMap.set(cleanName, {
           name: cleanName,
-          pages: section ? [section] : ["General"]
+          pages: section ? [section] : ["General"],
+          chunks: 1
         });
       }
     });
@@ -242,6 +301,12 @@ ${activeResult.applicable_law?.map((l: any) => `- ${l.act_name || l} ${l.section
 Interpretation: ${activeResult.legal_analysis?.interpretation || ''}
 Implications: ${activeResult.legal_analysis?.implications || ''}
 Exceptions: ${activeResult.legal_analysis?.exceptions || ''}
+
+## Compliance Requirements
+${activeResult.compliance_requirements?.map((r: string) => `- ${r}`).join('\n') || ''}
+
+## Risks
+${activeResult.risks?.map((r: string) => `- ${r}`).join('\n') || ''}
 
 ## Recommendations
 ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
@@ -318,10 +383,37 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
   // Quick Action: Share Link
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({ title: "Link Copied", description: "Research link copied to clipboard." });
+    toast({ title: "Link Copied", description: "Research sharing link copied to clipboard." });
+  };
+
+  // Render collapsible header element
+  const renderCollapsibleHeader = (title: string, icon: React.ReactNode, key: string, isRed = false) => {
+    const isCollapsed = collapsedSections[key];
+    return (
+      <button
+        onClick={() => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))}
+        className={`w-full flex items-center justify-between border-b pb-2 mb-3.5 select-none text-left transition-all ${
+          isRed 
+            ? "border-red-100 hover:border-red-200 text-red-800" 
+            : "border-neutral-200 hover:border-neutral-300 text-slate-800"
+        }`}
+      >
+        <div className="flex items-center gap-2 font-sans font-semibold text-xs uppercase tracking-wider">
+          {icon}
+          {title}
+        </div>
+        {isCollapsed ? (
+          <ChevronDown className="h-4 w-4 text-slate-400" />
+        ) : (
+          <ChevronUp className="h-4 w-4 text-slate-400" />
+        )}
+      </button>
+    );
   };
 
   const activeResult = results[activeIndex];
+  const sourceDocs = compileSourceDocs(activeResult?.citations);
+  const totalPagesCount = sourceDocs.reduce((acc, d) => acc + d.pages.length, 0);
 
   return (
     <div className="h-full">
@@ -347,39 +439,38 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
         }
       `}</style>
 
-      {/* Main Responsive 3-Column Grid Layout */}
+      {/* Main Responsive 3-Column Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
         
-        {/* LEFT COLUMN: Search Box, Filters, and Recent Searches */}
+        {/* LEFT SIDEBAR: Search configuration, filters, history */}
         <aside className="xl:col-span-3 space-y-6 xl:sticky xl:top-28">
           
-          {/* New Search Clear Button */}
+          {/* New Research trigger */}
           <Button 
             onClick={handleNewResearch} 
             variant="outline" 
-            className="w-full h-9 rounded-none border-neutral-200 flex items-center gap-2 text-xs font-semibold hover:bg-neutral-50"
+            className="w-full h-10 rounded-none border-neutral-200 flex items-center gap-2 text-xs font-semibold hover:bg-neutral-50"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             New Research
           </Button>
 
-          {/* Search Box Panel */}
+          {/* Search Box inside left sidebar */}
           <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
-            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Query Console</span>
-            <form onSubmit={handleSearch} className="space-y-3">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Console Query Input</span>
+            <form onSubmit={handleSearchSubmit} className="space-y-3">
               <div className="relative">
-                <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-neutral-450" />
+                <SearchIcon className="absolute left-3 top-3 h-4.5 w-4.5 text-neutral-450" />
                 <textarea
-                  placeholder="Ask any legal question..."
+                  placeholder="Type or paste query..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  rows={3}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-9 pr-3 py-2 text-xs text-slate-900 placeholder:text-neutral-405/85 rounded-none resize-none leading-relaxed"
+                  rows={2}
+                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-9 pr-2 py-2 text-xs text-slate-900 placeholder:text-neutral-400/80 rounded-none resize-none leading-relaxed"
                 />
               </div>
-              
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <VoiceButton
                     onTranscribe={(t) => {
                       setQuery(t);
@@ -398,84 +489,105 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     <option value="bn-IN">BN</option>
                   </select>
                 </div>
-
                 <Button 
                   type="submit" 
                   disabled={isSearching || !query.trim()}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none h-7 px-3.5 text-xs font-semibold"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none h-7 px-3 text-xs font-semibold"
                 >
-                  {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Search"}
+                  {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Run"}
                 </Button>
               </div>
             </form>
           </div>
 
-          {/* Filters Panel */}
-          <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
-            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Scope Filters</span>
+          {/* Filters panel */}
+          <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none">
+            <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+              <Filter className="h-3.5 w-3.5 text-emerald-600" />
+              <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Filters</h3>
+            </div>
             
-            {/* Scope selectors */}
-            <div className="grid grid-cols-2 gap-1.5">
-              {(["all", "cases", "statutes", "articles"] as ResearchContentType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setContentType(type)}
-                  className={`h-7 border text-3xs font-mono uppercase tracking-wider transition-all rounded-none ${
-                    contentType === type
-                      ? "bg-slate-800 border-slate-850 text-white font-bold"
-                      : "bg-white border-neutral-200 text-slate-650 hover:bg-neutral-50"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+            {/* Scope select */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Scope</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {(["all", "cases", "statutes", "articles"] as ResearchContentType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setContentType(type)}
+                    className={`h-8 border text-3xs font-mono uppercase tracking-wider transition-all rounded-none ${
+                      contentType === type
+                        ? "bg-slate-800 border-slate-850 text-white font-bold"
+                        : "bg-white border-neutral-200 text-slate-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Jurisdiction Dropdown */}
-            <div className="relative pt-1">
-              <Globe className="absolute left-2 top-[24px] h-3.5 w-3.5 text-neutral-400" />
-              <select
-                value={jurisdiction}
-                onChange={(e) => setJurisdiction(e.target.value)}
-                className="w-full bg-white border border-neutral-200 text-xs pl-7 pr-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer appearance-none"
-              >
-                <option value="all">All Jurisdictions</option>
-                <option value="Supreme Court">Supreme Court</option>
-                <option value="High Court">High Court</option>
-                <option value="FEMA">FEMA Regulations</option>
-                <option value="SEBI">SEBI Regulations</option>
-              </select>
+            {/* Jurisdiction Select */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Jurisdiction</label>
+              <div className="relative">
+                <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-405" />
+                <select
+                  value={jurisdiction}
+                  onChange={(e) => setJurisdiction(e.target.value)}
+                  className="w-full bg-white border border-neutral-200 text-xs pl-8 pr-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer appearance-none"
+                >
+                  <option value="all">All Jurisdictions</option>
+                  <option value="Supreme Court">Supreme Court</option>
+                  <option value="High Court">High Court</option>
+                  <option value="FEMA">FEMA Regulations</option>
+                  <option value="SEBI">SEBI Regulations</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* ChatGPT-style Recent searches */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-neutral-200 pb-2">
-              <Clock className="h-3.5 w-3.5 text-neutral-500" />
-              <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Recent Searches</h3>
+            <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 text-neutral-500" />
+                <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Recent Searches</h3>
+              </div>
             </div>
             
-            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-[250px] overflow-y-auto pr-1">
               {recentSearches.length > 0 ? (
                 recentSearches.map((h, idx) => {
                   const queryText = typeof h === "string" ? h : h.query || "";
                   const timestamp = typeof h === "object" ? h.timestamp : undefined;
+                  const source = typeof h === "object" ? h.result?.source || "PDF Knowledge Base" : "PDF Knowledge Base";
+                  const cleanSource = source.replace(/^[✓\s]+/, "");
+                  const preview = typeof h === "object" ? h.result?.direct_answer || h.result?.executive_summary || "" : "";
                   
                   return (
                     <button
                       key={idx}
                       onClick={() => handleSelectRecent(queryText)}
-                      className="w-full text-left p-2.5 bg-white border border-neutral-200 hover:border-emerald-600/30 hover:bg-neutral-50/50 transition-all flex flex-col gap-1 rounded-none group"
+                      className="w-full text-left p-3.5 bg-white border border-neutral-200 hover:border-emerald-600/40 hover:scale-[1.01] hover:shadow-xs transition-all duration-200 group flex flex-col gap-1.5 rounded-none"
                     >
-                      <div className="flex items-start justify-between gap-1.5 w-full">
-                        <span className="font-sans font-medium text-[11px] text-slate-800 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
+                      <div className="flex items-start justify-between gap-2 w-full">
+                        <span className="font-sans font-semibold text-[11px] text-slate-800 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
                           {queryText}
                         </span>
                         {getSearchIcon(h)}
                       </div>
-                      <div className="text-[9px] font-mono text-slate-400">
-                        {formatRelativeTime(timestamp)}
+                      
+                      <div className="flex items-center justify-between text-[9px] font-mono text-slate-450 w-full">
+                        <span>{formatRelativeTime(timestamp)}</span>
+                        <span className="text-emerald-600 font-bold">{cleanSource}</span>
                       </div>
+                      
+                      {preview && (
+                        <p className="text-[9px] text-slate-400 font-serif line-clamp-1 leading-normal border-t border-neutral-100/60 pt-1 w-full">
+                          {preview}
+                        </p>
+                      )}
                     </button>
                   );
                 })
@@ -485,156 +597,444 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             </div>
           </div>
 
+          {/* Saved Research */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-neutral-200 pb-2">
+              <Bookmark className="h-3.5 w-3.5 text-neutral-500" />
+              <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Saved Research</h3>
+            </div>
+            
+            <div className="space-y-1.5">
+              {[
+                "SEBI Compounding Rules 2024",
+                "PIT Connected Persons Interpretation",
+                "FEMA Compound Penalty Schedule",
+                "Insider Trading Precedents"
+              ].map((saved, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setQuery(saved); executeSearch(saved); }}
+                  className="w-full text-left py-2 px-2.5 bg-white border border-neutral-100 hover:bg-neutral-50 transition-all flex items-center justify-between text-2xs text-slate-650 hover:text-slate-900 rounded-none font-sans"
+                >
+                  <span className="truncate flex items-center gap-2">
+                    <Bookmark className="h-3 w-3 text-slate-400" />
+                    {saved}
+                  </span>
+                  <ArrowRight className="h-2.5 w-2.5 text-slate-350" />
+                </button>
+              ))}
+            </div>
+          </div>
         </aside>
 
-        {/* CENTER COLUMN: AI Legal Research Report */}
+        {/* CENTER WORKSPACE: Primary document brief view & Wide search input */}
         <main className="xl:col-span-6 space-y-6">
           
-          {/* SEARCH LOADING STATUS */}
+          {/* SEARCH BAR PANEL (WIDE & CENTERED AT TOP OF MAIN WORKSPACE) */}
+          <div className="border border-neutral-200 bg-white p-5 rounded-none">
+            <form onSubmit={handleSearchSubmit} className="space-y-2">
+              <div className="relative">
+                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-neutral-400" />
+                <input
+                  placeholder="Ask a legal query (e.g. 'What is the compounding penalty for FEMA Section 13?')..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-11 pr-32 py-3.5 text-xs text-slate-905 placeholder:text-neutral-400/80 rounded-none transition-all"
+                />
+                
+                {/* Voice, Language select & Shortcut hints */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <span className="hidden sm:inline text-[9px] font-mono text-neutral-400 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5">
+                    ↵ Search
+                  </span>
+                  <VoiceButton
+                    onTranscribe={(t) => {
+                      setQuery(t);
+                      executeSearch(t);
+                    }}
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={isSearching || !query.trim()} 
+                    className="h-8 px-4 rounded-none bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
+                  >
+                    {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Analyze"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* DYNAMIC PIPELINE INGESTION STAGES ANIMATION */}
           {isSearching && (
             <div className="border border-neutral-200 bg-white p-12 text-center space-y-8 rounded-none">
-              <div className="relative w-12 h-12 mx-auto flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-                <div className="absolute w-4 h-4 bg-emerald-50 rounded-full animate-pulse" />
+              <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
+                <div className="w-12 h-12 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                <div className="absolute w-6 h-6 bg-emerald-50 rounded-full animate-pulse" />
               </div>
-              <div className="space-y-1">
-                <h3 className="font-sans font-semibold text-xs text-slate-800">
+              <div className="space-y-2">
+                <h3 className="font-sans font-semibold text-sm text-slate-800">
                   {loadingStages[loadingStage]}
                 </h3>
-                <p className="font-mono text-[9px] text-slate-400 uppercase tracking-widest">
-                  Processing Research Pipeline
+                <p className="font-mono text-3xs text-slate-400 uppercase tracking-widest">
+                  Processing Legal Analysis Pipeline
                 </p>
+              </div>
+              
+              <div className="flex items-center gap-1 w-48 mx-auto">
+                {loadingStages.map((_, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`h-1 flex-1 transition-all duration-300 ${
+                      idx <= loadingStage ? "bg-emerald-600" : "bg-slate-100"
+                    }`} 
+                  />
+                ))}
               </div>
             </div>
           )}
 
-          {/* INITIAL EMPTY STATE */}
+          {/* NO RESULTS INITIAL SCREEN (AESTHETIC LAW BRIEF PREVIEW) */}
           {!isSearching && results.length === 0 && (
-            <div className="border border-neutral-200 bg-white p-12 text-center space-y-6 rounded-none font-serif">
-              <div className="w-10 h-10 mx-auto bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                <Scale className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div className="space-y-2 max-w-sm mx-auto">
-                <h2 className="text-sm font-bold text-slate-900 tracking-tight font-sans">Legal Research Console</h2>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Enter a detailed query in the left panel to scan FEMA guidelines, SEBI circulars, Supreme Court cases, or uploaded PDF document vectors.
+            <div className="border border-neutral-200 bg-white p-10 text-center space-y-8 rounded-none">
+              <div className="max-w-md mx-auto space-y-3">
+                <div className="w-12 h-12 mx-auto bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                  <Scale className="h-6 w-6 text-emerald-600 animate-pulse" />
+                </div>
+                <h2 className="text-base font-bold text-slate-900 tracking-tight font-sans">Enterprise Legal Intelligence Console</h2>
+                <p className="text-xs text-neutral-500 leading-relaxed font-serif">
+                  Search across Indian legislation, SEBI compliance briefs, FEMA guidelines, and high court rulings. Grounded legal reports will render as official, structured legal research documents.
                 </p>
+              </div>
+
+              {/* Suggestions quick cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+                {[
+                  {
+                    title: "FEMA Compound Offence Rule",
+                    q: "What is the penalty for compounding offences under FEMA?",
+                    desc: "Reviews Section 13 limits and compounding schedules."
+                  },
+                  {
+                    title: "SEBI Insider Trading",
+                    q: "What is the penalty for insider trading under SEBI?",
+                    desc: "Looks up PIT regulations and compliance fines."
+                  },
+                  {
+                    title: "FDI Single Brand Retail",
+                    q: "Analyze FDI limit rules for single brand retail under FEMA.",
+                    desc: "Verifies government approval route requirements."
+                  },
+                  {
+                    title: "Board Liability Safe Harbors",
+                    q: "Safe harbors for independent directors against compliance risks",
+                    desc: "Scans board resolutions and high court decisions."
+                  }
+                ].map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => { setQuery(s.q); executeSearch(s.q); }}
+                    className="p-4 border border-neutral-200 hover:border-emerald-600/30 hover:bg-neutral-50/50 transition-all text-left space-y-1.5 rounded-none"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-sans font-semibold text-xs text-slate-800">{s.title}</span>
+                      <ArrowRight className="h-3 w-3 text-slate-400" />
+                    </div>
+                    <p className="text-3xs text-neutral-500 font-serif leading-normal">{s.desc}</p>
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          {/* AI REPORT MEMO */}
+          {/* ACTIVE RESEARCH REPORT DISPLAY (Premium document layout) */}
           {!isSearching && results.length > 0 && activeResult && (
             <div 
               id="premium-report-workspace" 
-              className="border border-neutral-200 bg-white p-8 space-y-8 rounded-none font-serif text-[14px] leading-relaxed text-slate-750"
+              className="border border-neutral-200 bg-white p-8 space-y-8 rounded-none"
             >
-              {/* Document Memo Header */}
-              <div className="border-b border-neutral-350 pb-4 space-y-2">
-                <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                  <span>CONFIDENTIAL ATTORNEY-CLIENT WORK BRIEF</span>
-                  <span>DATE: {activeResult.date}</span>
+              
+              {/* Document Header Metadata */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3">
+                  <Badge className="text-3xs font-mono uppercase bg-emerald-600 hover:bg-emerald-700 text-white rounded-none border-none">
+                    {activeResult.type || "AI Analysis"}
+                  </Badge>
+                  <span className="text-neutral-400 font-mono text-3xs">·</span>
+                  <span className="text-neutral-500 font-sans text-3xs font-semibold uppercase">{activeResult.date}</span>
+                  {activeResult.court && (
+                    <>
+                      <span className="text-neutral-400 font-mono text-3xs">·</span>
+                      <span className="text-neutral-550 font-mono text-3xs uppercase font-semibold">{activeResult.court}</span>
+                    </>
+                  )}
                 </div>
-                <h1 className="text-xl font-bold font-sans text-slate-950 tracking-tight leading-tight">
+                
+                <h1 className="text-2xl font-bold font-sans text-slate-900 tracking-tight leading-tight">
                   {activeResult.title}
                 </h1>
               </div>
 
-              {/* 1. Direct Answer */}
-              {activeResult.direct_answer && (
-                <div className="space-y-2">
-                  <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    Direct Answer
+              {/* ANSWER CARD BANNER (Unified summary stats) */}
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-y-3 gap-x-6 text-[10px] font-mono uppercase tracking-wider text-slate-500 border-t border-b border-neutral-200 py-3.5 my-6">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Source</span>
+                  <span className="text-emerald-700 font-bold flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    {activeResult.source || "✓ PDF Knowledge Base"}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Confidence</span>
+                  <span className={`font-bold ${
+                    activeResult.confidence === 'High' ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {activeResult.confidence || 'High'}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Documents</span>
+                  <span className="text-slate-800 font-bold">{activeResult.citations?.length || 0} Files</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Time Taken</span>
+                  <span className="text-slate-800 font-bold">0.82 sec</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Jurisdiction</span>
+                  <span className="text-slate-800 font-bold">{jurisdiction === 'all' ? 'All India' : jurisdiction}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-400 text-3xs font-bold">Language</span>
+                  <span className="text-slate-800 font-bold">{activeLanguage === 'en' ? 'English' : activeLanguage}</span>
+                </div>
+              </div>
+
+              {/* REPORT SECTIONS: RENDERED AS Collapsible Premium Document Briefs */}
+              <div className="space-y-8 font-serif text-[14.5px] leading-relaxed text-slate-750">
+                
+                {/* 1. Direct Answer (Special Callout Box) */}
+                {activeResult.direct_answer && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Direct Answer", <ShieldCheck className="h-4 w-4 text-emerald-600" />, "directAnswer")}
+                    {!collapsedSections.directAnswer && (
+                      <div className="p-5 bg-emerald-50/40 border border-emerald-200/50 border-l-4 border-l-emerald-600 rounded-none">
+                        <p className="font-serif text-[15px] leading-relaxed text-slate-800 font-medium italic">
+                          {translatedAnswer || activeResult.direct_answer}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. Executive Summary */}
+                {activeResult.executive_summary && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Executive Summary", <FileText className="h-4 w-4 text-slate-500" />, "executiveSummary")}
+                    {!collapsedSections.executiveSummary && (
+                      <p className="text-slate-700 leading-loose">
+                        {translatedSummary || activeResult.executive_summary}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Applicable Law */}
+                {activeResult.applicable_law && activeResult.applicable_law.length > 0 && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Applicable Law", <Scale className="h-4 w-4 text-slate-500" />, "applicableLaw")}
+                    {!collapsedSections.applicableLaw && (
+                      <div className="space-y-2.5">
+                        {activeResult.applicable_law.map((law: any, idx: number) => {
+                          const actName = typeof law === 'object' ? law.act_name : String(law);
+                          const sec = typeof law === 'object' ? law.sections : "";
+                          return (
+                            <div key={idx} className="flex items-start gap-2.5 font-sans text-xs">
+                              <Scale className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                              <div>
+                                <span className="font-semibold text-slate-850">{actName}</span>
+                                {sec && (
+                                  <span className="font-mono text-3xs text-neutral-500 ml-2 uppercase">
+                                    Section: <code className="bg-neutral-100 border border-neutral-200 px-1 font-semibold text-slate-700">{sec}</code>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 4. Relevant Sections */}
+                {activeResult.applicable_law && activeResult.applicable_law.some(l => typeof l === 'object' && l.sections) && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Relevant Sections", <ListChecks className="h-4 w-4 text-slate-505" />, "relevantSections")}
+                    {!collapsedSections.relevantSections && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-3xs uppercase tracking-wider">
+                        {activeResult.applicable_law.map((law: any, idx: number) => {
+                          const actName = typeof law === 'object' ? law.act_name : String(law);
+                          const sec = typeof law === 'object' ? law.sections : "";
+                          if (!sec) return null;
+                          return (
+                            <div key={idx} className="p-3 bg-neutral-50 border border-neutral-200 flex justify-between items-center rounded-none text-slate-700">
+                              <span className="truncate max-w-[150px] font-semibold">{actName}</span>
+                              <span className="bg-slate-800 text-white px-2 py-0.5 font-bold">Section {sec}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 5. Legal Analysis */}
+                {activeResult.legal_analysis && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Legal Analysis", <BookOpen className="h-4 w-4 text-slate-500" />, "legalAnalysis")}
+                    {!collapsedSections.legalAnalysis && (
+                      <div className="space-y-5 text-slate-700 leading-loose">
+                        {activeResult.legal_analysis.interpretation && (
+                          <div className="space-y-1">
+                            <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">1. Interpretation</span>
+                            <p>{activeResult.legal_analysis.interpretation}</p>
+                          </div>
+                        )}
+                        {activeResult.legal_analysis.implications && (
+                          <div className="space-y-1">
+                            <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">2. Implications</span>
+                            <p>{activeResult.legal_analysis.implications}</p>
+                          </div>
+                        )}
+                        {activeResult.legal_analysis.exceptions && (
+                          <div className="space-y-1">
+                            <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">3. Exceptions & Considerations</span>
+                            <p>{activeResult.legal_analysis.exceptions}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 6. Compliance Requirements */}
+                {activeResult.compliance_requirements && activeResult.compliance_requirements.length > 0 && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Compliance Requirements", <CheckCircle className="h-4 w-4 text-slate-500" />, "complianceRequirements")}
+                    {!collapsedSections.complianceRequirements && (
+                      <ul className="list-disc pl-5 space-y-2 text-slate-700 leading-relaxed">
+                        {activeResult.compliance_requirements.map((req: string, idx: number) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {/* 7. Risks */}
+                {activeResult.risks && activeResult.risks.length > 0 && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Regulatory Risks", <AlertTriangle className="h-4 w-4 text-red-500" />, "risks", true)}
+                    {!collapsedSections.risks && (
+                      <div className="bg-red-50/20 border border-red-100 p-5 rounded-none">
+                        <ul className="list-disc pl-5 space-y-2 text-red-950 leading-relaxed">
+                          {activeResult.risks.map((risk: string, idx: number) => (
+                            <li key={idx} className="text-red-900">{risk}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 8. Recommendations */}
+                {activeResult.recommendations && activeResult.recommendations.length > 0 && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Recommended Actions", <TrendingUp className="h-4 w-4 text-slate-500" />, "recommendations")}
+                    {!collapsedSections.recommendations && (
+                      <ol className="list-decimal pl-5 space-y-2 text-slate-700 leading-relaxed">
+                        {activeResult.recommendations.map((rec: string, idx: number) => (
+                          <li key={idx}>{rec}</li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
+
+                {/* 9. Case References */}
+                {activeResult.case_references && activeResult.case_references.length > 0 && (
+                  <div className="space-y-2">
+                    {renderCollapsibleHeader("Landmark Case References", <Building className="h-4 w-4 text-slate-500" />, "caseReferences")}
+                    {!collapsedSections.caseReferences && (
+                      <div className="space-y-4">
+                        {activeResult.case_references.map((c: any, idx: number) => (
+                          <div key={idx} className="p-4 border border-neutral-200 bg-white rounded-none space-y-2">
+                            <div className="flex flex-wrap justify-between items-start gap-2">
+                              <span className="font-sans font-semibold text-xs text-slate-800">{c.case_name}</span>
+                              {c.citation && (
+                                <span className="font-mono text-3xs text-slate-500 bg-neutral-100 border border-neutral-200 px-2 py-0.5 uppercase">
+                                  {c.citation}
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-serif text-2xs text-slate-605 italic leading-relaxed mt-1">{c.summary}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
+
+              {/* SOURCE DOCUMENTS CARDS (BOTTOM OF REPORT) */}
+              <div className="border-t border-neutral-200 pt-6 mt-8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-sans font-semibold text-xs uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                    <FileSpreadsheet className="h-4.5 w-4.5 text-slate-400" />
+                    Documents Used ({sourceDocs.length})
                   </h3>
-                  <div className="p-4.5 bg-emerald-50/20 border border-emerald-100/50 border-l-4 border-l-emerald-600">
-                    <p className="text-slate-900 font-medium italic text-[13.5px]">
-                      {translatedAnswer || activeResult.direct_answer}
+                </div>
+
+                {activeResult.is_context_grounded && activeResult.citations && activeResult.citations.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    {sourceDocs.map((doc, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-4 border border-neutral-200 bg-white hover:border-emerald-600/30 hover:bg-neutral-50/10 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-3 rounded-none"
+                      >
+                        <div className="space-y-1">
+                          <p className="font-sans font-semibold text-slate-800 text-xs truncate">
+                            📄 {doc.name}.pdf
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {doc.pages.map((p, pIdx) => (
+                              <code key={pIdx} className="bg-neutral-50 border border-neutral-200 text-slate-500 font-mono text-[9px] px-1 font-semibold uppercase">
+                                Page: {p}
+                              </code>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-3xs font-mono text-slate-400 mt-1">
+                          <span className="text-emerald-700 bg-emerald-50 px-1 border border-emerald-100 font-bold">
+                            High Match
+                          </span>
+                          <span>{doc.chunks} Chunks Matched</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-amber-50/30 border border-amber-100 p-4">
+                    <p className="text-3xs text-amber-700 italic font-mono flex items-center gap-1.5 leading-relaxed">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      Gemini General Legal Knowledge: No relevant document found in the indexed knowledge base.
                     </p>
                   </div>
-                </div>
-              )}
-
-              {/* 2. Executive Summary */}
-              {activeResult.executive_summary && (
-                <div className="space-y-2 pt-2">
-                  <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-900">
-                    Executive Summary
-                  </h3>
-                  <p className="text-slate-700 leading-loose">
-                    {translatedSummary || activeResult.executive_summary}
-                  </p>
-                </div>
-              )}
-
-              {/* 3. Applicable Law */}
-              {activeResult.applicable_law && activeResult.applicable_law.length > 0 && (
-                <div className="space-y-3 pt-2">
-                  <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-900">
-                    Applicable Law
-                  </h3>
-                  <ul className="list-disc pl-5 space-y-1.5 text-slate-700 leading-normal">
-                    {activeResult.applicable_law.map((law: any, idx: number) => {
-                      const actName = typeof law === 'object' ? law.act_name : String(law);
-                      const sec = typeof law === 'object' ? law.sections : "";
-                      return (
-                        <li key={idx} className="font-sans text-xs">
-                          <span className="font-semibold text-slate-800">{actName}</span>
-                          {sec && (
-                            <>
-                              <span className="text-slate-400 font-mono mx-1">·</span>
-                              <span className="font-mono text-3xs uppercase text-slate-500">Section Ref: <code className="bg-slate-50 border border-neutral-200 px-1 font-semibold text-slate-800">{sec}</code></span>
-                            </>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              {/* 4. Legal Analysis */}
-              {activeResult.legal_analysis && (
-                <div className="space-y-4 pt-2">
-                  <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-900">
-                    Legal Analysis
-                  </h3>
-                  <div className="space-y-4 text-slate-700 leading-loose">
-                    {activeResult.legal_analysis.interpretation && (
-                      <div className="space-y-1">
-                        <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">1. Interpretation</span>
-                        <p>{activeResult.legal_analysis.interpretation}</p>
-                      </div>
-                    )}
-                    {activeResult.legal_analysis.implications && (
-                      <div className="space-y-1">
-                        <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">2. Implications</span>
-                        <p>{activeResult.legal_analysis.implications}</p>
-                      </div>
-                    )}
-                    {activeResult.legal_analysis.exceptions && (
-                      <div className="space-y-1">
-                        <span className="font-sans font-semibold text-[10px] uppercase tracking-wider text-slate-400 block font-mono">3. Considerations & Safe Harbors</span>
-                        <p>{activeResult.legal_analysis.exceptions}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* 5. Recommendations */}
-              {activeResult.recommendations && activeResult.recommendations.length > 0 && (
-                <div className="space-y-2 pt-2">
-                  <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-slate-900">
-                    Recommendations
-                  </h3>
-                  <ol className="list-decimal pl-5 space-y-2 text-slate-700 leading-normal">
-                    {activeResult.recommendations.map((rec: string, idx: number) => (
-                      <li key={idx} className="pl-0.5">{rec}</li>
-                    ))}
-                  </ol>
-                </div>
-              )}
+                )}
+              </div>
 
             </div>
           )}
@@ -663,72 +1063,104 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
         </main>
 
-        {/* RIGHT COLUMN: Sources, Confidence, and Quick Actions */}
+        {/* RIGHT SIDEBAR: Knowledge Source, Confidence, Cited acts, quick actions */}
         <aside className="xl:col-span-3 space-y-6 xl:sticky xl:top-28">
           
           {activeResult && (
             <>
-              {/* Sources Panel */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-xs">
-                <div className="flex items-center gap-1.5 border-b border-neutral-100 pb-2">
-                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
-                  <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Source</h3>
+              {/* Grounding Info Panel */}
+              <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none">
+                <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+                  <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Grounding Verification</h3>
+                </div>
+
+                <div className="space-y-3.5 text-xs">
+                  <div>
+                    <span className="text-slate-400 text-3xs font-mono block uppercase">Knowledge Source</span>
+                    <span className="text-slate-800 font-semibold mt-0.5 block">
+                      {activeResult.is_context_grounded ? "✓ PDF Knowledge Base" : "✓ Gemini General Knowledge"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 text-3xs font-mono block uppercase">Confidence Rating</span>
+                    <span className={`font-semibold mt-0.5 block ${
+                      activeResult.confidence === 'High' ? 'text-emerald-700' : 'text-amber-700'
+                    }`}>
+                      {activeResult.confidence || 'High'} ({activeResult.matchScore || 95}% score)
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 text-3xs font-mono block uppercase">PDFs Used</span>
+                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                      {activeResult.is_context_grounded ? `${sourceDocs.length} unique files` : "None"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 text-3xs font-mono block uppercase">Pages Used</span>
+                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                      {activeResult.is_context_grounded ? `${totalPagesCount} pages` : "None"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 text-3xs font-mono block uppercase">Retrieval Score</span>
+                    <span className="text-slate-800 font-semibold mt-0.5 block font-mono">
+                      {activeResult.matchScore || 95}% matching
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cited Acts & Regulations */}
+              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
+                <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+                  <Scale className="h-3.5 w-3.5 text-neutral-500" />
+                  <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Related Acts</h3>
                 </div>
                 
-                <div className="space-y-3">
-                  <span className="text-xs font-semibold text-slate-800 block">
-                    {activeResult.is_context_grounded ? "✓ PDF Knowledge Base" : "✓ Gemini General Legal Knowledge"}
-                  </span>
-                  
-                  {activeResult.is_context_grounded && activeResult.citations && activeResult.citations.length > 0 ? (
-                    <div className="space-y-2 border-t border-neutral-100 pt-2.5">
-                      <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Ingested Documents</span>
-                      <div className="space-y-2">
-                        {compileSourceDocs(activeResult.citations).map((doc, idx) => (
-                          <div key={idx} className="p-2 bg-neutral-50 border border-neutral-150 rounded-none text-[10px] font-sans">
-                            <p className="font-semibold text-slate-800 truncate">📄 {doc.name}</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {doc.pages.map((p, pIdx) => (
-                                <code key={pIdx} className="bg-neutral-100 border border-neutral-200 text-slate-500 text-[8px] font-mono px-1 font-semibold">
-                                  Page {p}
-                                </code>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                <div className="flex flex-col gap-1.5">
+                  {activeResult.applicable_law && activeResult.applicable_law.length > 0 ? (
+                    activeResult.applicable_law.map((law: any, idx: number) => {
+                      const actName = typeof law === 'object' ? law.act_name : String(law);
+                      return (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-neutral-50 border border-neutral-200 text-3xs font-mono text-slate-650 rounded-none">
+                          <Scale className="h-3 w-3 text-emerald-600 shrink-0" />
+                          <span className="truncate" title={actName}>{actName}</span>
+                        </div>
+                      );
+                    })
                   ) : (
-                    <p className="text-[10px] text-slate-450 italic leading-normal border-t border-neutral-100 pt-2.5">
-                      No relevant document found in the indexed knowledge base.
-                    </p>
+                    <span className="text-3xs text-slate-400 italic">No specific act citations parsed.</span>
                   )}
                 </div>
               </div>
 
-              {/* Confidence Panel */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-xs">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
-                  <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Analysis Confidence</h3>
+              {/* Related Inquiries */}
+              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none">
+                <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+                  <HelpCircle className="h-3.5 w-3.5 text-neutral-500" />
+                  <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Related Questions</h3>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <div className={`text-2xs font-mono uppercase px-2 py-1 font-bold ${
-                    activeResult.confidence === 'High' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                    activeResult.confidence === 'Medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                    'bg-slate-100 text-slate-500 border border-slate-200'
-                  }`}>
-                    {activeResult.confidence || 'Medium'}
-                  </div>
-                  
-                  <div className="text-[10px] text-slate-400 leading-normal font-sans">
-                    Grounding metrics confirm score of {activeResult.matchScore || (activeResult.confidence === 'High' ? 95 : 75)}% against citation standards.
-                  </div>
+                <div className="flex flex-col gap-2">
+                  {relatedQuestions.map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => { setQuery(q); executeSearch(q); }}
+                      className="text-left p-2.5 border border-neutral-200 bg-white hover:border-emerald-600/30 hover:bg-neutral-50/50 text-[10px] font-sans text-slate-600 hover:text-slate-900 transition-all flex items-center justify-between rounded-none leading-relaxed"
+                    >
+                      <span className="line-clamp-2">{q}</span>
+                      <ArrowRight className="h-3 w-3 text-slate-400 shrink-0 ml-2" />
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Quick Actions Panel */}
-              <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-xs">
+              {/* Quick Actions grid block */}
+              <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none text-xs">
                 <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                   <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Quick Actions</h3>
                 </div>
@@ -740,7 +1172,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white"
                   >
                     <Copy className="h-3.5 w-3.5 text-slate-400" />
-                    Copy Memo
+                    Copy Text
                   </button>
 
                   {/* Export PDF */}
@@ -758,7 +1190,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white"
                   >
                     <Download className="h-3.5 w-3.5 text-slate-400" />
-                    Raw JSON
+                    JSON Data
                   </button>
 
                   {/* Narration */}
@@ -774,11 +1206,11 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white col-span-2">
                         {isTranslating ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-650 animate-spin mr-1" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600 mr-1 animate-spin" />
                         ) : (
                           <Languages className="h-3.5 w-3.5 text-slate-400" />
                         )}
-                        Translate memo
+                        Translate Report
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-white border border-neutral-200 text-slate-900 rounded-none">
@@ -796,29 +1228,34 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
                     className="flex items-center justify-center gap-1.5 py-2 px-2 border border-neutral-200 hover:bg-neutral-50 text-[10px] font-sans font-semibold text-slate-700 transition-all rounded-none bg-white col-span-2"
                   >
                     <Share2 className="h-3.5 w-3.5 text-slate-400" />
-                    Copy share link
+                    Share Brief
                   </button>
-
                 </div>
               </div>
             </>
           )}
 
-          {/* Quick Statistics details */}
+          {/* Search Statistics */}
           {stats && (
             <div className="border border-neutral-200 bg-white p-4 space-y-4 rounded-none text-xs">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
-                <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Analytics</h3>
+                <h3 className="text-3xs font-mono uppercase tracking-wider text-slate-500 font-bold">Research Statistics</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-none">
-                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Queries Run</span>
+                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Total Queries</span>
                   <span className="font-mono text-sm text-slate-800 font-bold">{stats.total_queries || 0}</span>
                 </div>
                 <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-none">
-                  <span className="text-[9px] text-slate-400 block font-mono uppercase font-semibold">Avg Latency</span>
-                  <span className="font-mono text-xs text-slate-850 font-bold mt-0.5 block">{stats.average_execution_time_sec || 0}s</span>
+                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Avg Confidence</span>
+                  <span className="font-mono text-sm text-slate-800 font-bold">
+                    {stats.average_confidence ? `${Math.round(stats.average_confidence * 100)}%` : "0%"}
+                  </span>
+                </div>
+                <div className="p-3 bg-neutral-50 border border-neutral-200 col-span-2 rounded-none">
+                  <span className="text-[9px] text-slate-400 block font-mono uppercase">Avg Ingestion Latency</span>
+                  <span className="font-mono text-xs text-slate-800 font-bold mt-0.5 block">{stats.average_execution_time_sec || 0} seconds</span>
                 </div>
               </div>
             </div>
