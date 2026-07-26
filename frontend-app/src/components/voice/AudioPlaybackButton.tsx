@@ -16,6 +16,14 @@ export const AudioPlaybackButton = ({ text, className = "" }: AudioPlaybackButto
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
+  const getLanguageCodeForText = (t: string) => {
+    const devanagariRegex = /[\u0900-\u097F]/;
+    const bengaliRegex = /[\u0980-\u09FF]/;
+    if (devanagariRegex.test(t)) return "hi-IN";
+    if (bengaliRegex.test(t)) return "bn-IN";
+    return "en-IN"; // Default English
+  };
+
   const handleTogglePlay = async () => {
     if (isPlaying) {
       // Pause
@@ -38,7 +46,8 @@ export const AudioPlaybackButton = ({ text, className = "" }: AudioPlaybackButto
 
     setIsSynthesizing(true);
     try {
-      const base64Data = await synthesizeText(text, "en-IN-W", "shubh");
+      const detectedLang = getLanguageCodeForText(text);
+      const base64Data = await synthesizeText(text, detectedLang, "meera");
       if (base64Data) {
         setCachedAudioBase64(base64Data);
         playAudio(base64Data);
