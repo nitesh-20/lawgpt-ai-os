@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { 
-  FileEdit, 
-  Files, 
-  Sparkles, 
-  RotateCcw, 
   FileText, 
+  Sparkles, 
   Download, 
   AlertTriangle, 
   CheckCircle, 
@@ -16,23 +13,23 @@ import {
   Share2,
   Scale,
   Calendar,
-  Tag,
-  Maximize2,
-  FileMinus,
   Check,
   User,
   Clock,
   Briefcase,
   HelpCircle,
   TrendingUp,
-  FileCheck
+  FileCheck,
+  Search,
+  FileMinus,
+  CornerDownRight,
+  Edit2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { VoiceButton } from "@/components/voice/VoiceButton";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   generateDraft, 
   reviewDraft, 
@@ -54,7 +51,13 @@ const DocumentDrafting = () => {
   const [activeTab, setActiveTab] = useState("templates");
   const { toast } = useToast();
 
-  // Structured Templates List (21 Realistic templates)
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState("Central Govt, India");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+
+  // 21 Realistic Legal Templates
   const templatesList: LegalTemplate[] = [
     {
       id: "nda",
@@ -63,25 +66,25 @@ const DocumentDrafting = () => {
       category: "Confidentiality",
       useCase: "Exchanging source code, vendor specs, or corporate metrics with prospective partners.",
       backendId: "nda",
-      fields: ["Effective Date", "Disclosing Party (Party A)", "Receiving Party (Party B)", "Purpose"]
+      fields: ["Effective Date", "Disclosing Party", "Receiving Party", "Purpose"]
     },
     {
       id: "employment_agreement",
       name: "Employment Agreement",
-      description: "Binding contract outlining job responsibilities, compensation, and general work conditions.",
-      category: "HR / Employment",
+      description: "Binding contract outlining job responsibilities, compensation, and work conditions.",
+      category: "Employment",
       useCase: "Hiring executive-level or operational full-time staff under regional labor guidelines.",
       backendId: "employment_agreement",
-      fields: ["Effective Date", "Employer Name (Party A)", "Employee Name (Party B)", "Job Title", "Salary"]
+      fields: ["Effective Date", "Employer Name", "Employee Name", "Job Title", "Salary"]
     },
     {
       id: "independent_contractor",
       name: "Independent Contractor Agreement",
       description: "Defines non-employee project scopes, retainer payouts, and intellectual property transfers.",
-      category: "HR / Employment",
+      category: "Employment",
       useCase: "Engaging freelance product designers, contract developers, or advisory personnel.",
       backendId: "service_agreement",
-      fields: ["Effective Date", "Client Name (Party A)", "Contractor Name (Party B)", "Scope of Services", "Retainer Fees"]
+      fields: ["Effective Date", "Client Name", "Contractor Name", "Scope of Services", "Retainer Fees"]
     },
     {
       id: "service_agreement",
@@ -90,7 +93,7 @@ const DocumentDrafting = () => {
       category: "Commercial",
       useCase: "Outsourcing facility management, cloud monitoring, or customer support operations.",
       backendId: "service_agreement",
-      fields: ["Effective Date", "Client Name (Party A)", "Service Provider (Party B)", "Scope of Services", "Fees"]
+      fields: ["Effective Date", "Client Name", "Service Provider", "Scope of Services", "Fees"]
     },
     {
       id: "software_dev",
@@ -99,7 +102,7 @@ const DocumentDrafting = () => {
       category: "Intellectual Property",
       useCase: "Commissioning an external software agency to build a custom SaaS or mobile application.",
       backendId: "service_agreement",
-      fields: ["Effective Date", "Client Name (Party A)", "Developer Name (Party B)", "Tech Stack & Milestones", "Project Cost"]
+      fields: ["Effective Date", "Client Name", "Developer Name", "Tech Stack & Milestones", "Project Cost"]
     },
     {
       id: "msa",
@@ -108,7 +111,7 @@ const DocumentDrafting = () => {
       category: "Commercial",
       useCase: "Establishing multi-year B2B vendor relations prior to executing statements of work.",
       backendId: "general_contract",
-      fields: ["Effective Date", "Client Name (Party A)", "Provider Name (Party B)", "Overall Scope", "Term Duration"]
+      fields: ["Effective Date", "Client Name", "Provider Name", "Overall Scope", "Term Duration"]
     },
     {
       id: "partnership_agreement",
@@ -133,9 +136,9 @@ const DocumentDrafting = () => {
       name: "Vendor Agreement",
       description: "Specifies purchase timelines, delivery inspections, and defect remedies.",
       category: "Commercial",
-      useCase: "Acquiring hardware inventories or manufacturing goods from standard suppliers.",
+      useCase: "Acquiring hardware inventories or manufacturing goods from suppliers.",
       backendId: "vendor_agreement",
-      fields: ["Effective Date", "Customer Name (Party A)", "Vendor Name (Party B)", "Goods Description", "Purchase Cost"]
+      fields: ["Effective Date", "Customer Name", "Vendor Name", "Goods Description", "Purchase Cost"]
     },
     {
       id: "consulting_agreement",
@@ -144,13 +147,13 @@ const DocumentDrafting = () => {
       category: "Commercial",
       useCase: "Retaining corporate consultants or financial strategists for restructuring.",
       backendId: "service_agreement",
-      fields: ["Effective Date", "Client Name (Party A)", "Consultant Name (Party B)", "Advisory Scope", "Hourly Rate"]
+      fields: ["Effective Date", "Client Name", "Consultant Name", "Advisory Scope", "Hourly Rate"]
     },
     {
       id: "terms_conditions",
       name: "Terms & Conditions",
       description: "Website/app governance rules, acceptable use codes, and liability disclaimers.",
-      category: "E-Commerce / Tech",
+      category: "Tech",
       useCase: "Setting legal requirements for registering on a public web forum or online store.",
       backendId: "terms_and_conditions",
       fields: ["Effective Date", "Company Name", "Website URL", "Jurisdiction Forum"]
@@ -159,7 +162,7 @@ const DocumentDrafting = () => {
       id: "privacy_policy",
       name: "Privacy Policy",
       description: "Details data collection methodologies, cookie tracking, and user consent.",
-      category: "Compliance / Tech",
+      category: "Compliance",
       useCase: "Ensuring store compliance for mobile apps gathering analytics or emails.",
       backendId: "privacy_policy",
       fields: ["Effective Date", "Company Name", "Website URL", "User Data Types Collected"]
@@ -167,8 +170,8 @@ const DocumentDrafting = () => {
     {
       id: "cookie_policy",
       name: "Cookie Policy",
-      description: "Explains local storage tracers, marketing pixel pixels, and cookie opt-out paths.",
-      category: "Compliance / Tech",
+      description: "Explains local storage tracers, marketing pixels, and cookie opt-out paths.",
+      category: "Compliance",
       useCase: "Publishing mandatory EU cookie compliance notices on active sites.",
       backendId: "privacy_policy",
       fields: ["Effective Date", "Company Name", "Website URL", "Third-party Pixels Used"]
@@ -177,37 +180,37 @@ const DocumentDrafting = () => {
       id: "dpa",
       name: "Data Processing Agreement (DPA)",
       description: "Specifies secure sub-processor compliance under GPDP and GDPR constraints.",
-      category: "Compliance / Tech",
+      category: "Compliance",
       useCase: "Passing user logs to hosting databases or analytical microservices.",
       backendId: "nda",
-      fields: ["Effective Date", "Data Exporter (Party A)", "Data Importer (Party B)", "Categories of Data", "Data Security Covenants"]
+      fields: ["Effective Date", "Data Exporter", "Data Importer", "Categories of Data", "Data Security Covenants"]
     },
     {
       id: "offer_letter",
       name: "Employment Offer Letter",
       description: "Formal non-binding onboarding letter outlining role offers and salary structures.",
-      category: "HR / Employment",
-      useCase: "Extending a formal job offer package to a chosen engineer or manager.",
+      category: "Employment",
+      useCase: "Extending a formal job offer package to a chosen candidate.",
       backendId: "offer_letter",
-      fields: ["Start Date", "Employer Name (Party A)", "Candidate Name (Party B)", "Job Title Offered", "Base Compensation"]
+      fields: ["Start Date", "Employer Name", "Candidate Name", "Job Title Offered", "Base Compensation"]
     },
     {
       id: "legal_notice",
       name: "Legal Notice",
       description: "Formal pre-action notification demanding immediate resolution of defaults.",
       category: "Litigation",
-      useCase: "Serving notices to non-paying corporate debtors prior to arbitration filing.",
+      useCase: "Serving notices to non-paying corporate debtors prior to litigation.",
       backendId: "legal_notice",
-      fields: ["Issue Date", "Sender Name (Party A)", "Recipient Name (Party B)", "Breach Details", "Demands & Cure Period"]
+      fields: ["Issue Date", "Sender Name", "Recipient Name", "Breach Details", "Demands & Cure Period"]
     },
     {
       id: "cease_desist",
       name: "Cease and Desist Notice",
       description: "Urgent warning demanding immediate suspension of infringement behaviors.",
       category: "Litigation",
-      useCase: "Demanding copyright infringers pull down copyrighted images online.",
+      useCase: "Stopping trademark copycats or defamatory online posts.",
       backendId: "legal_notice",
-      fields: ["Issue Date", "Sender Name (Party A)", "Recipient Name (Party B)", "Infringement Facts", "Halt Directives"]
+      fields: ["Issue Date", "Sender Name", "Recipient Name", "Infringement Facts", "Halt Directives"]
     },
     {
       id: "rental_agreement",
@@ -216,14 +219,14 @@ const DocumentDrafting = () => {
       category: "Real Estate",
       useCase: "Leasing warehouse real estate or corporate office structures to commercial clients.",
       backendId: "lease_agreement",
-      fields: ["Effective Date", "Landlord Name (Party A)", "Tenant Name (Party B)", "Premises Address", "Rent & Security Deposit"]
+      fields: ["Effective Date", "Landlord Name", "Tenant Name", "Premises Address", "Rent & Security Deposit"]
     },
     {
       id: "mou",
       name: "Memorandum of Understanding (MoU)",
       description: "Documents consensus on project goals prior to signing binding deals.",
       category: "Commercial",
-      useCase: "Reaching a baseline understanding with research institutes for co-development.",
+      useCase: "Reaching a baseline understanding with research partners.",
       backendId: "memorandum_of_understanding",
       fields: ["Effective Date", "Party A Name", "Party B Name", "Mutual Cooperation Goals", "Term Duration"]
     },
@@ -232,14 +235,14 @@ const DocumentDrafting = () => {
       name: "Board Resolution",
       description: "Official record documenting corporate board authorizations.",
       category: "Corporate",
-      useCase: "Passing resolutions to authorize directors to sign loan facilities.",
+      useCase: "Passing resolutions to authorize directors to sign loan agreements.",
       backendId: "general_contract",
       fields: ["Effective Date", "Company Name", "Resolution Details", "Voting Directors Names"]
     },
     {
       id: "power_of_attorney",
       name: "Power of Attorney",
-      description: "Appoints an attorney-in-fact to represent a principal in designated legal matters.",
+      description: "Appoints an attorney-in-fact to represent a principal in legal matters.",
       category: "Corporate",
       useCase: "Authorizing localized agents to clear customs or register properties.",
       backendId: "affidavit",
@@ -247,36 +250,30 @@ const DocumentDrafting = () => {
     }
   ];
 
-  // Selected Template
+  // Active Selected Template
   const [selectedTemplate, setSelectedTemplate] = useState<LegalTemplate>(templatesList[0]);
-  const [filterCategory, setFilterCategory] = useState("all");
 
-  // Form Fields State
-  const [partyA, setPartyA] = useState("");
-  const [partyB, setPartyB] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState("");
-  const [term, setTerm] = useState("");
-  const [purpose, setPurpose] = useState("");
-  const [jurisdiction, setJurisdiction] = useState("Central Govt, India");
-  const [language, setLanguage] = useState("en");
-  const [specialInstructions, setSpecialInstructions] = useState("");
+  // Form Fields / Variables inside Document
+  const [docVariables, setDocVariables] = useState<Record<string, string>>({
+    "Effective Date": new Date().toISOString().split('T')[0],
+    "Disclosing Party": "Acme Ventures Ltd",
+    "Receiving Party": "Alpha Software Corp",
+    "Purpose": "Evaluation of mutual distribution partnership opportunities"
+  });
+
+  const [promptInstructions, setPromptInstructions] = useState("");
   const [additionalClauses, setAdditionalClauses] = useState("");
-  const [userInstructions, setUserInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Generated Document State
+  // Generated Text State (Editable inside virtual editor)
   const [generatedDraft, setGeneratedDraft] = useState("");
-  const [docTitle, setDocTitle] = useState("");
-  const [docDate, setDocDate] = useState("");
-  const [docJurisdiction, setDocJurisdiction] = useState("");
-  const [docLanguage, setDocLanguage] = useState("");
+  const [isEditingDraft, setIsEditingDraft] = useState(false);
 
   // Review State
-  const [reviewText, setReviewText] = useState("");
-  const [isReviewing, setIsReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState<any | null>(null);
+  const [isReviewing, setIsReviewing] = useState(false);
 
-  // Redline State
+  // Compare State
   const [originalText, setOriginalText] = useState("");
   const [revisedText, setRevisedText] = useState("");
   const [isRedlining, setIsRedlining] = useState(false);
@@ -288,100 +285,108 @@ const DocumentDrafting = () => {
   const [isImproving, setIsImproving] = useState(false);
   const [improveResult, setImproveResult] = useState<any | null>(null);
 
-  // Set initial template variables
+  // Synchronize variables when selected template changes
   const handleSelectTemplate = (tpl: LegalTemplate) => {
     setSelectedTemplate(tpl);
-    setActiveTab("generate");
-    toast({ 
-      title: "Template Loaded", 
-      description: `Drafting console configured for ${tpl.name}.` 
+    const initialVars: Record<string, string> = {};
+    tpl.fields.forEach(field => {
+      initialVars[field] = "";
     });
+    // set default date if exists
+    if (tpl.fields.includes("Effective Date")) {
+      initialVars["Effective Date"] = new Date().toISOString().split('T')[0];
+    } else if (tpl.fields.includes("Start Date")) {
+      initialVars["Start Date"] = new Date().toISOString().split('T')[0];
+    } else if (tpl.fields.includes("Issue Date")) {
+      initialVars["Issue Date"] = new Date().toISOString().split('T')[0];
+    }
+    setDocVariables(initialVars);
+    setGeneratedDraft("");
+    setReviewResult(null);
+    setPromptInstructions("");
+    setAdditionalClauses("");
+    setActiveTab("generate");
   };
 
-  // Build the generation payload and send to backend
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setGeneratedDraft("");
     
-    // Map variables depending on backend expectations
+    // Map human-readable fields to backend keys
     const variables: Record<string, any> = {};
     const backendId = selectedTemplate.backendId;
 
     if (backendId === "nda") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["disclosing_party"] = partyA || "Disclosing Party";
-      variables["receiving_party"] = partyB || "Receiving Party";
-      variables["purpose"] = purpose || "Confidential discussions";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["disclosing_party"] = docVariables["Disclosing Party"] || "";
+      variables["receiving_party"] = docVariables["Receiving Party"] || "";
+      variables["purpose"] = docVariables["Purpose"] || "";
     } else if (backendId === "employment_agreement") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["employer_name"] = partyA || "Employer Corp";
-      variables["employee_name"] = partyB || "Employee";
-      variables["job_title"] = term || "Specialist";
-      variables["salary"] = purpose || "Market rate";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["employer_name"] = docVariables["Employer Name"] || "";
+      variables["employee_name"] = docVariables["Employee Name"] || "";
+      variables["job_title"] = docVariables["Job Title"] || "";
+      variables["salary"] = docVariables["Salary"] || "";
     } else if (backendId === "offer_letter") {
-      variables["employer_name"] = partyA || "Employer Corp";
-      variables["candidate_name"] = partyB || "Candidate";
-      variables["job_title"] = term || "Executive";
-      variables["start_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["salary"] = purpose || "Standard benefits";
+      variables["employer_name"] = docVariables["Employer Name"] || "";
+      variables["candidate_name"] = docVariables["Candidate Name"] || "";
+      variables["job_title"] = docVariables["Job Title Offered"] || "";
+      variables["start_date"] = docVariables["Start Date"] || "";
+      variables["salary"] = docVariables["Base Compensation"] || "";
     } else if (backendId === "lease_agreement") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["landlord_name"] = partyA || "Landlord";
-      variables["tenant_name"] = partyB || "Tenant";
-      variables["property_address"] = purpose || "Designated premises";
-      variables["monthly_rent"] = term || "Negotiated sum";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["landlord_name"] = docVariables["Landlord Name"] || "";
+      variables["tenant_name"] = docVariables["Tenant Name"] || "";
+      variables["property_address"] = docVariables["Premises Address"] || "";
+      variables["monthly_rent"] = docVariables["Rent & Security Deposit"] || "";
     } else if (backendId === "service_agreement") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["client_name"] = partyA || "Client";
-      variables["service_provider"] = partyB || "Service Provider";
-      variables["scope_of_services"] = purpose || "Contracted tasks";
-      variables["fees"] = term || "Milestone milestones";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["client_name"] = docVariables["Client Name"] || "";
+      variables["service_provider"] = docVariables["Service Provider"] || docVariables["Contractor Name"] || docVariables["Developer Name"] || "";
+      variables["scope_of_services"] = docVariables["Scope of Services"] || docVariables["Tech Stack & Milestones"] || docVariables["Advisory Scope"] || "";
+      variables["fees"] = docVariables["Fees"] || docVariables["Retainer Fees"] || docVariables["Project Cost"] || docVariables["Hourly Rate"] || "";
     } else if (backendId === "partnership_agreement") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["partner_1"] = partyA || "Partner A";
-      variables["partner_2"] = partyB || "Partner B";
-      variables["capital_contributions"] = purpose || "Mutual capital";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["partner_1"] = docVariables["Partner A Name"] || "";
+      variables["partner_2"] = docVariables["Partner B Name"] || "";
+      variables["capital_contributions"] = docVariables["Capital Contributions"] || "";
     } else if (backendId === "vendor_agreement") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["customer_name"] = partyA || "Customer";
-      variables["vendor_name"] = partyB || "Vendor";
-      variables["goods_services"] = purpose || "Deliverables";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["customer_name"] = docVariables["Customer Name"] || "";
+      variables["vendor_name"] = docVariables["Vendor Name"] || "";
+      variables["goods_services"] = docVariables["Goods Description"] || "";
     } else if (backendId === "privacy_policy" || backendId === "terms_and_conditions") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["company_name"] = partyA || "Company Inc.";
-      variables["website_url"] = purpose || "https://example.com";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["company_name"] = docVariables["Company Name"] || "";
+      variables["website_url"] = docVariables["Website URL"] || "";
     } else if (backendId === "legal_notice") {
-      variables["issue_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["sender_name"] = partyA || "Sender Claimant";
-      variables["recipient_name"] = partyB || "Recipient Defendant";
-      variables["facts_of_case"] = purpose || "Breach statements";
-      variables["demands"] = specialInstructions || "Specific remediation requests";
+      variables["issue_date"] = docVariables["Issue Date"] || "";
+      variables["sender_name"] = docVariables["Sender Name"] || docVariables["Principal Name"] || "";
+      variables["recipient_name"] = docVariables["Recipient Name"] || docVariables["Attorney Name"] || "";
+      variables["facts_of_case"] = docVariables["Breach Details"] || docVariables["Infringement Facts"] || docVariables["Specific Powers Granted"] || "";
+      variables["demands"] = docVariables["Demands & Cure Period"] || docVariables["Halt Directives"] || docVariables["Jurisdiction Limit"] || "";
     } else if (backendId === "memorandum_of_understanding") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["party_a"] = partyA || "Cooperating Party A";
-      variables["party_b"] = partyB || "Cooperating Party B";
-      variables["mutual_goals"] = purpose || "Alliance benchmarks";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["party_a"] = docVariables["Party A Name"] || "";
+      variables["party_b"] = docVariables["Party B Name"] || "";
+      variables["mutual_goals"] = docVariables["Mutual Cooperation Goals"] || "";
     } else if (backendId === "affidavit") {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["deponent_name"] = partyA || "Deponent";
-      variables["deponent_address"] = partyB || "Deponent residence";
-      variables["statements"] = purpose || "Sworn deposition facts";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["deponent_name"] = docVariables["Principal Name"] || "";
+      variables["deponent_address"] = docVariables["Attorney Name"] || "";
+      variables["statements"] = docVariables["Specific Powers Granted"] || "";
     } else {
-      variables["effective_date"] = effectiveDate || new Date().toISOString().split('T')[0];
-      variables["party_a"] = partyA || "Party A";
-      variables["party_b"] = partyB || "Party B";
-      variables["recitals"] = purpose || "Contracted recitals";
+      variables["effective_date"] = docVariables["Effective Date"] || "";
+      variables["party_a"] = docVariables["Party A Name"] || "";
+      variables["party_b"] = docVariables["Party B Name"] || "";
+      variables["recitals"] = docVariables["Mutual Cooperation Goals"] || "";
     }
 
-    // Build compound user instructions to guide Gemini
     const compoundInstructions = `
-Document Type: Please generate a high-quality ${selectedTemplate.name}.
-Target Jurisdiction: ${jurisdiction}
-Draft Language: ${language}
-Term / Duration: ${term}
-Special Drafting Requirements: ${specialInstructions}
-Additional Custom Clauses to Integrate: ${additionalClauses}
-Extra guidelines: ${userInstructions}
+Document Request: Compile a premium ${selectedTemplate.name}.
+Selected Jurisdiction Forum: ${selectedJurisdiction}
+Language target: ${selectedLanguage}
+Drafting direction instructions: ${promptInstructions}
+Additional contract clauses to inject: ${additionalClauses}
 `.trim();
 
     try {
@@ -390,62 +395,38 @@ Extra guidelines: ${userInstructions}
         variables,
         user_instructions: compoundInstructions
       });
-      
-      const resData = res.data || res;
-      const draftText = resData.generated_draft || resData.draft || "Draft generation succeeded.";
-      
-      setGeneratedDraft(draftText);
-      setDocTitle(selectedTemplate.name);
-      setDocDate(effectiveDate || new Date().toLocaleDateString());
-      setDocJurisdiction(jurisdiction);
-      setDocLanguage(language === "en" ? "English" : language);
-      
-      toast({ 
-        title: "Draft Compiled", 
-        description: "Legal workspace document successfully generated by AI." 
-      });
+      const data = res.data || res;
+      setGeneratedDraft(data.generated_draft || data.draft || "");
+      toast({ title: "Draft Completed", description: "AI compiled the legal document successfully." });
     } catch (e) {
       console.error(e);
-      toast({ 
-        title: "Generation Failed", 
-        description: "Could not compile the legal draft templates.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Generation Error", description: "Failed to compile document draft.", variant: "destructive" });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Audit document text
-  const handleReview = async () => {
-    if (!reviewText.trim()) return;
+  const handleReviewAudit = async () => {
+    if (!generatedDraft.trim()) return;
     setIsReviewing(true);
     setReviewResult(null);
     try {
       const res = await reviewDraft({
-        text: reviewText,
+        text: generatedDraft,
         doc_type: selectedTemplate.backendId
       });
       const data = res.data || res;
       setReviewResult(data.review_analysis || data);
-      toast({ 
-        title: "Audit Completed", 
-        description: "Found risk provisions and missing clause indexes." 
-      });
+      toast({ title: "Audit Completed", description: "Risk and compliance scorecard updated." });
     } catch (e) {
       console.error(e);
-      toast({ 
-        title: "Audit Failed", 
-        description: "Failed to audit draft contract.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Audit Error", description: "Vulnerability analysis failed.", variant: "destructive" });
     } finally {
       setIsReviewing(false);
     }
   };
 
-  // Compare original vs revised
-  const handleRedline = async () => {
+  const handleRedlineCompare = async () => {
     if (!originalText.trim() || !revisedText.trim()) return;
     setIsRedlining(true);
     setRedlineResult(null);
@@ -455,24 +436,16 @@ Extra guidelines: ${userInstructions}
         revised_text: revisedText
       });
       setRedlineResult(res.data || res);
-      toast({ 
-        title: "Redlines Generated", 
-        description: "Version differences indexed successfully." 
-      });
+      toast({ title: "Redlines Generated", description: "Comparison results compiled successfully." });
     } catch (e) {
       console.error(e);
-      toast({ 
-        title: "Redline Failed", 
-        description: "Failed to compile redlines.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Redline Error", description: "Comparison engine failed.", variant: "destructive" });
     } finally {
       setIsRedlining(false);
     }
   };
 
-  // Improve specific clause text
-  const handleImprove = async () => {
+  const handleImproveClause = async () => {
     if (!improveText.trim()) return;
     setIsImproving(true);
     setImproveResult(null);
@@ -481,25 +454,16 @@ Extra guidelines: ${userInstructions}
         text: improveText,
         instructions: improveInstructions
       });
-      const data = res.data || res;
-      setImproveResult(data);
-      toast({ 
-        title: "Clause Rewritten", 
-        description: "AI successfully improved your clause." 
-      });
+      setImproveResult(res.data || res);
+      toast({ title: "Clause Rewritten", description: "AI successfully improved your clause." });
     } catch (e) {
       console.error(e);
-      toast({ 
-        title: "Improvement Failed", 
-        description: "Failed to rewrite clause.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Optimization Failed", description: "Clause improvement failed.", variant: "destructive" });
     } finally {
       setIsImproving(false);
     }
   };
 
-  // Download draft file
   const handleExportText = (content: string, filename = "draft.txt") => {
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -511,403 +475,382 @@ Extra guidelines: ${userInstructions}
     document.body.removeChild(link);
   };
 
-  // Unique category filter lists
-  const categories = ["all", "Confidentiality", "HR / Employment", "Corporate", "Commercial", "Compliance / Tech", "Real Estate", "Litigation"];
-  
-  const filteredTemplates = filterCategory === "all" 
-    ? templatesList 
-    : templatesList.filter(t => t.category === filterCategory);
+  // Categories list
+  const categories = ["all", "Confidentiality", "Employment", "Corporate", "Commercial", "Compliance", "Real Estate", "Litigation"];
 
-  // Markdown styling parser wrapper
-  const renderFormattedDoc = (text: string) => {
+  // Filter templates list
+  const filteredTemplates = templatesList.filter(t => {
+    const matchSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        t.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCat = selectedCategory === "all" || t.category === selectedCategory;
+    return matchSearch && matchCat;
+  });
+
+  // A4 Document parser formatter
+  const renderDocumentViewer = (text: string) => {
     if (!text) return null;
     return text.split("\n").map((line, idx) => {
-      const cleanLine = line.trim();
-      if (cleanLine.startsWith("# ")) {
+      const trimmed = line.trim();
+      
+      // Document Main Title
+      if (trimmed.startsWith("# ")) {
         return (
-          <h1 key={idx} className="text-center text-base font-bold font-sans tracking-tight uppercase border-b border-neutral-350 pb-2.5 my-6 text-slate-900">
-            {cleanLine.replace("# ", "")}
+          <h1 key={idx} className="text-center text-sm font-bold font-sans uppercase tracking-tight my-6 text-slate-900 leading-tight">
+            {trimmed.replace("# ", "")}
           </h1>
         );
       }
-      if (cleanLine.startsWith("## ")) {
+      
+      // Clause Heading Level 1 (e.g. 1. 2. 3.)
+      const h2Match = trimmed.match(/^##\s+(\d+\.?\s*.*)/) || trimmed.match(/^##\s+(.*)/);
+      if (h2Match) {
         return (
-          <h2 key={idx} className="text-xs font-bold font-sans uppercase tracking-wider mt-5 mb-2 text-slate-800">
-            {cleanLine.replace("## ", "")}
+          <h2 key={idx} className="text-xs font-bold font-sans tracking-wide uppercase mt-5 mb-2.5 text-slate-850">
+            {h2Match[1]}
           </h2>
         );
       }
-      if (cleanLine.startsWith("### ")) {
+
+      // Subclause Heading Level 2 (e.g. 1.1, 1.2)
+      const h3Match = trimmed.match(/^###\s+(\d+\.\d+\.?\s*.*)/) || trimmed.match(/^###\s+(.*)/);
+      if (h3Match) {
         return (
-          <h3 key={idx} className="text-[11px] font-bold font-sans uppercase tracking-wider pl-2 mt-4 mb-2 text-slate-700">
-            {cleanLine.replace("### ", "")}
+          <h3 key={idx} className="text-[11px] font-bold font-sans tracking-normal mt-4 mb-2 text-slate-800 pl-2">
+            {h3Match[1]}
           </h3>
         );
       }
-      if (cleanLine.startsWith("- ") || cleanLine.startsWith("* ")) {
+
+      // Bullet lists
+      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         return (
-          <li key={idx} className="list-disc pl-6 leading-relaxed my-1.5 font-serif text-slate-750">
-            {cleanLine.substring(2)}
+          <li key={idx} className="list-disc pl-6 leading-relaxed my-2 font-serif text-[13px] text-slate-700">
+            {trimmed.substring(2)}
           </li>
         );
       }
-      if (cleanLine === "") {
-        return <div key={idx} className="h-3" />;
+
+      // Empty Lines
+      if (trimmed === "") {
+        return <div key={idx} className="h-3.5" />;
       }
-      // Indent double bracket variables or highlight clauses
-      const isIndented = cleanLine.match(/^\d+\./) || cleanLine.startsWith("1.") || cleanLine.startsWith("2.") || cleanLine.startsWith("3.");
+
+      // Paragraph elements (Indented if starting with numbers)
+      const isIndented = trimmed.match(/^\d+\.\d+/) || trimmed.match(/^\d+\./);
       return (
-        <p key={idx} className={`leading-relaxed my-2 font-serif text-slate-750 text-justify text-xs ${isIndented ? "pl-4 font-semibold" : ""}`}>
-          {cleanLine}
+        <p key={idx} className={`leading-relaxed my-2 text-justify font-serif text-[13px] text-slate-700 ${isIndented ? "pl-5 font-semibold" : ""}`}>
+          {trimmed}
         </p>
       );
     });
   };
 
   return (
-    <div className="h-full">
-      {/* Workspace Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-neutral-200 mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <FileEdit className="h-5 w-5 text-emerald-600" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 font-sans">Drafting Workspace</h1>
-          </div>
-          <p className="text-3xs text-slate-400 font-mono uppercase tracking-widest">
-            AI-driven legal document generation, redlining, audit, and clause refinement
-          </p>
+    <div className="h-full max-w-7xl mx-auto px-4 md:px-8 bg-white font-sans text-slate-805">
+      
+      {/* TOOLBAR TOP PANEL */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-100 pb-4 mb-6">
+        
+        {/* Simple underline Navigation Tabs */}
+        <div className="flex gap-6 text-[10px] font-mono uppercase tracking-wider">
+          {[
+            { id: "templates", label: "Templates" },
+            { id: "generate", label: "Generate" },
+            { id: "review", label: "Review & Audit" },
+            { id: "redline", label: "Compare" },
+            { id: "improve", label: "Improve" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`pb-2.5 transition-all relative font-bold cursor-pointer ${
+                activeTab === tab.id 
+                  ? "text-emerald-700 font-extrabold border-b-2 border-emerald-600" 
+                  : "text-slate-400 hover:text-slate-900 border-b-2 border-transparent"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
+
+        {/* Global Toolbar Filters */}
+        <div className="flex flex-wrap items-center gap-3 text-xs font-sans">
+          
+          {/* Search bar inside toolbar */}
+          {activeTab === "templates" && (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" />
+              <input
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-40 bg-neutral-50/50 border border-neutral-200 focus:border-emerald-600 focus:outline-none pl-8 pr-2 py-1 text-[11px] placeholder:text-neutral-400 rounded-none font-sans"
+              />
+            </div>
+          )}
+
+          {/* Category Chip in toolbar */}
+          {activeTab === "templates" && (
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-neutral-50/50 border border-neutral-200 text-[11px] py-1 px-2 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-600 font-sans"
+            >
+              <option value="all">All Categories</option>
+              {categories.slice(1).map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Jurisdiction Select */}
+          <select
+            value={selectedJurisdiction}
+            onChange={(e) => setSelectedJurisdiction(e.target.value)}
+            className="bg-neutral-50/50 border border-neutral-200 text-[11px] py-1 px-2 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-600 font-sans"
+          >
+            <option value="Central Govt, India">India (Central)</option>
+            <option value="State of Maharashtra, India">Maharashtra State</option>
+            <option value="State of Karnataka, India">Karnataka State</option>
+            <option value="Delaware Corporate Court, USA">Delaware Corporate</option>
+          </select>
+
+          {/* Language Select */}
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            className="bg-neutral-50/50 border border-neutral-200 text-[11px] py-1 px-2 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-600 font-sans"
+          >
+            <option value="en">English (EN)</option>
+            <option value="hi-IN">Hindi (HI)</option>
+            <option value="ta-IN">Tamil (TA)</option>
+            <option value="te-IN">Telugu (TE)</option>
+            <option value="bn-IN">Bengali (BN)</option>
+          </select>
+
+        </div>
+
       </div>
 
-      {/* Premium Sticky Top Navigation Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-neutral-50 border border-neutral-200 p-1 h-10 w-full grid grid-cols-5 sticky top-28 z-20 rounded-none shadow-xs">
-          <TabsTrigger value="templates" className="text-3xs font-mono uppercase tracking-wider data-[state=active]:bg-slate-800 data-[state=active]:text-white rounded-none">1. Templates</TabsTrigger>
-          <TabsTrigger value="generate" className="text-3xs font-mono uppercase tracking-wider data-[state=active]:bg-slate-800 data-[state=active]:text-white rounded-none">2. Generate</TabsTrigger>
-          <TabsTrigger value="review" className="text-3xs font-mono uppercase tracking-wider data-[state=active]:bg-slate-800 data-[state=active]:text-white rounded-none">3. Review & Audit</TabsTrigger>
-          <TabsTrigger value="redline" className="text-3xs font-mono uppercase tracking-wider data-[state=active]:bg-slate-800 data-[state=active]:text-white rounded-none">4. Redline Compare</TabsTrigger>
-          <TabsTrigger value="improve" className="text-3xs font-mono uppercase tracking-wider data-[state=active]:bg-slate-800 data-[state=active]:text-white rounded-none">5. Improve Clauses</TabsTrigger>
-        </TabsList>
+      {/* 1. MINIMAL TEMPLATES SEARCH LIST */}
+      {activeTab === "templates" && (
+        <div className="space-y-4">
+          <div className="border border-neutral-200 bg-white overflow-hidden rounded-none shadow-3xs">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-neutral-200 bg-neutral-50/50 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                  <th className="py-3.5 px-4 font-semibold">📄 Template Document</th>
+                  <th className="py-3.5 px-4 font-semibold">Category</th>
+                  <th className="py-3.5 px-4 font-semibold">Scope / Usecase Description</th>
+                  <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 text-xs font-sans">
+                {filteredTemplates.length > 0 ? (
+                  filteredTemplates.map((tpl) => (
+                    <tr key={tpl.id} className="hover:bg-neutral-50/30 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-slate-800">
+                        📄 {tpl.name}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-[10px] font-mono bg-neutral-100 text-slate-600 px-2 py-0.5 border border-neutral-200 rounded-none uppercase">
+                          {tpl.category}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 font-serif leading-relaxed">
+                        {tpl.description} <span className="text-3xs font-mono text-slate-400 block mt-0.5">Use case: {tpl.useCase}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => handleSelectTemplate(tpl)}
+                          className="px-3.5 py-1 text-3xs font-mono uppercase tracking-wider text-emerald-700 border border-emerald-600/30 bg-white hover:bg-emerald-50 transition-all rounded-none font-bold"
+                        >
+                          Use Template
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-slate-400 italic">No legal templates match your filters.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-        {/* 1. TEMPLATES GALLERY */}
-        <TabsContent value="templates" className="mt-0 space-y-6">
+      {/* 2. DRAFTING WORKSPACE */}
+      {activeTab === "generate" && (
+        <div className="space-y-6">
           
-          {/* Category Filter Chips */}
-          <div className="flex flex-wrap gap-1.5 border-b border-neutral-100 pb-4">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setFilterCategory(cat)}
-                className={`px-3 py-1 text-3xs font-mono uppercase tracking-wider transition-all border rounded-none ${
-                  filterCategory === cat
-                    ? "bg-emerald-600 text-white border-emerald-600 font-bold"
-                    : "bg-white text-slate-500 border-neutral-200 hover:bg-neutral-50"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Grid of Templates */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {filteredTemplates.map((tpl) => (
-              <div 
-                key={tpl.id} 
-                className="border border-neutral-200 bg-white p-5 hover:border-emerald-600/40 hover:scale-[1.01] transition-all flex flex-col justify-between h-full rounded-none group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400">{tpl.category}</span>
-                    <Badge className="bg-neutral-100 text-slate-650 hover:bg-neutral-100 text-[8px] font-mono border border-neutral-200 rounded-none uppercase">
-                      {tpl.backendId}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <h3 className="font-bold text-xs text-slate-800 group-hover:text-emerald-700 transition-colors font-sans">
-                      {tpl.name}
-                    </h3>
-                    <p className="text-[11px] text-slate-450 leading-relaxed font-serif">
-                      {tpl.description}
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 bg-neutral-50 border border-neutral-150 text-[10px] space-y-0.5 rounded-none">
-                    <span className="font-mono text-3xs uppercase tracking-wider text-slate-450 block font-bold">Use Case:</span>
-                    <p className="text-slate-600 leading-normal font-sans">{tpl.useCase}</p>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={() => handleSelectTemplate(tpl)} 
-                  className="w-full h-8 bg-slate-800 hover:bg-slate-900 text-white rounded-none font-semibold text-3xs uppercase tracking-wider mt-5"
-                >
-                  Configure Template
-                </Button>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* 2. GENERATE DRAFT PANEL */}
-        <TabsContent value="generate" className="mt-0">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          {/* Notion-style header details */}
+          <div className="border-b border-neutral-150 pb-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">Document Title</span>
+              <h2 className="text-sm font-bold text-slate-900 font-sans flex items-center gap-2">
+                📄 {selectedTemplate.name}
+              </h2>
+            </div>
             
-            {/* Left: Input parameters form */}
-            <div className="xl:col-span-5 border border-neutral-200 bg-white p-5 space-y-5 rounded-none">
-              
-              <div className="flex justify-between items-center border-b border-neutral-100 pb-3">
-                <span className="text-[10px] font-mono text-emerald-700 uppercase font-bold">
-                  Configuring: {selectedTemplate.name}
-                </span>
-                <button 
-                  onClick={() => setActiveTab("templates")}
-                  className="text-3xs font-mono uppercase text-slate-400 hover:text-slate-900 underline"
-                >
-                  Change Template
-                </button>
+            <div className="flex items-center gap-4 text-xs font-sans">
+              <div className="text-[10px] font-mono text-slate-500 uppercase space-y-0.5">
+                <span className="text-slate-400 block text-3xs uppercase">Jurisdiction</span>
+                <span className="font-bold text-slate-800">{selectedJurisdiction}</span>
               </div>
+              <div className="text-[10px] font-mono text-slate-500 uppercase space-y-0.5">
+                <span className="text-slate-400 block text-3xs uppercase">Language</span>
+                <span className="font-bold text-slate-800">{selectedLanguage === 'en' ? 'English' : selectedLanguage}</span>
+              </div>
+              <button
+                onClick={() => setActiveTab("templates")}
+                className="h-8 px-3 border border-neutral-200 hover:bg-neutral-50 text-3xs font-mono uppercase tracking-wider rounded-none"
+              >
+                Change Template
+              </button>
+            </div>
+          </div>
 
-              {/* Structured Drafting Fields */}
-              <div className="space-y-4">
-                
-                {/* Form fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans">
-                  
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Document Type</label>
-                    <select
-                      value={selectedTemplate.id}
-                      onChange={(e) => {
-                        const matched = templatesList.find(t => t.id === e.target.value);
-                        if (matched) setSelectedTemplate(matched);
-                      }}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-800"
-                    >
-                      {templatesList.map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
+          {/* Full-width Notion-style prompt bar */}
+          <div className="bg-neutral-50 border border-neutral-200 p-4 space-y-3.5 rounded-none shadow-3xs">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-mono text-slate-450 uppercase font-bold flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                Drafting Instructions Prompt Console
+              </span>
+              <VoiceButton onTranscribe={(t) => setPromptInstructions(prev => prev + (prev ? " " : "") + t)} />
+            </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Jurisdiction</label>
-                    <select
-                      value={jurisdiction}
-                      onChange={(e) => setJurisdiction(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-800"
-                    >
-                      <option value="Central Govt, India">India (Central Laws)</option>
-                      <option value="State of Maharashtra, India">Maharashtra State</option>
-                      <option value="State of Delhi, India">Delhi NCR</option>
-                      <option value="State of Karnataka, India">Karnataka State</option>
-                      <option value="United Kingdom (E&W)">United Kingdom</option>
-                      <option value="State of California, USA">California, USA</option>
-                      <option value="Delaware Corporate Court, USA">Delaware Corporate Court</option>
-                    </select>
-                  </div>
+            <textarea
+              placeholder="e.g. Draft a mutual 2-year NDA. Restrict disclosures to tech code bases. Set governing forum to Bangalore, Karnataka."
+              value={promptInstructions}
+              onChange={(e) => setPromptInstructions(e.target.value)}
+              rows={2}
+              className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-900 placeholder:text-neutral-400/80 rounded-none resize-none leading-relaxed font-sans"
+            />
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Drafting Language</label>
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none cursor-pointer text-slate-800"
-                    >
-                      <option value="en">English (Default)</option>
-                      <option value="hi-IN">Hindi (हिंदी)</option>
-                      <option value="ta-IN">Tamil (தமிழ்)</option>
-                      <option value="te-IN">Telugu (తెలుగు)</option>
-                      <option value="bn-IN">Bengali (বাংলা)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Effective Date</label>
-                    <input
-                      type="date"
-                      value={effectiveDate}
-                      onChange={(e) => setEffectiveDate(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Party A (First Party)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Acme Corp Inc."
-                      value={partyA}
-                      onChange={(e) => setPartyA(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Party B (Second Party)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. John Doe"
-                      value={partyB}
-                      onChange={(e) => setPartyB(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350"
-                    />
-                  </div>
-
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Agreement Term (Duration)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 12 Months from Effective Date / Indefinite until terminated"
-                      value={term}
-                      onChange={(e) => setTerm(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350"
-                    />
-                  </div>
-
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Purpose / Scope of Agreement</label>
-                    <textarea
-                      placeholder="Explain what transaction or relationship this contract governs..."
-                      value={purpose}
-                      onChange={(e) => setPurpose(e.target.value)}
-                      rows={2}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350 resize-none leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[9px] font-mono text-slate-455 uppercase block font-bold">Additional Specific Clauses</label>
-                    <textarea
-                      placeholder="Optionally paste or type custom clause provisions you want included..."
-                      value={additionalClauses}
-                      onChange={(e) => setAdditionalClauses(e.target.value)}
-                      rows={2}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350 resize-none leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="space-y-1 md:col-span-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">Drafting Instructions / Guidance</label>
-                      <VoiceButton onTranscribe={(t) => setSpecialInstructions(prev => prev + (prev ? " " : "") + t)} />
-                    </div>
-                    <textarea
-                      placeholder="e.g. Set confidentiality threshold to 5 years, add 90-day cure period for default, etc."
-                      value={specialInstructions}
-                      onChange={(e) => setSpecialInstructions(e.target.value)}
-                      rows={2}
-                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:outline-none focus:border-emerald-600 rounded-none text-slate-800 placeholder:text-neutral-350 resize-none leading-relaxed"
-                    />
-                  </div>
-
-                </div>
-
+            <div className="flex justify-between items-center border-t border-neutral-200 pt-3 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  placeholder="Extra clauses (e.g. non-solicit)..."
+                  value={additionalClauses}
+                  onChange={(e) => setAdditionalClauses(e.target.value)}
+                  className="w-60 bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-2 py-1 text-2xs placeholder:text-neutral-400 rounded-none"
+                />
               </div>
 
               <Button 
                 onClick={handleGenerate} 
                 disabled={isGenerating} 
-                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-6 h-8 text-xs font-semibold uppercase tracking-wider"
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Assembling legal draft...
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                    Assembling Draft...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Sparkles className="h-3.5 w-3.5 mr-2" />
                     Generate Draft
                   </>
                 )}
               </Button>
-
             </div>
+          </div>
 
-            {/* Right: Professional virtual A4 Document Viewer */}
-            <div className="xl:col-span-7 space-y-6">
+          {/* Large Virtual Microsoft Word A4 Document Page */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start pt-4">
+            
+            {/* Left: Virtual paper sheet */}
+            <div className="xl:col-span-8 space-y-4">
               {generatedDraft ? (
                 <div className="space-y-4">
                   
-                  {/* Actions Header Bar */}
-                  <div className="flex flex-wrap items-center justify-between bg-neutral-50 border border-neutral-200 p-3 rounded-none">
+                  {/* Floating paper controls toolbar */}
+                  <div className="flex items-center justify-between border-b border-neutral-100 pb-2 flex-wrap gap-2">
+                    <span className="text-[9px] font-mono uppercase text-slate-400">Microsoft Word Viewport Editor</span>
+                    
                     <div className="flex items-center gap-1.5">
                       <AudioPlaybackButton text={generatedDraft} className="scale-90 bg-white border-neutral-200" />
+                      
                       <Button
                         onClick={() => {
                           setReviewText(generatedDraft);
                           setActiveTab("review");
-                          toast({ title: "Transferring draft", description: "Vulnerability audit panel loaded." });
+                          toast({ title: "Document Loaded", description: "Audit dashboard populated." });
                         }}
                         variant="outline"
-                        className="h-8 px-3.5 border-neutral-200 text-3xs uppercase tracking-wider font-mono rounded-none bg-white hover:bg-neutral-50"
+                        className="h-7 px-3 border-neutral-200 text-3xs font-mono uppercase tracking-wider rounded-none bg-white"
                       >
                         <FileCheck className="h-3.5 w-3.5 mr-1" />
-                        Audit Draft
+                        Audit
                       </Button>
+                      
                       <Button
                         onClick={() => {
                           setOriginalText(generatedDraft);
                           setActiveTab("redline");
-                          toast({ title: "Transferring draft", description: "Redline comparison panel loaded." });
+                          toast({ title: "Document Loaded", description: "Compare baseline saved." });
                         }}
                         variant="outline"
-                        className="h-8 px-3.5 border-neutral-200 text-3xs uppercase tracking-wider font-mono rounded-none bg-white hover:bg-neutral-50"
+                        className="h-7 px-3 border-neutral-200 text-3xs font-mono uppercase tracking-wider rounded-none bg-white"
                       >
-                        <Files className="h-3.5 w-3.5 mr-1" />
-                        Set Baseline
+                        <Scale className="h-3.5 w-3.5 mr-1" />
+                        Compare
                       </Button>
-                    </div>
 
-                    <div className="flex items-center gap-1.5">
                       <Button
                         onClick={() => {
                           navigator.clipboard.writeText(generatedDraft);
-                          toast({ title: "Copied", description: "Draft text copied to clipboard." });
+                          toast({ title: "Copied", description: "Report draft copied." });
                         }}
                         variant="outline"
-                        className="h-8 w-8 p-0 border-neutral-200 rounded-none bg-white"
-                        title="Copy draft"
+                        className="h-7 w-7 p-0 border-neutral-200 rounded-none bg-white"
+                        title="Copy draft text"
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
+
                       <Button 
                         onClick={() => handleExportText(generatedDraft, `${selectedTemplate.id}_draft.md`)}
-                        className="h-8 px-3 bg-slate-800 hover:bg-slate-900 text-white text-3xs font-mono uppercase tracking-wider rounded-none"
+                        className="h-7 px-3 bg-slate-800 hover:bg-slate-900 text-white text-3xs font-mono uppercase tracking-wider rounded-none"
                       >
-                        <Download className="h-3.5 w-3.5 mr-1.5" />
+                        <Download className="h-3.5 w-3.5 mr-1" />
                         Export .md
                       </Button>
                     </div>
                   </div>
 
-                  {/* Virtual A4 Paper document container */}
-                  <div className="bg-white border border-neutral-200 shadow-sm p-12 min-h-[750px] relative overflow-hidden rounded-none mx-auto max-w-[21cm]">
+                  {/* Virtual A4 White Paper Editor */}
+                  <div className="bg-white border border-neutral-200 shadow-sm p-12 min-h-[850px] relative overflow-hidden rounded-none mx-auto max-w-[21cm]">
                     
-                    {/* Document Watermark / Header */}
+                    {/* Watermark header */}
                     <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-wider text-slate-400 border-b border-neutral-100 pb-3 mb-8">
-                      <span>{docTitle}</span>
-                      <span className="text-emerald-700 font-bold">✓ AI Generated Draft</span>
-                      <span>DATE: {docDate}</span>
+                      <span>{selectedTemplate.name}</span>
+                      <span className="text-emerald-700 font-bold">✓ AI Document Workspace</span>
+                      <span>DATE: {docVariables["Effective Date"] || docVariables["Start Date"] || "Current"}</span>
                     </div>
 
-                    {/* Meta Section */}
-                    <div className="text-[10px] font-mono text-slate-500 uppercase space-y-1 border-l-2 border-slate-305 pl-3 mb-6">
-                      <p><span className="text-slate-400">Jurisdiction Forum:</span> {docJurisdiction}</p>
-                      <p><span className="text-slate-400">Draft Language:</span> {docLanguage}</p>
-                    </div>
+                    {/* Rich text viewer */}
+                    {isEditingDraft ? (
+                      <textarea
+                        value={generatedDraft}
+                        onChange={(e) => setGeneratedDraft(e.target.value)}
+                        rows={30}
+                        className="w-full bg-white border border-neutral-200 focus:outline-none p-4 text-xs font-serif leading-relaxed text-slate-850 rounded-none resize-none"
+                      />
+                    ) : (
+                      <div className="space-y-4">
+                        {renderDocumentViewer(generatedDraft)}
+                      </div>
+                    )}
 
-                    {/* Parsed legal content rendering */}
-                    <div className="space-y-4">
-                      {renderFormattedDoc(generatedDraft)}
-                    </div>
-
-                    {/* Signatures placeholder */}
-                    <div className="grid grid-cols-2 gap-12 border-t border-neutral-100 pt-8 mt-12 text-[10px] font-mono uppercase text-slate-550">
+                    {/* Signatures Panel */}
+                    <div className="grid grid-cols-2 gap-12 border-t border-neutral-150 pt-8 mt-12 text-[10px] font-mono uppercase text-slate-500">
                       <div className="space-y-8">
                         <span>For Party A (Principal):</span>
                         <div className="border-b border-neutral-250 w-32 h-6" />
@@ -920,209 +863,226 @@ Extra guidelines: ${userInstructions}
                       </div>
                     </div>
 
+                    {/* Inline Edit trigger */}
+                    <button 
+                      onClick={() => setIsEditingDraft(!isEditingDraft)} 
+                      className="absolute right-4 bottom-4 p-1.5 border border-neutral-200 hover:bg-neutral-50 rounded-none text-slate-400 bg-white"
+                      title={isEditingDraft ? "View Styled Paper" : "Edit Raw Text"}
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </button>
+
                   </div>
 
                 </div>
               ) : (
-                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-4 rounded-none min-h-[500px] flex flex-col justify-center items-center font-serif">
+                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-4 rounded-none min-h-[600px] flex flex-col justify-center items-center font-serif shadow-3xs">
                   <FileText className="h-10 w-10 text-neutral-350" />
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-700 font-sans">Draft Workspace Viewport</p>
+                    <p className="text-xs font-semibold text-slate-700 font-sans">Legal drafting page empty</p>
                     <p className="text-[10px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                      Fill out the document variables and click "Generate Draft" to compile the virtual contract page.
+                      Configure the parameters, enter instructions in the prompt bar, and click "Generate Draft" to build.
                     </p>
                   </div>
                 </div>
               )}
             </div>
 
-          </div>
-        </TabsContent>
+            {/* Right: Embedded document variable inputs (like Word fields panel) */}
+            <div className="xl:col-span-4 border border-neutral-200 bg-white p-4 space-y-4 rounded-none shadow-3xs">
+              <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                Document Placeholders
+              </span>
 
-        {/* 3. REVIEW & AUDIT PANEL */}
-        <TabsContent value="review" className="mt-0">
+              <div className="space-y-3.5 text-xs font-sans">
+                {selectedTemplate.fields.map((field) => (
+                  <div key={field} className="space-y-1">
+                    <label className="text-[9px] font-mono text-slate-450 uppercase block font-bold">
+                      {field}
+                    </label>
+                    <input
+                      type={field.includes("Date") ? "date" : "text"}
+                      placeholder={`Enter ${field.toLowerCase()}...`}
+                      value={docVariables[field] || ""}
+                      onChange={(e) => setDocVariables({ ...docVariables, [field]: e.target.value })}
+                      className="w-full bg-white border border-neutral-200 px-2 py-1.5 focus:border-emerald-600 focus:outline-none rounded-none text-slate-800 placeholder:text-neutral-300"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {generatedDraft && (
+                <div className="border-t border-neutral-100 pt-4 space-y-2">
+                  <span className="text-[9px] font-mono uppercase block text-slate-400">Document Actions</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => handleExportText(generatedDraft, `${selectedTemplate.id}_draft.txt`)}
+                      className="py-1.5 px-2 border border-neutral-200 hover:bg-neutral-50 font-mono text-[9px] uppercase tracking-wider text-slate-650 rounded-none bg-white"
+                    >
+                      Export Text
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setReviewText(generatedDraft);
+                        setActiveTab("review");
+                        handleReviewAudit();
+                      }}
+                      className="py-1.5 px-2 bg-slate-850 hover:bg-slate-900 text-white font-mono text-[9px] uppercase tracking-wider rounded-none"
+                    >
+                      Audit Risk
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* 3. REVIEW & AUDIT PAGE */}
+      {activeTab === "review" && (
+        <div className="space-y-6">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             
-            {/* Input target contract */}
-            <div className="xl:col-span-6 border border-neutral-200 bg-white p-5 space-y-5 rounded-none">
+            {/* Left: Active document text page */}
+            <div className="xl:col-span-8 space-y-4">
               <div className="flex justify-between items-center border-b border-neutral-100 pb-2">
-                <span className="text-[10px] font-mono text-slate-450 uppercase font-bold">Vulnerability Audit Console</span>
-                <VoiceButton onTranscribe={(t) => setReviewText(prev => prev + (prev ? " " : "") + t)} />
+                <span className="text-[10px] font-mono uppercase text-slate-400">Target contract document text</span>
+                <Button 
+                  onClick={handleReviewAudit}
+                  disabled={isReviewing || !reviewText.trim()}
+                  className="h-7 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[9px] uppercase tracking-wider rounded-none"
+                >
+                  {isReviewing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <FileCheck className="h-3.5 w-3.5 mr-1" />}
+                  Audit Document
+                </Button>
               </div>
 
               <textarea
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
-                placeholder="Paste contract code or drafting lines here to scan for missing clauses, ambiguities, and liabilities..."
-                rows={16}
-                className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-800 placeholder:text-neutral-400 font-serif leading-relaxed rounded-none"
+                placeholder="Paste contract text here to audit..."
+                rows={25}
+                className="w-full bg-white border border-neutral-200 focus:outline-none p-5 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
               />
-
-              <Button 
-                onClick={handleReview} 
-                disabled={isReviewing || !reviewText.trim()} 
-                className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
-              >
-                {isReviewing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Running compliance check...
-                  </>
-                ) : (
-                  <>
-                    <FileCheck className="h-4 w-4 mr-2" />
-                    Analyze Draft
-                  </>
-                )}
-              </Button>
             </div>
 
-            {/* Audit Scorecard display */}
-            <div className="xl:col-span-6 space-y-6">
+            {/* Right: Risk scorecard (Word side audit pane style) */}
+            <div className="xl:col-span-4 space-y-6">
               {reviewResult ? (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   
-                  {/* Overall Risk Banner */}
+                  {/* Score banner */}
                   <div className={`p-4 border rounded-none flex items-center justify-between ${
                     (reviewResult.risks?.length || 0) > 3 
-                      ? "bg-red-50/50 border-red-200 text-red-900"
-                      : (reviewResult.risks?.length || 0) > 0 
-                        ? "bg-amber-50/50 border-amber-200 text-amber-900"
-                        : "bg-emerald-50/50 border-emerald-200 text-emerald-950"
+                      ? "bg-red-50/50 border-red-200 text-red-905"
+                      : "bg-emerald-50/50 border-emerald-200 text-emerald-950"
                   }`}>
                     <div className="space-y-0.5">
-                      <span className="text-[9px] font-mono uppercase tracking-wider block font-bold">Vulnerability Audit Rating</span>
+                      <span className="text-[9px] font-mono uppercase text-slate-400 block font-bold">Risk Assessment</span>
                       <span className="font-sans font-bold text-xs uppercase">
-                        {(reviewResult.risks?.length || 0) > 3 ? "HIGH RISK LIABILITY OUTLINE" : (reviewResult.risks?.length || 0) > 0 ? "MEDIUM RISK ALLOCATION" : "SECURE CONTRACT BASELINE"}
+                        {(reviewResult.risks?.length || 0) > 3 ? "Critical Liabilities" : "Secure Contract"}
                       </span>
                     </div>
 
-                    <div className={`text-2xs font-mono font-bold border px-2.5 py-1 ${
-                      (reviewResult.risks?.length || 0) > 3 ? "bg-red-100 border-red-300 text-red-800" :
-                      (reviewResult.risks?.length || 0) > 0 ? "bg-amber-100 border-amber-300 text-amber-800" :
-                      "bg-emerald-100 border-emerald-300 text-emerald-800"
+                    <div className={`text-2xs font-mono font-bold border px-2 py-0.5 ${
+                      (reviewResult.risks?.length || 0) > 3 ? "bg-red-100 border-red-300 text-red-800" : "bg-emerald-100 border-emerald-300 text-emerald-800"
                     }`}>
-                      {(reviewResult.risks?.length || 0) > 3 ? "HIGH" : (reviewResult.risks?.length || 0) > 0 ? "MEDIUM" : "LOW"} RISK
+                      {(reviewResult.risks?.length || 0) > 3 ? "HIGH" : "LOW"} RISK
                     </div>
                   </div>
 
-                  {/* 1. Missing Clauses */}
-                  <div className="border border-neutral-200 bg-white p-5 space-y-3.5 rounded-none">
+                  {/* Missing Clauses */}
+                  <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
                     <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Missing Clauses ({reviewResult.missing_clauses?.length || 0})
+                      Missing Clauses
                     </span>
-                    
                     <div className="space-y-2">
                       {reviewResult.missing_clauses && reviewResult.missing_clauses.length > 0 ? (
                         reviewResult.missing_clauses.map((c: string, idx: number) => (
-                          <div key={idx} className="p-3 bg-red-50/40 border border-red-150 rounded-none text-2xs flex justify-between items-center">
-                            <span className="font-sans font-semibold text-red-900">📄 {c}</span>
-                            <Badge className="bg-red-100 border-red-200 text-red-805 hover:bg-red-100 text-[8px] font-mono uppercase rounded-none">
-                              High severity
-                            </Badge>
+                          <div key={idx} className="flex justify-between items-center border-b border-neutral-100 pb-2 last:border-0 last:pb-0">
+                            <span className="font-sans font-semibold text-red-800">📄 {c}</span>
+                            <Badge className="bg-red-50 text-red-700 text-[8px] font-mono border border-red-200 rounded-none uppercase">High</Badge>
                           </div>
                         ))
                       ) : (
-                        <div className="flex items-center gap-1.5 text-emerald-700 text-2xs font-semibold">
-                          <Check className="h-4 w-4" />
-                          All standard baseline template clauses detected.
-                        </div>
+                        <span className="text-slate-400 italic">No missing clauses detected.</span>
                       )}
                     </div>
                   </div>
 
-                  {/* 2. Ambiguous Clauses */}
-                  <div className="border border-neutral-200 bg-white p-5 space-y-3.5 rounded-none">
+                  {/* Ambiguous Clauses */}
+                  <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
                     <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Ambiguous Clauses ({reviewResult.ambiguous_wording?.length || 0})
+                      Ambiguous Clauses
                     </span>
-                    
-                    <div className="space-y-3.5 text-2xs text-slate-700">
+                    <div className="space-y-3">
                       {reviewResult.ambiguous_wording && reviewResult.ambiguous_wording.length > 0 ? (
                         reviewResult.ambiguous_wording.map((c: any, idx: number) => {
-                          const clauseName = typeof c === 'object' ? c.clause : `Provision #${idx+1}`;
-                          const description = typeof c === 'object' ? c.description || c.reason : String(c);
-                          const severity = typeof c === 'object' ? c.severity || "medium" : "medium";
-                          
+                          const title = typeof c === 'object' ? c.clause : `Provision #${idx+1}`;
+                          const detail = typeof c === 'object' ? c.description || c.reason : String(c);
                           return (
-                            <div key={idx} className="space-y-1.5 border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
+                            <div key={idx} className="space-y-1 border-b border-neutral-100 pb-2.5 last:border-0 last:pb-0">
                               <div className="flex justify-between items-center">
-                                <span className="font-sans font-semibold text-slate-800">{clauseName}</span>
-                                <Badge className={`text-[8px] font-mono uppercase rounded-none border ${
-                                  severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-700 border-amber-200'
-                                }`}>
-                                  {severity} severity
-                                </Badge>
+                                <span className="font-sans font-semibold text-slate-800">{title}</span>
+                                <Badge className="bg-amber-50 text-amber-700 text-[8px] font-mono border border-amber-200 rounded-none uppercase">Medium</Badge>
                               </div>
-                              <p className="font-serif leading-relaxed text-slate-600">{description}</p>
+                              <p className="font-serif text-slate-600 leading-normal">{detail}</p>
                             </div>
                           );
                         })
                       ) : (
-                        <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                          <Check className="h-4 w-4" />
-                          No ambiguous clauses flagged.
-                        </div>
+                        <span className="text-slate-400 italic font-serif">No ambiguities flagged.</span>
                       )}
                     </div>
                   </div>
 
-                  {/* 3. Compliance Issues */}
-                  <div className="border border-neutral-200 bg-white p-5 space-y-3.5 rounded-none">
+                  {/* Compliance Issues */}
+                  <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
                     <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Compliance Issues / Risks ({reviewResult.risks?.length || 0})
+                      Compliance Issues
                     </span>
-                    
                     <div className="space-y-3">
                       {reviewResult.risks && reviewResult.risks.length > 0 ? (
                         reviewResult.risks.map((r: any, idx: number) => (
-                          <div key={idx} className="p-3 border border-neutral-150 bg-neutral-50 text-2xs space-y-1.5 rounded-none">
+                          <div key={idx} className="space-y-1.5 border-b border-neutral-100 pb-2.5 last:border-0 last:pb-0">
                             <div className="flex justify-between items-center">
-                              <span className="font-sans font-semibold text-slate-850">{r.clause || "Liability Provision"}</span>
-                              <Badge className={`text-[8px] font-mono uppercase rounded-none ${
-                                r.level === 'Critical' || r.level === 'High' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                              }`}>
-                                {r.level || "Medium"}
-                              </Badge>
+                              <span className="font-sans font-semibold text-slate-800 truncate max-w-[150px]">{r.clause || "Compliance"}</span>
+                              <Badge className="bg-red-50 text-red-700 text-[8px] font-mono border border-red-200 rounded-none uppercase">{r.level || "Critical"}</Badge>
                             </div>
-                            <p className="font-serif text-slate-600 leading-normal">"{r.excerpt || r.reason}"</p>
-                            <p className="text-slate-700 font-sans font-semibold"><span className="text-slate-400 font-mono text-[9px] uppercase">Filing Fix:</span> {r.recommendation}</p>
+                            <p className="font-serif text-slate-650 leading-relaxed italic">"{r.excerpt || r.reason}"</p>
+                            <p className="font-sans text-slate-700"><span className="font-mono text-slate-400 text-[9px] uppercase">Recommendation:</span> {r.recommendation}</p>
                           </div>
                         ))
                       ) : (
-                        <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                          <Check className="h-4 w-4" />
-                          Compliance audit verified: No active anomalies detected.
-                        </div>
+                        <span className="text-slate-400 italic">No compliance gaps found.</span>
                       )}
                     </div>
                   </div>
 
-                  {/* 4. Suggestions */}
-                  <div className="border border-neutral-200 bg-white p-5 space-y-3.5 rounded-none text-2xs text-slate-700">
+                  {/* Suggestions */}
+                  <div className="border border-neutral-200 bg-white p-4 space-y-3.5 rounded-none text-2xs text-slate-700 shadow-3xs">
                     <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Audit Recommendations
+                      Suggestions
                     </span>
-                    
-                    <ul className="list-disc pl-5 space-y-1.5 leading-relaxed font-serif">
-                      {reviewResult.recommendations && reviewResult.recommendations.length > 0 ? (
-                        reviewResult.recommendations.map((rec: string, idx: number) => (
-                          <li key={idx} className="text-slate-650">{rec}</li>
-                        ))
-                      ) : (
-                        <li className="text-slate-400 italic">No recommendations required.</li>
-                      )}
+                    <ul className="list-disc pl-5 space-y-1.5 leading-normal text-slate-650 font-serif">
+                      {reviewResult.recommendations && reviewResult.recommendations.map((rec: string, idx: number) => (
+                        <li key={idx}>{rec}</li>
+                      ))}
                     </ul>
                   </div>
 
                 </div>
               ) : (
-                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-4 rounded-none min-h-[400px] flex flex-col justify-center items-center font-serif">
+                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif">
                   <FileCheck className="h-10 w-10 text-neutral-350" />
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-700 font-sans">Audit Results panel</p>
-                    <p className="text-[10px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                      Insert contract text in the console panel and run analysis to populate regulatory scores.
+                    <p className="text-xs font-semibold text-slate-750 font-sans">Embedded Audit Page</p>
+                    <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                      Input the contract draft text in the workspace sheet and click 'Audit Document' to load reviews.
                     </p>
                   </div>
                 </div>
@@ -1130,171 +1090,165 @@ Extra guidelines: ${userInstructions}
             </div>
 
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* 4. REDLINE COMPARE PANEL */}
-        <TabsContent value="redline" className="mt-0">
-          <div className="space-y-6">
+      {/* 4. REDLINE COMPARE PAGE */}
+      {activeTab === "redline" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Side-by-side editing text fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
+              <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Document A (Original Baseline)</label>
+              <textarea
+                value={originalText}
+                onChange={(e) => setOriginalText(e.target.value)}
+                placeholder="Paste original contract draft..."
+                rows={12}
+                className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-805 font-serif leading-relaxed rounded-none"
+              />
+            </div>
+
+            <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
+              <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Document B (Revised / Counterparty)</label>
+              <textarea
+                value={revisedText}
+                onChange={(e) => setRevisedText(e.target.value)}
+                placeholder="Paste revised contract draft..."
+                rows={12}
+                className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-805 font-serif leading-relaxed rounded-none"
+              />
+            </div>
+
+          </div>
+
+          <Button 
+            onClick={handleRedlineCompare} 
+            disabled={isRedlining || !originalText.trim() || !revisedText.trim()} 
+            className="w-full h-10 bg-slate-800 hover:bg-slate-900 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
+          >
+            {isRedlining ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                Generating comparison...
+              </>
+            ) : (
+              <>
+                <Scale className="h-3.5 w-3.5 mr-2" />
+                Compare Document Versions
+              </>
+            )}
+          </Button>
+
+          {/* Comparison results */}
+          {redlineResult ? (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start pt-6 border-t border-neutral-200">
               
-              <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded-none">
-                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Document Version A (Baseline)</label>
-                <textarea
-                  value={originalText}
-                  onChange={(e) => setOriginalText(e.target.value)}
-                  placeholder="Paste original contract draft lines..."
-                  rows={10}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
-                />
+              {/* Diff list */}
+              <div className="xl:col-span-8 space-y-4">
+                <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Discrepancy Redlines</span>
+                
+                <div className="space-y-4">
+                  {redlineResult.modifications && redlineResult.modifications.map((mod: any, idx: number) => (
+                    <div key={idx} className="p-4 bg-white border border-neutral-200 rounded-none space-y-3 text-2xs shadow-3xs">
+                      <div className="flex justify-between items-center text-[9px] font-mono border-b border-neutral-100 pb-2">
+                        <span className="font-bold text-slate-800 uppercase">📄 {mod.clause_type || "Provision"}</span>
+                        <span className="text-emerald-705 font-bold uppercase">Modified</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-3 bg-red-50/40 border border-red-100 rounded-none text-red-900 font-serif leading-relaxed">
+                          <span className="font-mono text-[8px] text-red-500 uppercase block font-bold mb-1">Removed:</span>
+                          {mod.original}
+                        </div>
+                        <div className="p-3 bg-emerald-50/40 border border-emerald-100 rounded-none text-emerald-900 font-serif leading-relaxed">
+                          <span className="font-mono text-[8px] text-emerald-600 uppercase block font-bold mb-1">Added:</span>
+                          {mod.revised}
+                        </div>
+                      </div>
+
+                      {mod.impact_summary && (
+                        <p className="bg-neutral-50 p-2.5 border border-neutral-150 text-slate-600 font-sans leading-normal rounded-none">
+                          <span className="font-mono text-[8px] text-slate-400 uppercase block font-bold">AI Risk Assessment:</span>
+                          {mod.impact_summary}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Insertions & Deletions arrays */}
+                  {redlineResult.insertions && redlineResult.insertions.length > 0 && (
+                    <div className="p-4 bg-emerald-50/20 border border-emerald-100 space-y-2 rounded-none">
+                      <span className="text-[9px] font-mono uppercase text-emerald-700 block font-bold">Insertions</span>
+                      <ul className="list-disc pl-5 text-2xs font-serif text-slate-700 leading-normal">
+                        {redlineResult.insertions.map((ins: any, idx: number) => (
+                          <li key={idx}>{typeof ins === 'string' ? ins : ins.text}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {redlineResult.deletions && redlineResult.deletions.length > 0 && (
+                    <div className="p-4 bg-red-50/20 border border-red-150 space-y-2 rounded-none">
+                      <span className="text-[9px] font-mono uppercase text-red-700 block font-bold">Deletions</span>
+                      <ul className="list-disc pl-5 text-2xs font-serif text-slate-750 leading-normal">
+                        {redlineResult.deletions.map((del: any, idx: number) => (
+                          <li key={idx}>{typeof del === 'string' ? del : del.text}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded-none">
-                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Document Version B (Counterparty / Revised)</label>
-                <textarea
-                  value={revisedText}
-                  onChange={(e) => setRevisedText(e.target.value)}
-                  placeholder="Paste revised contract draft lines..."
-                  rows={10}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
-                />
+              {/* Redline sidebar */}
+              <div className="xl:col-span-4 space-y-6">
+                <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-700 shadow-3xs">
+                  <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    Comparison Summary
+                  </span>
+                  <p className="font-serif leading-relaxed text-slate-650">{redlineResult.summary}</p>
+                </div>
+
+                <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-700 shadow-3xs">
+                  <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
+                    Legal Impact
+                  </span>
+                  <p className="font-serif leading-relaxed text-slate-655">{redlineResult.legal_impact || redlineResult.risk_changes}</p>
+                </div>
               </div>
 
             </div>
-
-            <Button 
-              onClick={handleRedline} 
-              disabled={isRedlining || !originalText.trim() || !revisedText.trim()} 
-              className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
-            >
-              {isRedlining ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Generating redlines...
-                </>
-              ) : (
-                <>
-                  <Scale className="h-4 w-4 mr-2" />
-                  Compare Drafts
-                </>
-              )}
-            </Button>
-
-            {/* Redline Output details */}
-            {redlineResult ? (
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start pt-6 border-t border-neutral-200">
-                
-                {/* Left: Modifications Diff Lists */}
-                <div className="xl:col-span-8 space-y-4">
-                  <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold">Clause Comparison redlines</span>
-                  
-                  <div className="space-y-4">
-                    {redlineResult.modifications && redlineResult.modifications.map((mod: any, idx: number) => (
-                      <div key={idx} className="p-4 bg-white border border-neutral-200 rounded-none space-y-3 text-2xs">
-                        <div className="flex justify-between items-center text-[9px] font-mono border-b border-neutral-100 pb-2">
-                          <span className="font-bold text-slate-800 uppercase">📄 {mod.clause_type || "Provision"}</span>
-                          <span className="text-emerald-700 font-bold bg-emerald-50 px-1 border border-emerald-100 uppercase">MODIFIED</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-3 bg-red-50/40 border border-red-150 rounded-none text-red-950 font-serif leading-relaxed relative">
-                            <span className="absolute right-2 top-2 text-[8px] font-mono text-red-400 uppercase font-bold">Removed</span>
-                            <span className="font-mono text-[8px] text-red-500 uppercase block font-bold mb-1">Original clause text:</span>
-                            {mod.original}
-                          </div>
-                          <div className="p-3 bg-emerald-50/40 border border-emerald-150 rounded-none text-emerald-950 font-serif leading-relaxed relative">
-                            <span className="absolute right-2 top-2 text-[8px] font-mono text-emerald-600 uppercase font-bold">Added</span>
-                            <span className="font-mono text-[8px] text-emerald-600 uppercase block font-bold mb-1">Revised clause text:</span>
-                            {mod.revised}
-                          </div>
-                        </div>
-
-                        {mod.impact_summary && (
-                          <div className="bg-neutral-50 p-2.5 border border-neutral-200 text-slate-650 font-sans leading-relaxed mt-2 rounded-none">
-                            <span className="font-mono text-[9px] uppercase tracking-wider text-slate-450 block font-bold">AI Legal Risk Shift Assessment:</span>
-                            {mod.impact_summary}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Insertions & Deletions list arrays */}
-                    {redlineResult.insertions && redlineResult.insertions.length > 0 && (
-                      <div className="p-4 bg-emerald-50/20 border border-emerald-100 space-y-2 rounded-none">
-                        <span className="text-[9px] font-mono uppercase text-emerald-700 block font-bold">Additions / Inserted text lines</span>
-                        <ul className="list-disc pl-5 text-2xs font-serif text-slate-750 leading-relaxed">
-                          {redlineResult.insertions.map((ins: any, idx: number) => (
-                            <li key={idx}>{typeof ins === 'string' ? ins : ins.text}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {redlineResult.deletions && redlineResult.deletions.length > 0 && (
-                      <div className="p-4 bg-red-50/20 border border-red-150 space-y-2 rounded-none">
-                        <span className="text-[9px] font-mono uppercase text-red-700 block font-bold">Deletions / Removed text lines</span>
-                        <ul className="list-disc pl-5 text-2xs font-serif text-slate-750 leading-relaxed">
-                          {redlineResult.deletions.map((del: any, idx: number) => (
-                            <li key={idx}>{typeof del === 'string' ? del : del.text}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: Summary cards */}
-                <div className="xl:col-span-4 space-y-6">
-                  
-                  {/* Summary of changes */}
-                  <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-700">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Comparison Summary
-                    </span>
-                    <p className="font-serif leading-relaxed text-slate-650">{redlineResult.summary}</p>
-                  </div>
-
-                  {/* Legal impact block */}
-                  <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none text-2xs text-slate-700">
-                    <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Overall Legal Impact
-                    </span>
-                    <p className="font-serif leading-relaxed text-slate-655">{redlineResult.legal_impact || redlineResult.risk_changes}</p>
-                  </div>
-
-                </div>
-
+          ) : (
+            <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
+              <Scale className="h-10 w-10 text-neutral-350" />
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-slate-700 font-sans">Redline Analysis panel</p>
+                <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
+                  Paste original and counterparty drafts in the panels above to generate version control differences.
+                </p>
               </div>
-            ) : (
-              <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-4 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif">
-                <Files className="h-10 w-10 text-neutral-350" />
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-700 font-sans">Redline Analysis panel</p>
-                  <p className="text-[10px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                    Select original and counterparty drafts in columns and click compare to render the color-coded variations.
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
+          )}
 
-          </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* 5. IMPROVE CLAUSES PANEL */}
-        <TabsContent value="improve" className="mt-0">
+      {/* 5. IMPROVE CLAUSES PAGE */}
+      {activeTab === "improve" && (
+        <div className="space-y-6">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             
-            {/* Input clause console */}
-            <div className="xl:col-span-6 border border-neutral-200 bg-white p-5 space-y-5 rounded-none">
+            {/* Input clause details */}
+            <div className="xl:col-span-6 border border-neutral-200 bg-white p-5 space-y-5 rounded-none shadow-3xs">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Target Clause Provision Text</label>
+                <label className="text-[10px] font-mono text-slate-450 uppercase font-bold block">Target Clause Provision</label>
                 <textarea
                   value={improveText}
                   onChange={(e) => setImproveText(e.target.value)}
-                  placeholder="Paste specific clause text lines here to modify or improve..."
+                  placeholder="Paste specific clause text lines here..."
                   rows={8}
-                  className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none p-3 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
+                  className="w-full bg-white border border-neutral-200 focus:outline-none p-3 text-xs text-slate-800 font-serif leading-relaxed rounded-none"
                 />
               </div>
 
@@ -1307,47 +1261,46 @@ Extra guidelines: ${userInstructions}
                   type="text"
                   value={improveInstructions}
                   onChange={(e) => setImproveInstructions(e.target.value)}
-                  placeholder="e.g. Rewrite to make liability caps mutual, or make notices written instead of oral."
+                  placeholder="e.g. Rewrite to make liability caps mutual, or make notices written."
                   className="w-full bg-white border border-neutral-200 focus:border-emerald-600 focus:outline-none px-3 py-2 text-xs text-slate-800 placeholder:text-neutral-350 rounded-none font-sans"
                 />
               </div>
 
               <Button 
-                onClick={handleImprove} 
+                onClick={handleImproveClause} 
                 disabled={isImproving || !improveText.trim()} 
                 className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-semibold text-xs uppercase tracking-wider"
               >
                 {isImproving ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
                     Optimizing clause...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Sparkles className="h-3.5 w-3.5 mr-2" />
                     Optimize Clause
                   </>
                 )}
               </Button>
             </div>
 
-            {/* AI Optimization Results */}
+            {/* Results pane */}
             <div className="xl:col-span-6 space-y-6">
               {improveResult ? (
-                <div className="space-y-6 text-2xs text-slate-700">
+                <div className="space-y-5 text-2xs text-slate-700">
                   
-                  {/* Improved Version */}
-                  <div className="border border-emerald-200 bg-white p-5 space-y-3 rounded-none relative">
-                    <span className="absolute right-4 top-4 text-[8px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1.5 border border-emerald-200 uppercase">
-                      Improved Draft Clause
+                  {/* Optimized version */}
+                  <div className="border border-emerald-200 bg-white p-5 space-y-3.5 rounded-none relative shadow-3xs">
+                    <span className="absolute right-4 top-4 text-[8px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 border border-emerald-200 uppercase rounded-none">
+                      AI Optimized Draft
                     </span>
                     <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                      Optimized Version
+                      Improved Clause
                     </span>
-                    <div className="font-serif leading-relaxed text-slate-800 bg-neutral-50 p-4 border border-neutral-200 rounded-none whitespace-pre-wrap">
-                      {improveResult.generated_draft || improveResult.improved_text || improveResult.text || "No draft returned."}
+                    <div className="font-serif leading-relaxed text-slate-850 bg-neutral-50 p-4 border border-neutral-200 rounded-none whitespace-pre-wrap">
+                      {improveResult.generated_draft || improveResult.improved_text || improveResult.text || ""}
                     </div>
-
                     <div className="flex justify-end pt-3">
                       <Button
                         onClick={() => {
@@ -1364,7 +1317,7 @@ Extra guidelines: ${userInstructions}
 
                   {/* Reason for Improvement */}
                   {(improveResult.executive_summary || improveResult.reason) && (
-                    <div className="border border-neutral-200 bg-white p-5 space-y-2 rounded-none">
+                    <div className="border border-neutral-200 bg-white p-4 space-y-2 rounded-none shadow-3xs">
                       <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
                         Reason for Improvement
                       </span>
@@ -1376,9 +1329,9 @@ Extra guidelines: ${userInstructions}
 
                   {/* Legal Benefit */}
                   {improveResult.clause_explanations && (
-                    <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded-none">
+                    <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none shadow-3xs">
                       <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                        Legal Benefit Assessment
+                        Legal Benefit
                       </span>
                       <div className="space-y-2">
                         {Object.entries(improveResult.clause_explanations).map(([key, exp]: any, idx) => (
@@ -1393,22 +1346,22 @@ Extra guidelines: ${userInstructions}
                     </div>
                   )}
 
-                  {/* Risks */}
+                  {/* Potential Risks */}
                   {improveResult.risk_assessment && improveResult.risk_assessment.length > 0 && (
-                    <div className="border border-neutral-200 bg-white p-5 space-y-3 rounded-none">
+                    <div className="border border-neutral-200 bg-white p-4 space-y-3 rounded-none shadow-3xs">
                       <span className="text-[10px] font-mono text-slate-450 uppercase block font-bold border-b border-neutral-100 pb-2">
-                        Potential Residual Risks
+                        Potential Risks
                       </span>
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         {improveResult.risk_assessment.map((r: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-red-50/30 border border-red-150 rounded-none text-2xs space-y-1.5">
-                            <div className="flex justify-between items-center">
-                              <span className="font-sans font-semibold text-red-900">{r.clause || "Residual Provision"}</span>
+                          <div key={idx} className="p-3 bg-red-50/20 border border-red-150 rounded-none text-2xs space-y-1 font-serif text-slate-700">
+                            <div className="flex justify-between items-center font-sans font-semibold text-red-900">
+                              <span>{r.clause || "Liability"}</span>
                               <Badge className="bg-red-100 text-red-750 text-[8px] font-mono uppercase rounded-none border border-red-200">
-                                {r.level || "Medium"}
+                                {r.level || "Critical"}
                               </Badge>
                             </div>
-                            <p className="font-serif text-slate-600 leading-normal">{r.reason}</p>
+                            <p className="leading-normal">{r.reason}</p>
                           </div>
                         ))}
                       </div>
@@ -1417,11 +1370,11 @@ Extra guidelines: ${userInstructions}
 
                 </div>
               ) : (
-                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-4 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif">
+                <div className="border border-neutral-200 border-dashed bg-neutral-50/50 p-12 text-center space-y-3 rounded-none min-h-[300px] flex flex-col justify-center items-center font-serif shadow-3xs">
                   <Sparkles className="h-10 w-10 text-neutral-350" />
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-slate-700 font-sans">Optimized Clause Results panel</p>
-                    <p className="text-[10px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+                    <p className="text-[10px] text-slate-400 max-w-xs leading-normal">
                       Provide a clause and refining prompt to generate the optimized, risk-assessed rewrite options.
                     </p>
                   </div>
@@ -1430,9 +1383,9 @@ Extra guidelines: ${userInstructions}
             </div>
 
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-      </Tabs>
     </div>
   );
 };
