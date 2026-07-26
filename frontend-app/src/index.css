@@ -246,3 +246,13 @@
   padding-right: 1.5rem !important;
 }
 
+/* Hide left/right sidebars in Legal Search & make main panel full width */
+aside.xl\:col-span-3 {
+  display: none !important;
+}
+main.xl\:col-span-6 {
+  grid-column: span 12 / span 12 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
