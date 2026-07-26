@@ -133,12 +133,11 @@
 .bg-neutral-100 {
   background-color: #101010 !important;
 }
-
 /* Secondary dark backgrounds for inputs / cards */
 .bg-slate-50\/50,
+.bg-neutral-50\/50,
 .bg-neutral-50\/40,
 .bg-slate-50\/40,
-.bg-\[\#f8fafc\],
 .bg-neutral-50\/30 {
   background-color: #151515 !important;
 }
@@ -237,5 +236,13 @@
 /* Fix Sheet / Modals overlay background */
 .bg-background\/80 {
   background-color: rgba(5, 5, 5, 0.8) !important;
+}
+
+/* Force chatbot layout container to take full width */
+.max-w-5xl {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
 }
 
