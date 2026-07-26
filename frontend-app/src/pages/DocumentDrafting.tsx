@@ -42,6 +42,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { VoiceButton } from "@/components/voice/VoiceButton";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
+import { GradientCard } from "@/components/ui/gradient-card";
 import { 
   generateDraft, 
   reviewDraft, 
@@ -717,46 +718,52 @@ Additional contract clauses to inject: ${additionalClauses}
 
             {/* Visual template cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTemplates.map((tpl) => (
-                <motion.div
-                  key={tpl.id}
-                  whileHover={{ scale: 1.025, y: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="border border-neutral-200 bg-white p-6 hover:border-emerald-600/40 hover:shadow-md transition-all flex flex-col justify-between h-full rounded relative overflow-hidden group cursor-pointer"
-                  onClick={() => handleSelectTemplate(tpl)}
-                >
-                  {tpl.popular && (
-                    <div className="absolute right-0 top-0 bg-emerald-600 text-white text-[9px] font-mono font-bold uppercase tracking-wider px-3 py-1">
-                      Popular
-                    </div>
-                  )}
+              {filteredTemplates.map((tpl) => {
+                const getGradientType = (cat: string) => {
+                  switch (cat) {
+                    case "Confidentiality": return "orange" as const;
+                    case "Employment": return "purple" as const;
+                    case "Corporate": return "gray" as const;
+                    case "Commercial": return "green" as const;
+                    default: return "gray" as const;
+                  }
+                };
 
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded">
-                        {getTemplateIcon(tpl.category)}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm md:text-base text-slate-800 font-sans group-hover:text-emerald-700 transition-colors">
-                          {tpl.name}
-                        </h3>
-                        <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wide block font-bold">{tpl.category}</span>
-                      </div>
-                    </div>
+                const getBadgeColor = (cat: string) => {
+                  switch (cat) {
+                    case "Confidentiality": return "#F59E0B"; // Amber
+                    case "Employment": return "#8B5CF6"; // Purple
+                    case "Corporate": return "#4B5563"; // Gray
+                    case "Commercial": return "#10B981"; // Green
+                    default: return "#6B7280"; // Slate
+                  }
+                };
 
-                    <p className="text-[13px] text-slate-505 font-serif leading-relaxed">
-                      {tpl.description}
-                    </p>
+                const getOverlayImage = (id: string) => {
+                  const hash = (id.charCodeAt(0) + id.charCodeAt(id.length - 1)) % 4;
+                  switch (hash) {
+                    case 0: return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=320&q=75";
+                    case 1: return "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=320&q=75";
+                    case 2: return "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=320&q=75";
+                    default: return "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=320&q=75";
+                  }
+                };
 
-                    <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-3 border-t border-neutral-100/60">
-                      <span>Latency: {tpl.draftTime}</span>
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        Setup Fields <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                return (
+                  <GradientCard
+                    key={tpl.id}
+                    gradient={getGradientType(tpl.category)}
+                    badgeText={tpl.popular ? `${tpl.category} • POPULAR` : tpl.category}
+                    badgeColor={getBadgeColor(tpl.category)}
+                    title={tpl.name}
+                    description={tpl.description}
+                    ctaText={`Draft Template (${tpl.draftTime})`}
+                    ctaHref="#"
+                    imageUrl={getOverlayImage(tpl.id)}
+                    onClick={() => handleSelectTemplate(tpl)}
+                  />
+                );
+              })}
             </div>
           </motion.div>
         )}
