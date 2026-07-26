@@ -9,8 +9,14 @@ export interface DocClause {
 export interface DocEntity {
   id: string;
   name: string;
-  type: "Party" | "Date" | "Amount" | "Jurisdiction" | "Obligation";
+  type: string;
   value: string;
+}
+
+export interface LegalReference {
+  id: string;
+  type: string;
+  reference: string;
 }
 
 export interface RelatedJudgment {
@@ -39,6 +45,7 @@ export interface DocumentDetail {
   summary: string;
   clauses: DocClause[];
   entities: DocEntity[];
+  legalReferences: LegalReference[];
   relatedJudgments: RelatedJudgment[];
   timeline: TimelineEvent[];
   aiNotes: AINote[];

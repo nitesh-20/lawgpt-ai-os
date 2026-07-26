@@ -38,7 +38,7 @@ class EntityExtractor:
 
         if self.api_key and "your-gemini-api-key" not in self.api_key:
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={self.api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={self.api_key}"
                 headers = {"Content-Type": "application/json"}
                 
                 system_instruction = (
@@ -99,7 +99,16 @@ class EntityExtractor:
         date_rx = r'\b(?:\d{1,2}(?:st|nd|rd|th)?[-/\s]?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[-/\s]?\d{2,4}|\d{1,2}[-/\s]\d{1,2}[-/\s]\d{2,4}|\d{4})\b'
         money_rx = r'(?:Rs\.?|INR|\$|£|€)\s*\d+(?:,\d{3})*(?:\.\d{2})?(?:\s*(?:Crore|Lakh|Million|Billion|Percent))?\b'
         percent_rx = r'\b\d+(?:\.\d+)?\s*%\s*(?:per annum|p\.a\.)?\b'
-        act_rx = r'\b((?:[A-Z][a-zA-Z0-9]*\s+(?:and\s+|of\s+|for\s+)?)*[A-Z][a-zA-Z0-9]*\s+Act,?\s*(?:18|19|20)\d{2})\b|\b((?:[A-Z][a-zA-Z0-9]*\s+(?:and\s+|of\s+|for\s+)?)*[A-Z][a-zA-Z0-9]*\s+Code,?\s*(?:18|19|20)\d{2})\b'
+        # "Sanhita"/"Adhiniyam" cover the 2023 Indian criminal law reforms (BNS, BNSS,
+        # BSA), which replaced "IPC"/"CrPC"/"Evidence Act" and don't fit an "Act, YYYY"
+        # or "Code, YYYY" pattern — a real gap for FIRs and criminal filings, which now
+        # cite these by default.
+        act_rx = (
+            r'\b((?:[A-Z][a-zA-Z0-9]*\s+(?:and\s+|of\s+|for\s+)?)*[A-Z][a-zA-Z0-9]*\s+Act,?\s*(?:18|19|20)\d{2})\b'
+            r'|\b((?:[A-Z][a-zA-Z0-9]*\s+(?:and\s+|of\s+|for\s+)?)*[A-Z][a-zA-Z0-9]*\s+Code,?\s*(?:18|19|20)\d{2})\b'
+            r'|\b(Bharatiya(?:\s+[A-Z][a-zA-Z]*)+\s+(?:Sanhita|Adhiniyam)(?:,?\s*(?:18|19|20)\d{2})?)\b'
+        )
+        known_abbreviations = ("IPC", "CrPC", "BNS", "BNSS", "BSA", "CPC", "POCSO", "NDPS", "IT Act", "PMLA")
         section_rx = r'\b(?:Section|Sec\.)\s*(\d+[A-Za-z0-9\-\(\)]*)\b'
         court_rx = r'\b([A-Z][A-Za-z\s]+ High Court|[A-Z][A-Za-z\s]+ District Court|Supreme Court of India|Supreme Court)\b'
         authority_rx = r'\b(SEBI|RBI|FEMA|TRAI|IRDAI|NCLT|NCLAT|CCI|Government of India|Ministry of [A-Z][a-zA-Z\s]+)\b'
@@ -112,7 +121,11 @@ class EntityExtractor:
         
         # Clean up Acts finding due to optional groups
         acts_raw = re.findall(act_rx, text)
-        acts = list(set(item[0] or item[1] for item in acts_raw if item[0] or item[1]))
+        acts = set(item[0] or item[1] or item[2] for item in acts_raw if item[0] or item[1] or item[2])
+        for abbr in known_abbreviations:
+            if re.search(rf'\b{re.escape(abbr)}\b', text):
+                acts.add(abbr)
+        acts = list(acts)
         
         sections = list(set(re.findall(section_rx, text)))
         courts = list(set(re.findall(court_rx, text)))
@@ -120,7 +133,10 @@ class EntityExtractor:
         
         # Basic signatures / signatories heuristic
         signatories = []
-        sig_matches = re.finditer(r'(?:Signature|Signed by|Executed by|For)\s*:?\s*([A-Z][a-zA-Z\s\.\-]{2,30})', text, re.IGNORECASE)
+        # \b before the alternation is required — without it, "For" case-insensitively
+        # matched the substring "FOR" hiding inside words like "INFORMATION", capturing
+        # garbage like "MATION REPORT" as a fake signatory.
+        sig_matches = re.finditer(r'\b(?:Signature|Signed by|Executed by|For)\b\s*:?\s*([A-Z][a-zA-Z\s\.\-]{2,30})', text, re.IGNORECASE)
         for m in sig_matches:
             name = m.group(1).strip()
             if name and not any(kw in name.lower() for kw in ["the", "authorized", "signatory", "on behalf"]):

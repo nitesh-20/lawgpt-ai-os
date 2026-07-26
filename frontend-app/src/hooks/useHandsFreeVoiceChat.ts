@@ -24,6 +24,11 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
   const [errorMessage, setErrorMessage] = useState("");
 
   const activeRef = useRef(false);
+  // Bumped on every start()/exit() so a slow turn from a previous session (e.g. a
+  // network call still in flight after the user tapped stop-and-restart) can tell
+  // it's stale and bail out instead of playing its audio over a newer, live turn —
+  // this was the "multiple AI voices at once" bug.
+  const generationRef = useRef(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -42,6 +47,8 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
 
   function stopPlayback() {
     if (audioElRef.current) {
+      audioElRef.current.onended = null;
+      audioElRef.current.onerror = null;
       audioElRef.current.pause();
       audioElRef.current = null;
     }
@@ -49,6 +56,7 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
 
   function exit() {
     activeRef.current = false;
+    generationRef.current += 1;
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.onstop = null;
       mediaRecorderRef.current.stop();
@@ -59,61 +67,82 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
     setErrorMessage("");
   }
 
-  async function submitTurn(blob: Blob) {
+  /** True if `gen` is still the live session — false means a stale async callback. */
+  function isCurrent(gen: number) {
+    return activeRef.current && generationRef.current === gen;
+  }
+
+  async function submitTurn(blob: Blob, gen: number) {
+    if (!isCurrent(gen)) return;
     setPhase("thinking");
     try {
       const result = await voiceChat(blob, sessionIdRef.current, languageCode);
-      onResult?.(result);
+      if (!isCurrent(gen)) return; // a newer/exited session superseded this one while we waited
 
-      if (!activeRef.current) {
-        setPhase("idle");
-        return;
-      }
+      onResult?.(result);
 
       if (result.response_audio) {
         setPhase("speaking");
+        stopPlayback(); // never let two clips play at once
         const audio = new Audio(`data:audio/wav;base64,${result.response_audio}`);
         audioElRef.current = audio;
         audio.onended = () => {
-          audioElRef.current = null;
-          if (activeRef.current) listenOnce();
-          else setPhase("idle");
+          if (audioElRef.current === audio) audioElRef.current = null;
+          if (isCurrent(gen)) listenOnce(gen);
+          else if (!activeRef.current) setPhase("idle");
         };
         audio.onerror = () => {
-          audioElRef.current = null;
-          if (activeRef.current) listenOnce();
-          else setPhase("idle");
+          if (audioElRef.current === audio) audioElRef.current = null;
+          if (isCurrent(gen)) listenOnce(gen);
+          else if (!activeRef.current) setPhase("idle");
         };
-        await audio.play();
-      } else {
-        listenOnce();
+        try {
+          await audio.play();
+        } catch (playErr) {
+          // Browser autoplay policy occasionally blocks play() after a long network
+          // wait — the reply text still made it into the chat via onResult above,
+          // so just move on to the next turn instead of treating this as fatal.
+          console.warn("Voice reply audio could not autoplay:", playErr);
+          if (audioElRef.current === audio) audioElRef.current = null;
+          if (isCurrent(gen)) listenOnce(gen);
+        }
+      } else if (isCurrent(gen)) {
+        listenOnce(gen);
       }
     } catch (err: any) {
+      if (!isCurrent(gen)) return;
       const msg = err?.message || "Voice turn failed";
       setPhase("error");
       setErrorMessage(msg);
       onError?.(msg);
-      setTimeout(() => exit(), 2000);
+      setTimeout(() => { if (isCurrent(gen)) exit(); }, 2000);
     }
   }
 
-  async function listenOnce() {
-    if (!activeRef.current) return;
+  async function listenOnce(gen: number) {
+    if (!isCurrent(gen)) return;
     setPhase("listening");
 
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // autoGainControl off: Chrome's default AGC amplifies quiet room noise to a
+      // steady target volume, which was keeping the VAD's silence check permanently
+      // above threshold and forcing users to hit "tap to stop" manually every time.
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+      });
     } catch {
       const msg = "Microphone access denied";
-      setPhase("error");
-      setErrorMessage(msg);
-      onError?.(msg);
-      setTimeout(() => exit(), 2000);
+      if (isCurrent(gen)) {
+        setPhase("error");
+        setErrorMessage(msg);
+        onError?.(msg);
+        setTimeout(() => { if (isCurrent(gen)) exit(); }, 2000);
+      }
       return;
     }
 
-    if (!activeRef.current) {
+    if (!isCurrent(gen)) {
       stream.getTracks().forEach((t) => t.stop());
       return;
     }
@@ -132,12 +161,12 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
       if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
         audioCtxRef.current.close();
       }
-      if (!activeRef.current) return;
+      if (!isCurrent(gen)) return;
       const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
       if (blob.size > 0) {
-        submitTurn(blob);
+        submitTurn(blob, gen);
       } else {
-        listenOnce();
+        listenOnce(gen);
       }
     };
 
@@ -156,12 +185,14 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
       let lastSpeechTime = Date.now();
 
       const checkSilence = () => {
-        if (!activeRef.current || recorder.state !== "recording") return;
+        if (!isCurrent(gen) || recorder.state !== "recording") return;
 
         analyser.getByteFrequencyData(buffer);
         const average = buffer.reduce((a, b) => a + b, 0) / buffer.length;
 
-        if (average > 8) {
+        // Raised from 8: with AGC off, ambient room noise typically sits well under this,
+        // while actual speech reliably clears it.
+        if (average > 14) {
           lastSpeechTime = Date.now();
         } else if (Date.now() - lastSpeechTime > silenceMs) {
           if (recorder.state === "recording") recorder.stop();
@@ -172,7 +203,7 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
       };
 
       setTimeout(() => {
-        if (activeRef.current && recorder.state === "recording") checkSilence();
+        if (isCurrent(gen) && recorder.state === "recording") checkSilence();
       }, 1000);
     } catch (err) {
       console.error("VAD setup error:", err);
@@ -182,9 +213,11 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
   function start() {
     if (activeRef.current) return;
     activeRef.current = true;
+    generationRef.current += 1;
+    const gen = generationRef.current;
     sessionIdRef.current = crypto.randomUUID();
     setErrorMessage("");
-    listenOnce();
+    listenOnce(gen);
   }
 
   /** Force the current listening turn to submit immediately instead of waiting for silence. */
@@ -197,7 +230,7 @@ export function useHandsFreeVoiceChat(options: UseHandsFreeVoiceChatOptions = {}
   /** Interrupt playback (barge-in) and resume listening right away. */
   function interrupt() {
     stopPlayback();
-    if (activeRef.current) listenOnce();
+    if (activeRef.current) listenOnce(generationRef.current);
   }
 
   // Cleanup on unmount only — `exit` is recreated every render, so this must not

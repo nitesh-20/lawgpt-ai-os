@@ -15,12 +15,15 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UploadedDocument } from "@/types/chat";
 import { apiClient } from "@/utils/apiClient";
 import { AnimatePresence, motion } from "framer-motion";
-import { VoiceButton } from "@/components/voice/VoiceButton";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
+import { useHandsFreeVoiceChat } from "@/hooks/useHandsFreeVoiceChat";
+import { Mic, MicOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Chatbot = () => {
   const [message, setMessage] = useState("");
@@ -35,6 +38,37 @@ const Chatbot = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
+
+  // Hands-free conversational Voice AI: record -> transcribe+answer+synthesize -> speak -> listen again.
+  const handsFreeVoice = useHandsFreeVoiceChat({
+    onResult: (result) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), content: result.transcript || "", sender: "user", timestamp: new Date() },
+        {
+          id: crypto.randomUUID(),
+          content: result.response_text,
+          sender: "bot",
+          timestamp: new Date(),
+          citations: (result.citations || []).map((cit: any, idx: number) => ({
+            id: cit.citation_id || `cit-${idx}`,
+            label: cit.document_name || cit.document_id || "Citation",
+            source: cit.text || "Authority source reference"
+          }))
+        }
+      ]);
+    },
+    onError: (msg) => {
+      toast({ title: "Voice Assistant Error", description: msg, variant: "destructive" });
+    }
+  });
+
+  const VOICE_PHASE_LABEL: Record<string, string> = {
+    listening: "Listening",
+    thinking: "Thinking",
+    speaking: "Speaking",
+    error: "Error"
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -93,13 +127,6 @@ const Chatbot = () => {
             citations
           }
         ]);
-
-        if (isVoiceSearchRef.current) {
-          isVoiceSearchRef.current = false;
-          setTimeout(() => {
-            speakText(botReply);
-          }, 600);
-        }
       } else {
         throw new Error("Local backend returned error status");
       }
@@ -323,17 +350,21 @@ const Chatbot = () => {
               </div>
 
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                <VoiceButton
-                  onTranscribe={(t) => {
-                    if (!t.trim()) return;
-                    isVoiceSearchRef.current = true;
-                    setMessages((prev) => [
-                      ...prev,
-                      { id: crypto.randomUUID(), content: t, sender: "user", timestamp: new Date() },
-                    ]);
-                    runStream(t);
-                  }}
-                />
+                <button
+                  type="button"
+                  onClick={handsFreeVoice.isActive ? handsFreeVoice.exit : handsFreeVoice.start}
+                  className={cn(
+                    "h-7 w-7 rounded-lg border border-neutral-200 flex items-center justify-center transition-colors shrink-0",
+                    "text-slate-500 hover:text-emerald-700 hover:bg-emerald-50"
+                  )}
+                  title={handsFreeVoice.isActive ? "Stop Voice Mode" : "Start Voice Mode"}
+                >
+                  {handsFreeVoice.isActive ? (
+                    <MicOff className="h-3.5 w-3.5 text-red-500 animate-pulse" />
+                  ) : (
+                    <Mic className="h-3.5 w-3.5" />
+                  )}
+                </button>
 
                 <Button
                   type="submit"
@@ -384,6 +415,31 @@ const Chatbot = () => {
         </aside>
 
       </div>
+
+      {/* HANDS-FREE VOICE AI OVERLAY */}
+      {handsFreeVoice.isActive && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-6">
+          <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center">
+            <Bot className={cn("h-10 w-10 text-emerald-400", handsFreeVoice.phase !== "idle" && "animate-pulse")} />
+          </div>
+          <span className="text-white/90 text-sm font-mono uppercase tracking-widest">
+            {VOICE_PHASE_LABEL[handsFreeVoice.phase] || "Listening"}
+          </span>
+          {handsFreeVoice.phase === "error" ? (
+            <span className="text-red-400 text-xs uppercase tracking-wider font-mono">
+              {handsFreeVoice.errorMessage}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handsFreeVoice.phase === "listening" ? handsFreeVoice.stopListeningNow : handsFreeVoice.exit}
+              className="text-white/60 hover:text-white text-xs uppercase tracking-wider font-mono"
+            >
+              {handsFreeVoice.phase === "listening" ? "Tap to stop" : "Exit Voice Mode"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

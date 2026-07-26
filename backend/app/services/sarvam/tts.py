@@ -33,24 +33,12 @@ class TextToSpeechManager:
             }
             
         logger.info(f"Sarvam TTS: Synthesizing {len(text)} chars ({language_code} - {speaker})")
-        
-        # Try Sarvam MCP first
-        try:
-            from app.services.sarvam.mcp.service import SarvamService
-            mcp_service = SarvamService.get_instance()
-            audio_data = await mcp_service.synthesize(text, speaker, language_code)
-            if audio_data:
-                import base64
-                audio_base64 = base64.b64encode(audio_data).decode("utf-8")
-                cls._cache[cache_key] = audio_base64
-                return {
-                    "status": "success",
-                    "audio_base64": audio_base64,
-                    "cached": False
-                }
-        except Exception as e:
-            logger.error(f"Sarvam MCP TTS failure: {e}. Falling back to REST API.")
-            
+
+        # The MCP tool path was measured at 13-18s per call (vs. ~2-3s hitting Sarvam's
+        # REST endpoint directly) and was also found to intermittently return non-audio
+        # payloads (file paths/status text) that got misread as base64 audio. Going
+        # straight to REST is both faster and more reliable — skip MCP for TTS entirely.
+
         # Sarvam text-to-speech endpoint
         endpoint = "/text-to-speech"
         

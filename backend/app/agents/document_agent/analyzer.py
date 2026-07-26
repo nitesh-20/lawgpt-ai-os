@@ -302,6 +302,7 @@ class DocumentAnalyzer:
                 "risk_matrix": risk_matrix,
                 "important_dates": important_dates,
                 "legal_references": legal_references,
+                "entities": entities_res,
                 "recommendations": recommendations,
                 "confidence_score": confidence_score,
                 "analysis_metrics": {

@@ -102,16 +102,37 @@ class SarvamService:
         
         result = await self.manager.call_mcp_tool(tool_name, args)
         if result and hasattr(result, "content") and result.content:
+            raw_text = result.content[0].text
+            audio_b64 = None
             try:
                 import json
-                parsed = json.loads(result.content[0].text)
-                audio_b64 = parsed.get("audio_base64") or result.content[0].text
-                return base64.b64decode(audio_b64)
+                parsed = json.loads(raw_text)
+                audio_b64 = parsed.get("audio_base64")
             except Exception:
-                try:
-                    return base64.b64decode(result.content[0].text)
-                except Exception:
-                    return None
+                pass
+
+            # Only trust an explicit audio_base64 field. The tool can also reply with a
+            # file path or plain-text status message (e.g. when it writes audio to disk
+            # instead of inlining it) — blindly base64-decoding that garbage previously
+            # produced unplayable audio that then poisoned the TTS cache.
+            if not audio_b64:
+                logger.warning("Sarvam MCP TTS: no audio_base64 in tool response, skipping.")
+                return None
+
+            try:
+                decoded = base64.b64decode(audio_b64, validate=True)
+            except Exception:
+                logger.warning("Sarvam MCP TTS: audio_base64 field was not valid base64, skipping.")
+                return None
+
+            # Sanity check it's actually audio before trusting it (and, upstream, caching it).
+            known_headers = (b"RIFF", b"OggS", b"ID3\x00", b"fLaC")
+            looks_like_audio = len(decoded) >= 200 and (decoded[:4] in known_headers or decoded[:2] == b"\xff\xfb")
+            if not looks_like_audio:
+                logger.warning(f"Sarvam MCP TTS: decoded payload does not look like audio ({len(decoded)} bytes), skipping.")
+                return None
+
+            return decoded
         return None
 
     async def extract_document(self, file_bytes: bytes, filename: str) -> Optional[Dict[str, Any]]:

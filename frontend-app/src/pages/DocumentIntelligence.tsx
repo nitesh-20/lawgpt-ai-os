@@ -274,6 +274,7 @@ const DocumentIntelligence = () => {
             <TabsList className="w-full bg-neutral-50 border border-border p-1 h-9">
               <TabsTrigger value="summary" className="w-full text-2xs data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Summary</TabsTrigger>
               <TabsTrigger value="entities" className="w-full text-2xs data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Entities</TabsTrigger>
+              <TabsTrigger value="laws" className="w-full text-2xs data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Laws & Citations</TabsTrigger>
               <TabsTrigger value="risk" className="w-full text-2xs data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Risk Notes</TabsTrigger>
             </TabsList>
 
@@ -324,6 +325,27 @@ const DocumentIntelligence = () => {
                   ))
                 ) : (
                   <p className="text-xs text-neutral-500 text-center py-6">No entities detected.</p>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="laws" className="glass-card p-5 mt-3">
+              <div className="flex items-center gap-2 mb-4">
+                <Scale className="h-4 w-4 text-primary" />
+                <span className="text-2xs font-mono uppercase text-neutral-800">Applicable Laws & Citations</span>
+              </div>
+              <div className="space-y-3">
+                {doc.legalReferences && doc.legalReferences.length > 0 ? (
+                  doc.legalReferences.map((ref) => (
+                    <div key={ref.id} className="flex justify-between items-center text-xs py-1.5 border-b border-border/60">
+                      <p className="text-neutral-800 leading-relaxed">{ref.reference}</p>
+                      <Badge variant="secondary" className="text-3xs font-mono uppercase bg-neutral-100 shrink-0 ml-3">{ref.type}</Badge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-neutral-500 text-center py-6">
+                    No acts, sections, or courts were detected in this document.
+                  </p>
                 )}
               </div>
             </TabsContent>

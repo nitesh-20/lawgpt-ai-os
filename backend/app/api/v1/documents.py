@@ -1,15 +1,48 @@
 import os
+import json
 from typing import Any
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, status
 from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
 from loguru import logger
+from app.core.config import settings
 from app.agents.document_agent.analyzer import DocumentAnalyzer
 from app.database.firestore import get_firestore_client
 
 router = APIRouter()
 analyzer = DocumentAnalyzer()
+
+# Local fallback manifest for the uploaded-documents list — Firestore is disabled in
+# this environment (placeholder project ID), so without this, uploads succeed and
+# analyze fine but never show up in the Documents list (no way to find them again).
+_DOCUMENTS_MANIFEST_PATH = settings.BASE_DIR / "data" / "local_documents_manifest.json"
+
+
+def _get_local_documents() -> list[dict[str, Any]]:
+    if _DOCUMENTS_MANIFEST_PATH.exists():
+        try:
+            with open(_DOCUMENTS_MANIFEST_PATH, "r") as f:
+                return list(json.load(f).values())
+        except Exception as e:
+            logger.error(f"Failed to read local documents manifest: {e}")
+    return []
+
+
+def _save_local_document(doc_id: str, doc_metadata: dict[str, Any]) -> None:
+    data: dict[str, Any] = {}
+    if _DOCUMENTS_MANIFEST_PATH.exists():
+        try:
+            with open(_DOCUMENTS_MANIFEST_PATH, "r") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data[doc_id] = doc_metadata
+    try:
+        with open(_DOCUMENTS_MANIFEST_PATH, "w") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to write local documents manifest: {e}")
 
 
 def get_safe_filename(file: UploadFile) -> str:
@@ -285,10 +318,13 @@ def get_documents_collection():
 async def list_documents():
     """List all uploaded documents."""
     docs_ref = get_documents_collection()
-    if not docs_ref:
-        return []
-    docs = docs_ref.get()
-    return [d.to_dict() for d in docs]
+    if docs_ref:
+        try:
+            docs = docs_ref.get()
+            return [d.to_dict() for d in docs]
+        except Exception as e:
+            logger.warning(f"Firestore document list failed: {e}. Falling back to local manifest.")
+    return _get_local_documents()
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_endpoint(file: UploadFile = File(...)):
@@ -315,8 +351,14 @@ async def upload_endpoint(file: UploadFile = File(...)):
         
         docs_ref = get_documents_collection()
         if docs_ref:
-            docs_ref.document(doc_id).set(doc_metadata)
-            
+            try:
+                docs_ref.document(doc_id).set(doc_metadata)
+            except Exception as e:
+                logger.warning(f"Firestore document write failed: {e}. Falling back to local manifest.")
+                _save_local_document(doc_id, doc_metadata)
+        else:
+            _save_local_document(doc_id, doc_metadata)
+
         return {
             "status": "success",
             "message": f"Document '{file_name}' uploaded and processed successfully.",
