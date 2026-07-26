@@ -140,29 +140,12 @@ class LegalReasoner:
             except Exception as e:
                 logger.error(f"Error calling Gemini API: {e}. Falling back to Sarvam LLM.")
 
-        # Fallback 1: Sarvam LLM
+        # Fallback 1: Local reasoning (RAG context based)
         try:
-            from app.services.sarvam.llm import SarvamLLMManager
-            logger.info("Attempting Sarvam LLM for legal reasoning...")
-            sarvam_resp = await SarvamLLMManager.generate_content(prompt)
-            if sarvam_resp.get("status") == "success":
-                text_response = sarvam_resp["content"]
-                print("\n=== STEP 3: RAW SARVAM RESPONSE ===")
-                print(text_response)
-                try:
-                    parsed = self._clean_and_parse_json(text_response)
-                    logger.info("Successfully received and parsed Sarvam LLM response.")
-                    return parsed
-                except Exception as parse_err:
-                    logger.warning(f"Sarvam JSON parse failed: {parse_err}. Recovering text response.")
-                    return self._recover_text_to_dict(text_response, query)
-            else:
-                logger.warning(f"Sarvam LLM failed: {sarvam_resp.get('message')}. Falling back to local reasoning.")
+            return self._local_reasoning(query, ranked_chunks, citations, has_pdf_context, default_source)
         except Exception as e:
-            logger.error(f"Error calling Sarvam LLM: {e}. Falling back to local reasoning.")
-
-        # Fallback 2: Local reasoning
-        return self._local_reasoning(query, ranked_chunks, citations, has_pdf_context, default_source)
+            logger.error(f"Local reasoning failed: {e}. Falling back to clean empty response.")
+            return self._recover_text_to_dict("No direct answer text was generated.", query)
 
     def _recover_text_to_dict(self, raw_text: str, query: str) -> dict[str, Any]:
         """
@@ -205,7 +188,7 @@ class LegalReasoner:
             "case_references": [],
             "citations": [],
             "confidence": "Medium",
-            "source": "General Legal Knowledge",
+            "source": "Generated using Gemini General Legal Knowledge",
             "is_context_grounded": False
         }
 

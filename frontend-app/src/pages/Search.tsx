@@ -439,22 +439,23 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
       </div>
 
       {/* PERSISTENT SEARCH CONSOLE: Always visible at the top (ChatGPT Style) */}
-      <div className="w-full max-w-3xl mx-auto bg-white border border-slate-200 p-3.5 rounded-2xl shadow-sm relative overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
-        <form onSubmit={handleSearchSubmit} className="space-y-4">
-          <div className="relative flex items-center">
-            <SearchIcon className="absolute left-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+      <div className="w-full max-w-3xl mx-auto bg-white border border-slate-200 p-2.5 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all duration-200">
+        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3">
+          <div className="relative w-full flex items-center h-12">
+            <SearchIcon className="absolute left-4 h-5 w-5 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Ask a compliance or precedent query (e.g. 'Right to speech')..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full h-12 bg-transparent border-0 focus:outline-none focus:ring-0 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 font-sans"
+              style={{ paddingLeft: '48px', paddingRight: '16px' }}
+              className="w-full h-full bg-transparent border-0 focus:outline-none focus:ring-0 text-sm text-slate-800 placeholder:text-slate-400 font-sans"
             />
           </div>
 
-          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-            <div className="flex items-center gap-2">
-              <div className="h-10 flex items-center justify-center">
+          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2.5 px-1">
+            <div className="flex items-center gap-3 h-10">
+              <div className="flex items-center justify-center h-10 w-10 shrink-0">
                 <VoiceButton
                   onTranscribe={(t) => {
                     setQuery(t);
@@ -466,7 +467,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-xs font-semibold h-10 px-3 focus:outline-none focus:border-blue-600 cursor-pointer rounded-xl text-slate-700 uppercase"
+                className="bg-slate-50 border border-slate-200 text-xs font-semibold h-10 px-3.5 focus:outline-none focus:border-blue-600 cursor-pointer rounded-xl text-slate-700 uppercase flex items-center justify-center"
               >
                 <option value="en">English (EN)</option>
                 <option value="hi-IN">Hindi (HI)</option>
@@ -479,7 +480,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             <Button 
               type="submit" 
               disabled={isSearching || !query.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center font-sans h-10 px-6 text-xs font-semibold shadow-sm transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center font-sans h-10 px-6 text-xs font-semibold shadow-sm transition-colors"
             >
               Search
               <ArrowRight className="ml-1.5 h-4 w-4" />
