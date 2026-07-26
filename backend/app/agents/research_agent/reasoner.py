@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Any
 import httpx
 from loguru import logger
@@ -39,6 +40,13 @@ class LegalReasoner:
         try:
             return json.loads(s)
         except Exception as e:
+            # Try to strip trailing extra closing brackets
+            temp_s = s.strip()
+            while temp_s.endswith("}"):
+                try:
+                    return json.loads(temp_s)
+                except Exception:
+                    temp_s = temp_s[:-1].strip()
             logger.error(f"JSON Parsing Error: {e}. Raw content: {text}")
             raise ValueError(f"Failed to parse JSON response: {e}")
 
@@ -164,17 +172,17 @@ class LegalReasoner:
         direct_ans = ""
         exec_sum = ""
         
-        direct_match = re.search(r'"direct_answer"\s*:\s*"([^"]+)"', cleaned_text)
+        direct_match = re.search(r'"direct_answer"\s*:\s*"((?:[^"\\]|\\.)*)"', cleaned_text)
         if direct_match:
-            direct_ans = direct_match.group(1)
+            direct_ans = direct_match.group(1).replace('\\"', '"').replace('\\n', '\n').strip()
         else:
-            direct_match_sq = re.search(r"'direct_answer'\s*:\s*'([^']+)'", cleaned_text)
+            direct_match_sq = re.search(r"'direct_answer'\s*:\s*'((?:[^'\\]|\\.)*)'", cleaned_text)
             if direct_match_sq:
-                direct_ans = direct_match_sq.group(1)
+                direct_ans = direct_match_sq.group(1).replace("\\'", "'").replace('\\n', '\n').strip()
                 
-        sum_match = re.search(r'"executive_summary"\s*:\s*"([^"]+)"', cleaned_text)
+        sum_match = re.search(r'"executive_summary"\s*:\s*"((?:[^"\\]|\\.)*)"', cleaned_text)
         if sum_match:
-            exec_sum = sum_match.group(1)
+            exec_sum = sum_match.group(1).replace('\\"', '"').replace('\\n', '\n').strip()
         
         # If we couldn't extract structured fields, use the entire raw text as direct_answer
         if not direct_ans:
