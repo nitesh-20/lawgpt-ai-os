@@ -200,6 +200,78 @@ export function MorphPanel() {
     return () => document.removeEventListener("mousedown", clickOutsideHandler)
   }, [showForm, triggerClose])
 
+  // Continuous background wake-word listener (Hey Vaani / वाणी / বাণী)
+  React.useEffect(() => {
+    if (showForm) return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("SpeechRecognition API not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    // Set to Hindi (hi-IN) to capture Indian accents and phonetic matches in English/Hindi/Bengali
+    recognition.lang = "hi-IN";
+
+    recognition.onresult = (event: any) => {
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const text = event.results[i][0].transcript.toLowerCase();
+        console.log("Wake word candidate transcript:", text);
+        
+        // Multi-lingual phonetic variants of 'Hey Vaani' / 'Hi Vaani' / 'Vaani' / 'Vani'
+        const matchesWakeWord = 
+          text.includes("vaani") || 
+          text.includes("vani") || 
+          text.includes("वानी") || 
+          text.includes("वाणी") || 
+          text.includes("বানি") || 
+          text.includes("বাণী") ||
+          text.includes("बनी") ||
+          text.includes("बानी") ||
+          text.includes("वनी");
+
+        if (matchesWakeWord) {
+          console.log("Wake word MATCHED: Triggering voice assistant...");
+          triggerOpen();
+          recognition.stop();
+          break;
+        }
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      if (e.error === "not-allowed") {
+        console.warn("Microphone permission denied for wake word detection.");
+        return;
+      }
+      // Restart on non-fatal errors
+      try { recognition.start(); } catch {}
+    };
+
+    recognition.onend = () => {
+      // Re-initialize listener to keep it running
+      if (!showForm) {
+        try { recognition.start(); } catch {}
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition for wake word:", err);
+    }
+
+    return () => {
+      try {
+        recognition.onend = null;
+        recognition.stop();
+      } catch {}
+    };
+  }, [showForm, triggerOpen])
+
   const ctx = React.useMemo(
     () => ({ showForm, triggerOpen, triggerClose }),
     [showForm, triggerOpen, triggerClose]
