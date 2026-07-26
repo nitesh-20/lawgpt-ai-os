@@ -51,6 +51,7 @@ import {
 } from "@/services/research";
 import { VoiceButton } from "@/components/voice/VoiceButton";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
+import { synthesizeText } from "@/services/voice";
 import { apiClient } from "@/utils/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -64,6 +65,31 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [stats, setStats] = useState<any | null>(null);
+
+  const isVoiceSearchRef = useRef(false);
+
+  const getLanguageCodeForText = (t: string) => {
+    const devanagariRegex = /[\u0900-\u097F]/;
+    const bengaliRegex = /[\u0980-\u09FF]/;
+    if (devanagariRegex.test(t)) return "hi-IN";
+    if (bengaliRegex.test(t)) return "bn-IN";
+    return "en-IN"; // Default English
+  };
+
+  const autoSpeakResponse = async (textToSpeak: string) => {
+    if (!textToSpeak.trim()) return;
+    try {
+      const detectedLang = getLanguageCodeForText(textToSpeak);
+      const base64Data = await synthesizeText(textToSpeak, detectedLang, "meera");
+      if (base64Data) {
+        const audioUrl = `data:audio/wav;base64,${base64Data}`;
+        const audio = new Audio(audioUrl);
+        audio.play();
+      }
+    } catch (e) {
+      console.error("Auto-speech synthesis failed:", e);
+    }
+  };
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -194,6 +220,12 @@ const Search = () => {
         description: `Retrieved and analyzed ${searchResults.length} references.`,
       });
       loadSidePanels();
+
+      // Trigger automatic audio playback if research was started from voice transcription
+      if (isVoiceSearchRef.current && searchResults.length > 0 && searchResults[0].direct_answer) {
+        isVoiceSearchRef.current = false;
+        autoSpeakResponse(searchResults[0].direct_answer);
+      }
     } catch (error) {
       console.error(error);
       toast({
@@ -665,6 +697,7 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
               <VoiceButton
                 showLanguageSelect={false}
                 onTranscribe={(t) => {
+                  isVoiceSearchRef.current = true;
                   setQuery(t);
                   executeSearch(t);
                 }}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, User, Settings, LogOut, Search } from "lucide-react";
+import { MorphPanel } from "@/components/ui/ai-input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,12 +76,9 @@ const Header = ({ isOnline = true, collapsed = false }: HeaderProps) => {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Online/Offline Status Indicator */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-destructive'}`} />
-            <span className="text-neutral-500 font-mono text-2xs uppercase tracking-wider">
-              {isOnline ? "Sync Active" : "Offline Mode"}
-            </span>
+          {/* AI Morphing Input Panel replacing Sync Active */}
+          <div className="flex items-center">
+            <MorphPanel />
           </div>
 
           {/* Notifications */}
