@@ -16,6 +16,20 @@ class DocumentIntelligenceManager:
             
         logger.info(f"Sarvam Document: Extracting text from {filename} ({len(file_bytes)} bytes)")
         
+        # Try Sarvam MCP first
+        try:
+            from app.services.sarvam.mcp.service import SarvamService
+            mcp_service = SarvamService.get_instance()
+            parsed_doc = await mcp_service.extract_document(file_bytes, filename)
+            if parsed_doc:
+                return {
+                    "status": "success",
+                    "content": parsed_doc.get("text") or parsed_doc.get("content") or str(parsed_doc),
+                    "structured_data": parsed_doc.get("structured_data") or parsed_doc
+                }
+        except Exception as e:
+            logger.error(f"Sarvam MCP Document Intelligence failure: {e}. Falling back to REST API.")
+            
         # Sarvam document parse endpoint
         endpoint = "/document/parse" # Hypothetical mapping or similar structure endpoint
         

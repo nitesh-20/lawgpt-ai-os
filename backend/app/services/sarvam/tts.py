@@ -34,6 +34,23 @@ class TextToSpeechManager:
             
         logger.info(f"Sarvam TTS: Synthesizing {len(text)} chars ({language_code} - {speaker})")
         
+        # Try Sarvam MCP first
+        try:
+            from app.services.sarvam.mcp.service import SarvamService
+            mcp_service = SarvamService.get_instance()
+            audio_data = await mcp_service.synthesize(text, speaker, language_code)
+            if audio_data:
+                import base64
+                audio_base64 = base64.b64encode(audio_data).decode("utf-8")
+                cls._cache[cache_key] = audio_base64
+                return {
+                    "status": "success",
+                    "audio_base64": audio_base64,
+                    "cached": False
+                }
+        except Exception as e:
+            logger.error(f"Sarvam MCP TTS failure: {e}. Falling back to REST API.")
+            
         # Sarvam text-to-speech endpoint
         endpoint = "/text-to-speech"
         

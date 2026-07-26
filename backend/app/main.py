@@ -22,6 +22,7 @@ from app.core.security import (
 )
 from app.database.firestore import initialize_firestore
 from app.database.storage import initialize_storage
+from app.services.sarvam.mcp.provider import SarvamProvider
 
 
 # --- Lifespan Setup ---
@@ -40,10 +41,20 @@ async def lifespan(app: FastAPI):
     initialize_firestore()
     initialize_storage()
 
+    # Startup Sarvam MCP Client
+    try:
+        await SarvamProvider.startup()
+    except Exception as e:
+        logger.error(f"Error starting Sarvam MCP subsystem: {e}")
+
     yield
 
     # Shutdown Events
     logger.info(f"Shutting down {settings.APP_NAME}...")
+    try:
+        await SarvamProvider.shutdown()
+    except Exception as e:
+        logger.error(f"Error shutting down Sarvam MCP subsystem: {e}")
 
 
 # --- Application Factory ---

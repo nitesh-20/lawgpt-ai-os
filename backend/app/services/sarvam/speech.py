@@ -17,6 +17,20 @@ class SpeechToTextManager:
             
         logger.info(f"Sarvam STT: Transcribing {filename} ({language_code})")
         
+        # Try Sarvam MCP first
+        try:
+            from app.services.sarvam.mcp.service import SarvamService
+            mcp_service = SarvamService.get_instance()
+            transcript = await mcp_service.transcribe(audio_bytes, filename, language_code)
+            if transcript:
+                return {
+                    "status": "success",
+                    "transcript": transcript,
+                    "language_code": language_code
+                }
+        except Exception as e:
+            logger.error(f"Sarvam MCP STT failure: {e}. Falling back to REST API.")
+        
         # Sarvam speech-to-text-translate endpoint
         endpoint = "/speech-to-text-translate"
         

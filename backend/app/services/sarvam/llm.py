@@ -18,6 +18,16 @@ class SarvamLLMManager:
             
         logger.info(f"Sarvam LLM: Generating content for prompt ({len(prompt)} chars)")
         
+        # Try Sarvam MCP first
+        try:
+            from app.services.sarvam.mcp.service import SarvamService
+            mcp_service = SarvamService.get_instance()
+            content = await mcp_service.chat(prompt)
+            if content:
+                return {"status": "success", "content": content}
+        except Exception as e:
+            logger.error(f"Sarvam MCP LLM failure: {e}. Falling back to REST API.")
+            
         # Currently assuming a typical chat/completions or custom completions endpoint
         endpoint = "/v1/chat/completions"
         
@@ -31,7 +41,7 @@ class SarvamLLMManager:
                 if len(subparts) > 1:
                     system_content = subparts[0].strip()
                     user_content = "User Legal Query:" + subparts[1].strip()
-
+                    
         payload = {
             "model": "sarvam-30b",
             "messages": [

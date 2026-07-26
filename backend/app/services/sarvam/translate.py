@@ -38,6 +38,21 @@ class TranslationManager:
             
         logger.info(f"Sarvam Translate: Translating {len(text)} chars ({source_language} -> {target_language})")
         
+        # Try Sarvam MCP first
+        try:
+            from app.services.sarvam.mcp.service import SarvamService
+            mcp_service = SarvamService.get_instance()
+            translated = await mcp_service.translate(text, source_language, target_language)
+            if translated:
+                cls._cache[cache_key] = translated
+                return {
+                    "status": "success",
+                    "translated_text": translated,
+                    "cached": False
+                }
+        except Exception as e:
+            logger.error(f"Sarvam MCP Translation failure: {e}. Falling back to REST API.")
+            
         # Sarvam translate endpoint
         endpoint = "/translate"
         
