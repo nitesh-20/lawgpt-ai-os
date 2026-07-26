@@ -5,29 +5,39 @@ interface LoaderProps {
   text?: string;
 }
 
-export const Component: React.FC<LoaderProps> = ({ size = 180, text = "Generating" }) => {
+export const Component: React.FC<LoaderProps> = ({ size = 150, text = "Generating" }) => {
   const letters = text.split("");
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-b from-[#1a3379] via-[#0f172a] to-black dark:from-gray-100 dark:via-gray-200 dark:to-gray-300">
-      <div
-        className="relative flex items-center justify-center font-inter select-none"
-        style={{ width: size, height: size }}
-      >
-       
-        {letters.map((letter, index) => (
-          <span
-            key={index}
-            className="inline-block text-white dark:text-gray-800 opacity-40 animate-loaderLetter text-lg font-bold mx-0.5"
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            {letter}
-          </span>
-        ))}
-
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-xs">
+      <div className="bg-[#0a0a0a]/95 border border-neutral-900 rounded-[28px] p-6 flex flex-col items-center justify-center space-y-6 shadow-2xl w-[90%] max-w-[340px] h-[260px] select-none">
+        
+        {/* Glowing Orb Circle */}
         <div
-          className="absolute inset-0 rounded-full animate-loaderCircle"
-        ></div>
+          className="relative flex items-center justify-center font-sans"
+          style={{ width: size, height: size }}
+        >
+          {letters.map((letter, index) => (
+            <span
+              key={index}
+              className="inline-block text-white opacity-40 animate-loaderLetter text-[17px] font-medium tracking-wide mx-0.5"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {letter}
+            </span>
+          ))}
+
+          <div
+            className="absolute inset-0 rounded-full animate-loaderCircle"
+          ></div>
+        </div>
+
+        {/* TAP TO STOP label */}
+        {text.toLowerCase().includes("listen") && (
+          <span className="text-[10px] font-mono text-neutral-400 tracking-[0.3em] uppercase animate-pulse pt-2 font-semibold">
+            Tap to Stop
+          </span>
+        )}
       </div>
 
       <style>{`
@@ -64,15 +74,15 @@ export const Component: React.FC<LoaderProps> = ({ size = 180, text = "Generatin
         @keyframes loaderLetter {
           0%,
           100% {
-            opacity: 0.4;
+            opacity: 0.35;
             transform: translateY(0);
           }
           20% {
             opacity: 1;
-            transform: scale(1.15);
+            transform: scale(1.1);
           }
           40% {
-            opacity: 0.7;
+            opacity: 0.6;
             transform: translateY(0);
           }
         }
@@ -83,17 +93,6 @@ export const Component: React.FC<LoaderProps> = ({ size = 180, text = "Generatin
 
         .animate-loaderLetter {
           animation: loaderLetter 3s infinite;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .animate-loaderCircle {
-            box-shadow:
-              0 6px 12px 0 #4b5563 inset,
-              0 12px 18px 0 #6b7280 inset,
-              0 36px 36px 0 #9ca3af inset,
-              0 0 3px 1.2px rgba(107, 114, 128, 0.3),
-              0 0 6px 1.8px rgba(156, 163, 175, 0.2);
-          }
         }
       `}</style>
     </div>
