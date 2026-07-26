@@ -16,8 +16,12 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,9 +34,8 @@ const Sidebar = () => {
       setCollapsed(true);
     } else {
       setIsOpen(true);
-      setCollapsed(false);
     }
-  }, [isMobile]);
+  }, [isMobile, setCollapsed]);
 
   const menuItems = [
     { icon: LayoutGrid, label: 'Dashboard', path: '/dashboard' },

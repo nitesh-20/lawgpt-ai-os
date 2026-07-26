@@ -14,6 +14,8 @@ import {
   Volume2
 } from "lucide-react";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 export const CommandPalette = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -37,13 +39,21 @@ export const CommandPalette = () => {
   };
 
   return (
-    <Command.Dialog
-      open={open}
-      onOpenChange={setOpen}
-      label="Command Menu"
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-neutral-900/30 backdrop-blur-xs"
-    >
-      <div className="w-full max-w-[640px] bg-white border border-border rounded shadow-xl overflow-hidden animate-scale-in">
+    <AnimatePresence>
+      {open && (
+        <Command.Dialog
+          open={open}
+          onOpenChange={setOpen}
+          label="Command Menu"
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-neutral-900/25 backdrop-blur-xs"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.97, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="w-full max-w-[640px] bg-white border border-border rounded-xl shadow-2xl overflow-hidden"
+          >
         <div className="flex items-center border-b border-border px-4 py-3">
           <Search className="h-5 w-5 text-neutral-400 mr-3" />
           <Command.Input
@@ -129,7 +139,9 @@ export const CommandPalette = () => {
             </Command.Item>
           </Command.Group>
         </Command.List>
-      </div>
-    </Command.Dialog>
+          </motion.div>
+        </Command.Dialog>
+      )}
+    </AnimatePresence>
   );
 };

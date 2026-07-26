@@ -15,9 +15,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
   isOnline?: boolean;
+  collapsed?: boolean;
 }
 
-const Header = ({ isOnline = true }: HeaderProps) => {
+const Header = ({ isOnline = true, collapsed = false }: HeaderProps) => {
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -52,8 +53,8 @@ const Header = ({ isOnline = true }: HeaderProps) => {
   return (
     <header className="fixed top-0 right-0 left-0 bg-white/80 backdrop-blur-md border-b border-border z-30">
       <div
-        className={`flex h-20 items-center justify-between px-6 md:px-8 transition-all ${
-          isMobile ? "ml-0" : "ml-60"
+        className={`flex h-20 items-center justify-between px-6 md:px-8 transition-all duration-300 ${
+          isMobile ? "ml-0" : (collapsed ? "ml-20" : "ml-60")
         }`}
       >
         {/* Sleek Search trigger styling */}
