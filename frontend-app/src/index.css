@@ -5,27 +5,33 @@
 
 @layer base {
   :root {
-    /* Editorial legal-tech palette: warm paper, deep forest-green accent, brass highlight.
-       Deliberately avoids blue/purple "AI startup" defaults. */
-    --background: 40 23% 97%;
-    --foreground: 226 19% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 226 19% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 226 19% 10%;
-    --primary: 158 42% 21%;
+    /* Editorial legal-tech palette, dark canvas: near-black surface, deep forest-green
+       accent, brass highlight. Structure borrows Framer's dark-canvas poster rhythm
+       (tight-tracked display type, pill CTAs, surface-lift depth); the accent stays
+       forest-green + brass, never Framer's blue/gradient palette. See DESIGN.md. */
+    --background: 30 8% 5%;
+    --foreground: 40 20% 96%;
+    --ink: 40 20% 96%;
+    --paper: 40 20% 96%;
+    --card: 30 8% 9%;
+    --card-foreground: 40 20% 96%;
+    --surface-1: 30 8% 9%;
+    --surface-2: 30 7% 13%;
+    --popover: 30 7% 13%;
+    --popover-foreground: 40 20% 96%;
+    --primary: 158 38% 40%;
     --primary-foreground: 40 30% 98%;
-    --secondary: 40 20% 92%;
-    --secondary-foreground: 226 19% 10%;
-    --muted: 40 16% 94%;
-    --muted-foreground: 228 8% 42%;
-    --accent: 38 45% 41%;
-    --accent-foreground: 40 30% 98%;
-    --destructive: 6 72% 46%;
+    --secondary: 30 7% 13%;
+    --secondary-foreground: 40 20% 96%;
+    --muted: 30 8% 11%;
+    --muted-foreground: 30 6% 62%;
+    --accent: 38 55% 52%;
+    --accent-foreground: 30 15% 10%;
+    --destructive: 6 72% 55%;
     --destructive-foreground: 40 30% 98%;
-    --border: 40 14% 88%;
-    --input: 40 14% 88%;
-    --ring: 158 42% 21%;
+    --border: 30 8% 18%;
+    --input: 30 8% 18%;
+    --ring: 158 38% 40%;
     --radius: 0.5rem;
   }
 }
@@ -241,6 +247,22 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Cinematic landing experience (src/pages/Landing.tsx + src/components/landing/*) */
+@keyframes lv-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(var(--lv-amp-x, 0px), var(--lv-amp-y, -14px), 0) rotate(var(--lv-rot, 0deg)); }
+}
+
+@keyframes lv-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2%, -3%, 0) scale(1.06); }
+}
+
+.lv-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
 
 @media (prefers-reduced-motion: reduce) {

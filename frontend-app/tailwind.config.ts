@@ -60,8 +60,12 @@ export default {
           light: "#F7F6F2",
           dark: "#14171F",
         },
-        ink: "#14171F",
-        paper: "#FAF9F6",
+        ink: "hsl(var(--ink))",
+        paper: "hsl(var(--paper))",
+        surface: {
+          1: "hsl(var(--surface-1))",
+          2: "hsl(var(--surface-2))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -98,8 +102,11 @@ export default {
         "scale-in": "scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(20, 23, 31, 0.04), 0 1px 1px rgba(20, 23, 31, 0.03)",
-        "card-hover": "0 4px 16px rgba(20, 23, 31, 0.08), 0 1px 2px rgba(20, 23, 31, 0.04)",
+        card: "inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.25)",
+        "card-hover": "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.35)",
+      },
+      letterSpacing: {
+        tightest: "-0.045em",
       },
     },
   },
