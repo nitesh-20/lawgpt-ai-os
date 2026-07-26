@@ -27,9 +27,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing page as root */}
+          <Route path="/" element={<Landing />} />
+
           {/* Main App Layout and standard routes */}
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/cases/:id" element={<CaseDetails />} />
@@ -43,8 +45,6 @@ const App = () => (
             <Route path="/agents" element={<AgentDashboard />} />
           </Route>
           
-          {/* Legacy landing page route preserved but moved off the root */}
-          <Route path="/landing" element={<Landing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
