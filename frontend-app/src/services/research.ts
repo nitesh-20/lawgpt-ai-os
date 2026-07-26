@@ -12,6 +12,17 @@ export interface ResearchResult {
   citations: string[];
   type: string;
   content?: string;
+  direct_answer?: string;
+  executive_summary?: string;
+  applicable_law?: any[];
+  legal_analysis?: any;
+  compliance_requirements?: string[];
+  risks?: string[];
+  recommendations?: string[];
+  case_references?: any[];
+  confidence?: string;
+  source?: string;
+  is_context_grounded?: boolean;
 }
 
 export interface ResearchSearchParams {
@@ -34,16 +45,28 @@ export async function search(params: ResearchSearchParams): Promise<ResearchResu
       return response.data.results as ResearchResult[];
     }
     
-    // Fallback: Map the structured AI report into a single result for the UI
+    // Map the complete structured AI report into the returned result
     const report = response.data;
+    const score = report.confidence === "High" ? 95 : (report.confidence === "Medium" ? 75 : 40);
     return [{
       id: `report-${Date.now()}`,
       title: "AI Legal Research Report",
       date: new Date().toISOString().split('T')[0],
-      matchScore: Math.round((report.confidence_score || 0.85) * 100),
-      summary: `${report.executive_summary ? report.executive_summary + '\n\n' : ''}${report.answer || ''}`,
+      matchScore: score,
+      summary: report.direct_answer || report.answer || "",
       citations: report.citations || [],
-      type: "AI Report"
+      type: "AI Report",
+      direct_answer: report.direct_answer,
+      executive_summary: report.executive_summary,
+      applicable_law: report.applicable_law,
+      legal_analysis: report.legal_analysis,
+      compliance_requirements: report.compliance_requirements,
+      risks: report.risks,
+      recommendations: report.recommendations,
+      case_references: report.case_references,
+      confidence: report.confidence,
+      source: report.source,
+      is_context_grounded: report.is_context_grounded
     }];
   }
   return [];

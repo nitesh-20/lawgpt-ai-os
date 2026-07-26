@@ -126,18 +126,30 @@ class ResearchAgent(BaseAgent):
                 except Exception:
                     history = []
 
-            history.append(
-                {
-                    "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
-                    "session_id": session_id,
-                    "query": query,
-                    "result": output_data["data"],
-                    "metrics": output_data["metrics"],
-                }
-            )
+            # Clean and normalize query to deduplicate
+            query_clean = query.strip()
+            norm_query = query_clean.lower()
+
+            # Filter out any duplicate of this query
+            filtered_history = [
+                item for item in history
+                if item.get("query", "").strip().lower() != norm_query
+            ]
+
+            new_entry = {
+                "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
+                "session_id": session_id,
+                "query": query_clean,
+                "result": output_data.get("data", {}),
+                "metrics": output_data.get("metrics", {}),
+            }
+
+            # Insert newest at index 0 and slice to max 15
+            filtered_history.insert(0, new_entry)
+            history_capped = filtered_history[:15]
 
             with open(self.history_file, "w") as f:
-                json.dump(history, f, indent=2)
+                json.dump(history_capped, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to write research agent history: {e}")
 

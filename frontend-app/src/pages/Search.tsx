@@ -11,6 +11,7 @@ import {
   type ResearchContentType
 } from "@/services/research";
 import { VoiceButton } from "@/components/voice/VoiceButton";
+import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 
 const Search = () => {
   const [query, setQuery] = useState("");
@@ -180,25 +181,177 @@ const Search = () => {
           <div className="space-y-4">
             {results.length > 0 ? (
               results.map((item) => (
-                <div key={item.id} className="glass-card p-5 hover:border-neutral-300 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
+                <div key={item.id} className="glass-card p-5 hover:border-neutral-300 space-y-4">
+                  <div className="flex items-start justify-between gap-3 border-b border-neutral-100 pb-3">
                     <div>
-                      <Badge className="text-3xs font-mono uppercase bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 mb-1.5">{item.type}</Badge>
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <Badge className="text-3xs font-mono uppercase bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">{item.type}</Badge>
+                        {item.source && (
+                          <Badge className={`text-3xs font-mono border ${
+                            item.source.includes("PDF")
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}>
+                            {item.source}
+                          </Badge>
+                        )}
+                        {item.confidence && (
+                          <Badge className="text-3xs font-mono bg-neutral-100 border border-neutral-200 text-neutral-600">
+                            Confidence: {item.confidence}
+                          </Badge>
+                        )}
+                      </div>
                       <h3 className="font-semibold text-xs text-neutral-900 leading-snug">{item.title}</h3>
-                      <p className="text-[10px] text-neutral-400 font-mono mt-1">{item.court} · {item.date}</p>
+                      <p className="text-[10px] text-neutral-400 font-mono mt-1">{item.court || "LawGPT Reasoner"} · {item.date}</p>
                     </div>
                     <Badge variant="secondary" className="text-3xs bg-neutral-100">{item.matchScore}% Match</Badge>
                   </div>
-                  <p className="text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">{item.summary}</p>
-                  {item.citations && item.citations.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2">
-                      {item.citations.map((c, idx) => (
-                        <span key={idx} className="text-3xs font-mono bg-neutral-50 border border-border px-2 py-0.5 rounded text-neutral-500">
-                          {c}
-                        </span>
-                      ))}
+
+                  {item.type === "AI Report" ? (
+                    <div className="space-y-4 text-xs text-neutral-700 leading-relaxed">
+                      {/* Direct Answer */}
+                      {item.direct_answer && (
+                        <div className="p-3 bg-neutral-50/80 border-l-2 border-primary rounded-r">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500 mb-1">Direct Answer</h4>
+                          <p className="text-neutral-800 font-medium italic">{item.direct_answer}</p>
+                        </div>
+                      )}
+
+                      {/* Executive Summary */}
+                      {item.executive_summary && (
+                        <div className="space-y-1">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Executive Summary</h4>
+                          <p className="text-neutral-600">{item.executive_summary}</p>
+                        </div>
+                      )}
+
+                      {/* Applicable Law */}
+                      {item.applicable_law && item.applicable_law.length > 0 && (
+                        <div className="space-y-1.5">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Applicable Law</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.applicable_law.map((law: any, idx: number) => (
+                              <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/5 border border-primary/10 text-3xs text-primary font-mono">
+                                <Scale size={10} />
+                                {law.act_name || law} {law.sections ? `(Sec. ${law.sections})` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Legal Analysis */}
+                      {item.legal_analysis && typeof item.legal_analysis === "object" && (
+                        <div className="space-y-2 p-3 bg-neutral-50/50 border border-neutral-150 rounded">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Legal Analysis</h4>
+                          {item.legal_analysis.interpretation && (
+                            <div>
+                              <span className="font-semibold text-[10px] uppercase text-neutral-400 block font-mono">Interpretation</span>
+                              <p className="text-neutral-600">{item.legal_analysis.interpretation}</p>
+                            </div>
+                          )}
+                          {item.legal_analysis.implications && (
+                            <div>
+                              <span className="font-semibold text-[10px] uppercase text-neutral-400 block font-mono">Implications</span>
+                              <p className="text-neutral-600">{item.legal_analysis.implications}</p>
+                            </div>
+                          )}
+                          {item.legal_analysis.exceptions && (
+                            <div>
+                              <span className="font-semibold text-[10px] uppercase text-neutral-400 block font-mono">Exceptions / Safe Harbors</span>
+                              <p className="text-neutral-600">{item.legal_analysis.exceptions}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Compliance Requirements */}
+                      {item.compliance_requirements && item.compliance_requirements.length > 0 && (
+                        <div className="space-y-1">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Compliance Guidelines</h4>
+                          <ul className="list-disc pl-4 space-y-0.5 text-neutral-600 text-2xs">
+                            {item.compliance_requirements.map((req: string, idx: number) => (
+                              <li key={idx}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Risks */}
+                      {item.risks && item.risks.length > 0 && (
+                        <div className="space-y-1">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Regulatory Risks</h4>
+                          <ul className="list-disc pl-4 space-y-0.5 text-red-600 text-2xs">
+                            {item.risks.map((risk: string, idx: number) => (
+                              <li key={idx}>{risk}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Recommendations */}
+                      {item.recommendations && item.recommendations.length > 0 && (
+                        <div className="space-y-1">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Recommended Actions</h4>
+                          <ol className="list-decimal pl-4 space-y-0.5 text-neutral-600 text-2xs">
+                            {item.recommendations.map((rec: string, idx: number) => (
+                              <li key={idx}>{rec}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      {/* Case References */}
+                      {item.case_references && item.case_references.length > 0 && (
+                        <div className="space-y-1.5">
+                          <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500">Landmark Case References</h4>
+                          <div className="space-y-1 text-2xs">
+                            {item.case_references.map((c: any, idx: number) => (
+                              <div key={idx} className="p-2 bg-white border border-neutral-100 rounded">
+                                <span className="font-semibold text-neutral-800">{c.case_name}</span>
+                                {c.citation && <span className="text-neutral-400 font-mono ml-2">({c.citation})</span>}
+                                <p className="text-neutral-500 mt-0.5 italic">{c.summary}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Source Documents */}
+                      <div className="border-t border-neutral-100 pt-3">
+                        <h4 className="font-semibold text-2xs uppercase tracking-wider text-neutral-500 mb-1">Source Attribution</h4>
+                        {item.is_context_grounded ? (
+                          <div className="space-y-1 text-3xs font-mono text-neutral-500">
+                            {item.citations && item.citations.map((c: any, idx: number) => (
+                              <div key={idx} className="flex justify-between p-1 bg-neutral-50 rounded">
+                                <span>📄 {c.document_name || c.citation_text || c}</span>
+                                {c.section && <span>Section: {c.section}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-3xs text-amber-600 italic">✓ Gemini General Legal Knowledge: No matching indexed document was found in the uploaded knowledge base.</p>
+                        )}
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <p className="text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">{item.summary}</p>
+                      {item.citations && item.citations.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {item.citations.map((c, idx) => (
+                            <span key={idx} className="text-3xs font-mono bg-neutral-50 border border-border px-2 py-0.5 rounded text-neutral-500">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <AudioPlaybackButton text={item.direct_answer || item.summary || item.title || ""} className="scale-90 origin-left" />
+                  </div>
                 </div>
               ))
             ) : (

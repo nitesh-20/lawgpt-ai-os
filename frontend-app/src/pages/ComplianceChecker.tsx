@@ -12,6 +12,7 @@ import {
 import { listDocuments } from "@/services/documents";
 import type { ComplianceSnapshot } from "@/types/compliance";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 

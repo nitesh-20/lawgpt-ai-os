@@ -122,10 +122,26 @@ async def get_statistics():
 
         for item in history:
             metrics = item.get("metrics", {})
-            total_confidence += metrics.get("confidence_score", 0.0)
+            result = item.get("result", {})
+            
+            # Map textual confidence level or use confidence_score if available
+            conf_str = result.get("confidence", "Medium")
+            conf_val = 0.85 if conf_str == "High" else (0.60 if conf_str == "Medium" else 0.35)
+            total_confidence += metrics.get("confidence_score", conf_val)
             total_time += metrics.get("execution_time_sec", 0.0)
 
-            result = item.get("result", {})
+            # Support both new list-of-dicts applicable_law and legacy lists
+            app_laws = result.get("applicable_law", [])
+            for law in app_laws:
+                act = law.get("act_name") if isinstance(law, dict) else str(law)
+                if act:
+                    act_counts[act] = act_counts.get(act, 0) + 1
+                    
+                sec = law.get("sections") if isinstance(law, dict) else ""
+                if sec:
+                    section_counts[sec] = section_counts.get(sec, 0) + 1
+
+            # Legacy support
             for act in result.get("Related Acts", []):
                 act_counts[act] = act_counts.get(act, 0) + 1
             for sec in result.get("Relevant Sections", []):
@@ -136,8 +152,8 @@ async def get_statistics():
 
         return {
             "total_queries": total_queries,
-            "average_confidence": round(total_confidence / total_queries, 3),
-            "average_execution_time_sec": round(total_time / total_queries, 3),
+            "average_confidence": round(total_confidence / total_queries, 3) if total_queries else 0.0,
+            "average_execution_time_sec": round(total_time / total_queries, 3) if total_queries else 0.0,
             "most_queried_acts": [{"act": act, "count": count} for act, count in most_queried_acts[:5]],
             "most_queried_sections": [{"section": sec, "count": count} for sec, count in most_queried_sections[:5]],
         }

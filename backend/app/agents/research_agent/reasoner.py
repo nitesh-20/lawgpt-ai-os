@@ -12,6 +12,36 @@ class LegalReasoner:
     to ensure deterministic context-only answers with zero hallucinations.
     """
 
+    def _clean_and_parse_json(self, text: str) -> dict[str, Any]:
+        """
+        Robustly cleans JSON response by removing markdown fences, triple backticks, and extra spaces.
+        """
+        s = text.strip()
+        if s.startswith("```"):
+            parts = s.split("```")
+            for part in parts:
+                part = part.strip()
+                if part.startswith("json"):
+                    part = part[4:].strip()
+                if part.startswith("{") and part.endswith("}"):
+                    s = part
+                    break
+                elif part.startswith("{") and "}" in part:
+                    s = part
+                    break
+
+        # Strip any leading/trailing characters that are not { or }
+        start_idx = s.find("{")
+        end_idx = s.rfind("}")
+        if start_idx != -1 and end_idx != -1:
+            s = s[start_idx:end_idx + 1]
+
+        try:
+            return json.loads(s)
+        except Exception as e:
+            logger.error(f"JSON Parsing Error: {e}. Raw content: {text}")
+            raise ValueError(f"Failed to parse JSON response: {e}")
+
     async def reason(
         self, query: str, ranked_chunks: list[dict[str, Any]], citations: list[dict[str, Any]]
     ) -> dict[str, Any]:
@@ -19,56 +49,62 @@ class LegalReasoner:
         Synthesizes a response using retrieved chunks. Utilizes Gemini if configured,
         otherwise defaults to the local syntactic reasoner.
         """
-        if not ranked_chunks:
-            return {
-                "summary": "No relevant legal context found in the database.",
-                "detailed_explanation": "I searched the knowledge base but could not locate any documents matching your query.",
-                "applicable_law": "N/A",
-                "relevant_sections": [],
-                "related_acts": [],
-                "references": [],
-                "confidence_score": 0.0,
-            }
+        # Determine relevance and source attribution
+        top_score = ranked_chunks[0].get("score", 0.0) if ranked_chunks else 0.0
+        has_pdf_context = len(ranked_chunks) > 0 and top_score >= 0.50
+        
+        default_source = "✓ PDF Knowledge Base"
+        default_is_grounded = True if has_pdf_context else False
 
-        # Format context for reasoning
+        # Format context for reasoning (limit to top 3 for optimal token limits)
         context_blocks = []
-        for idx, chunk in enumerate(ranked_chunks, 1):
+        for idx, chunk in enumerate(ranked_chunks[:3], 1):
             doc_id = chunk.get("document_id", "Unknown")
             sec = chunk.get("section", "N/A")
-            text = chunk.get("text", "")
+            text = chunk.get("text", "")[:1200] + "..." if len(chunk.get("text", "")) > 1200 else chunk.get("text", "")
             context_blocks.append(f"[{idx}] Document: {doc_id} | Section: {sec}\nContent: {text}")
         context_text = "\n\n".join(context_blocks)
+
+        system_instruction = (
+            "You are a Senior Legal Research Counsel. Produce a professional legal research report.\n"
+            "CRITICAL: You MUST NOT write any chain-of-thought, reasoning, preambles, explanations, or text outside the JSON. "
+            "Start your response directly with the '{' character and end with the '}' character. "
+            "Return your response ONLY as a single valid raw JSON object. Do not wrap in ```json.\n\n"
+            "KNOWLEDGE SOURCE MODE RULES:\n"
+            "1. If retrieved context is sufficient, use the provided PDF context chunks.\n"
+            "2. If retrieved context is insufficient or missing, you MUST answer from general Indian legal knowledge, "
+            "and set 'is_context_grounded' to false and 'source' to '✓ PDF Knowledge Base'.\n\n"
+            "Your output JSON object MUST contain exactly these keys:\n"
+            "{\n"
+            "  \"direct_answer\": \"Concise response in 2-4 sentences.\",\n"
+            "  \"executive_summary\": \"Professional legal memo executive summary.\",\n"
+            "  \"applicable_law\": [{\"act_name\": \"...\", \"sections\": \"...\"}],\n"
+            "  \"legal_analysis\": {\"interpretation\": \"...\", \"implications\": \"...\", \"exceptions\": \"...\"},\n"
+            "  \"compliance_requirements\": [\"...\"] (Array of strings),\n"
+            "  \"risks\": [\"...\"] (Array of strings),\n"
+            "  \"recommendations\": [\"...\"] (Array of strings),\n"
+            "  \"case_references\": [{\"case_name\": \"...\", \"citation\": \"...\", \"summary\": \"...\"}],\n"
+            "  \"citations\": [\"...\"] (Array of citation strings),\n"
+            "  \"confidence\": \"High\" or \"Medium\" or \"Low\",\n"
+            "  \"source\": \"✓ PDF Knowledge Base\",\n"
+            "  \"is_context_grounded\": true or false\n"
+            "}"
+        )
+
+        prompt = (
+            f"System Instruction:\n{system_instruction}\n\n"
+            f"User Legal Query: {query}\n\n"
+            f"Retrieved Legal Context Chunks:\n{context_text}\n\n"
+            "Construct the factual legal report now. Respond ONLY with the raw JSON object."
+        )
 
         api_key = settings.GEMINI_API_KEY or ""
         if api_key:
             try:
-                # Call Gemini API via httpx directly to avoid google-generativeai package dependency
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
                 headers = {"Content-Type": "application/json"}
-                
-                system_instruction = (
-                    "You are a Senior Legal Research Counsel. Answer the legal question based ONLY on the provided context. "
-                    "Do not fabricate facts or citations. "
-                    "CRITICAL: If the provided context chunks do not contain any information relevant to the user's query, "
-                    "do NOT attempt to answer. Instead, set 'executive_summary' to 'No relevant legal context found in the database.', "
-                    "and 'answer' to 'I searched the current legal database but could not locate any documents matching your query. Please try searching for a different term or upload relevant documents.' "
-                    "Return your answer in a strict JSON format with the following keys: 'answer' (Direct answer), "
-                    "'executive_summary' (Executive summary of findings), 'key_points' (array of important clauses or key findings), "
-                    "'acts' (array of applicable acts), 'sections' (array of relevant sections), "
-                    "'recommendations' (array of compliance implications & practical recommendations), "
-                    "'citations' (array of source citations), 'related_documents' (array of related document names), "
-                    "and 'confidence_score' (float between 0.0 and 1.0)."
-                )
-
-                prompt = (
-                    f"User Legal Query: {query}\n\n"
-                    f"Retrieved Legal Context Chunks:\n{context_text}\n\n"
-                    "Construct a factual response based strictly on the above context. Respond only with the raw JSON object."
-                )
-
                 payload = {
                     "contents": [{"parts": [{"text": prompt}]}],
-                    "systemInstruction": {"parts": [{"text": system_instruction}]},
                     "generationConfig": {
                         "responseMimeType": "application/json",
                         "temperature": 0.1
@@ -77,87 +113,69 @@ class LegalReasoner:
 
                 logger.info("Sending request to Gemini API for legal reasoning...")
                 async with httpx.AsyncClient() as client:
-                    resp = await client.post(url, json=payload, headers=headers, timeout=15.0)
+                    resp = await client.post(url, json=payload, headers=headers, timeout=20.0)
                     if resp.status_code == 200:
                         res_data = resp.json()
                         text_response = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                        parsed = json.loads(text_response.strip())
+                        parsed = self._clean_and_parse_json(text_response)
                         logger.info("Successfully received and parsed Gemini response.")
                         return parsed
                     else:
-                        logger.warning(f"Gemini API returned status {resp.status_code}: {resp.text}. Falling back to local reasoning.")
+                        logger.warning(f"Gemini API returned status {resp.status_code}: {resp.text}. Falling back to Sarvam LLM.")
             except Exception as e:
-                logger.error(f"Error calling Gemini API: {e}. Falling back to local reasoning.")
+                logger.error(f"Error calling Gemini API: {e}. Falling back to Sarvam LLM.")
 
-        # Fall back to high-fidelity local context-synthesizer
-        return self._local_reasoning(query, ranked_chunks, citations)
+        # Fallback 1: Sarvam LLM
+        try:
+            from app.services.sarvam.llm import SarvamLLMManager
+            logger.info("Attempting Sarvam LLM for legal reasoning...")
+            sarvam_resp = await SarvamLLMManager.generate_content(prompt)
+            if sarvam_resp.get("status") == "success":
+                parsed = self._clean_and_parse_json(sarvam_resp["content"])
+                logger.info("Successfully received and parsed Sarvam LLM response.")
+                return parsed
+            else:
+                logger.warning(f"Sarvam LLM failed: {sarvam_resp.get('message')}. Falling back to local reasoning.")
+        except Exception as e:
+            logger.error(f"Error calling Sarvam LLM: {e}. Falling back to local reasoning.")
+
+        # Fallback 2: Local reasoning
+        return self._local_reasoning(query, ranked_chunks, citations, has_pdf_context, default_source)
 
     def _local_reasoning(
-        self, query: str, ranked_chunks: list[dict[str, Any]], citations: list[dict[str, Any]]
+        self, query: str, ranked_chunks: list[dict[str, Any]], citations: list[dict[str, Any]], has_pdf_context: bool, default_source: str
     ) -> dict[str, Any]:
         """
         Synthesizes a response locally using retrieved chunks to prevent hallucination.
         """
         logger.info("Running local fallback reasoning engine...")
-        # Calculate average score for confidence
-        avg_score = sum(c.get("score", 0.5) for c in ranked_chunks) / max(len(ranked_chunks), 1)
-
-        # If the search score is too low, we likely fetched irrelevant documents
-        if avg_score < 0.50:
-            return {
-                "answer": "I searched the current legal database but could not locate any documents directly matching your query. Please upload more relevant documents to get accurate answers.",
-                "executive_summary": "No relevant legal context found in the database.",
-                "key_points": [],
-                "acts": [],
-                "sections": [],
-                "recommendations": [],
-                "citations": [],
-                "related_documents": [],
-                "confidence_score": 0.0
-            }
-
-        # Extract acts and sections
-        related_acts = list({c.get("document_name", "") for c in citations if c.get("document_name")})
-        relevant_sections = list(
-            {
-                f"Section {c.get('section')} of {c.get('document_name')}"
-                for c in citations
-                if c.get("section") and c.get("document_name")
-            }
-        )
-
-        # Assemble summary from the most relevant chunk
-        top_chunk = ranked_chunks[0]
-        top_text = top_chunk.get("text", "")
-        # Get first two sentences
+        top_text = ranked_chunks[0].get("text", "") if ranked_chunks else ""
         sentences = [s.strip() for s in top_text.split(".") if s.strip()]
-        summary = ". ".join(sentences[:2]) + "." if sentences else "Relevant provisions found."
+        summary = ". ".join(sentences[:2]) + "." if sentences else "No relevant legal context found in the database."
 
-        # Detailed explanation is formulated from chunk text blocks
+        detailed_explanation = ""
         paragraphs = []
         for idx, chunk in enumerate(ranked_chunks[:3], 1):
             doc_id = chunk.get("document_id", "Document").replace("_", " ").title()
             sec = chunk.get("section")
             text = chunk.get("text", "").strip()
-            
             ref_prefix = f"According to {doc_id}"
             if sec:
                 ref_prefix += f" (Section {sec})"
             paragraphs.append(f"{ref_prefix}: \"{text}\"")
-
-        detailed_explanation = "\n\n".join(paragraphs)
-
-        # Collect references
-        references = [cit.get("citation_text", "") for cit in citations]
+        detailed_explanation = "\n\n".join(paragraphs) if paragraphs else "No matching indexed document was found."
 
         return {
-            "answer": detailed_explanation,
+            "direct_answer": detailed_explanation[:300] + "..." if len(detailed_explanation) > 300 else detailed_explanation,
             "executive_summary": summary,
-            "key_points": [sentences[0]] if sentences else [],
-            "acts": related_acts,
-            "sections": relevant_sections,
-            "recommendations": ["Adherence to the active provisions is recommended."],
-            "citations": references,
-            "related_documents": related_acts,
-            "confidence_score": round(avg_score, 3)
+            "applicable_law": [{"act_name": cit.get("document_name", "N/A"), "sections": cit.get("section", "N/A")} for cit in citations] if citations else [],
+            "legal_analysis": {"interpretation": detailed_explanation, "implications": "N/A", "exceptions": "N/A"},
+            "compliance_requirements": ["Verify compliance against uploaded acts."],
+            "risks": [],
+            "recommendations": ["Review source documents carefully."],
+            "case_references": [],
+            "citations": [cit.get("citation_text", "") for cit in citations if cit.get("citation_text")],
+            "confidence": "Low",
+            "source": default_source,
+            "is_context_grounded": has_pdf_context
         }

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { VoiceButton } from "@/components/voice/VoiceButton";
+import { AudioPlaybackButton } from "@/components/voice/AudioPlaybackButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   listDraftTemplates, 
@@ -272,10 +273,13 @@ const DocumentDrafting = () => {
                 <div className="space-y-3 pt-4 border-t border-border">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-mono text-primary uppercase">Generated Content:</span>
-                    <Button onClick={() => handleExportText(generatedDraft, `${selectedTemplate.id}_draft.txt`)} className="btn-secondary flex items-center gap-1.5 px-2 py-1 h-auto text-2xs">
-                      <Download size={13} />
-                      Export Draft
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <AudioPlaybackButton text={generatedDraft} className="scale-90" />
+                      <Button onClick={() => handleExportText(generatedDraft, `${selectedTemplate.id}_draft.txt`)} className="btn-secondary flex items-center gap-1.5 px-2 py-1 h-auto text-2xs">
+                        <Download size={13} />
+                        Export Draft
+                      </Button>
+                    </div>
                   </div>
                   <textarea
                     value={generatedDraft}
@@ -310,7 +314,10 @@ const DocumentDrafting = () => {
 
           {reviewResult && (
             <div className="space-y-4 pt-4 border-t border-border">
-              <span className="text-[10px] font-mono text-primary uppercase">AI Risk Analysis:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-mono text-primary uppercase">AI Risk Analysis:</span>
+                <AudioPlaybackButton text={`Analysis complete. We found ${reviewResult.missing_clauses?.length || 0} missing clauses and ${reviewResult.risky_clauses?.length || 0} risky provisions.`} className="scale-90" />
+              </div>
               <div className="space-y-3">
                 {reviewResult.missing_clauses && reviewResult.missing_clauses.length > 0 && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded text-xs space-y-1.5">

@@ -195,10 +195,26 @@ class FirestoreVectorStore(BaseVectorStore):
             if all(v == 0.0 for v in query_embedding) or not emb or all(v == 0.0 for v in emb):
                 score = keyword_score
             else:
-                score = 0.7 * semantic_score + 0.3 * keyword_score
+                score = 0.6 * semantic_score + 0.4 * keyword_score
+
+            # Entity & Section Penalty: If query contains entities or sections and chunk contains none of them, apply penalty
+            import re
+            query_lower = query_text.lower()
+            text_lower = text.lower()
+            
+            entities_to_check = ["dpdp", "sebi", "rbi", "gst", "it act", "companies act"]
+            query_entities = [e for e in entities_to_check if e in query_lower]
+            query_sections = re.findall(r"\b(?:section|sec)\s*(\d+\w*)", query_lower)
+            
+            # If the query specifies entities/sections and the chunk contains none of them, apply heavy penalty (0.2x multiplier)
+            if query_entities or query_sections:
+                has_entity_match = any(e in text_lower for e in query_entities) if query_entities else False
+                has_section_match = any(s in text_lower for s in query_sections) if query_sections else False
+                if not (has_entity_match or has_section_match):
+                    score = score * 0.2
 
             c_with_score = dict(c)
-            c_with_score["score"] = score
+            c_with_score["score"] = round(score, 3)
             scored_candidates.append(c_with_score)
 
         scored_candidates.sort(key=lambda x: x.get("score", 0.0), reverse=True)

@@ -18,12 +18,27 @@ class BaseOCRProvider:
         raise NotImplementedError
 
 
-class MockOCRProvider(BaseOCRProvider):
+class SarvamOCRProvider(BaseOCRProvider):
     """
-    Mock OCR provider returning basic layout context.
+    OCR provider using Sarvam Document Intelligence.
     """
     async def perform_ocr(self, image_bytes: bytes) -> str:
-        return "[OCR Extracted Legal Text]"
+        try:
+            from app.services.sarvam.document import DocumentIntelligenceManager
+            # The vision extract API generally expects a file. 
+            # We will pass the bytes as a mock file payload.
+            res = await DocumentIntelligenceManager.parse(
+                file_bytes=image_bytes,
+                filename="scanned_page.pdf"
+            )
+            if res.get("status") == "success":
+                return res.get("content", "")
+            else:
+                logger.warning(f"Sarvam OCR failed: {res.get('message')}")
+                return "[OCR Failed]"
+        except Exception as e:
+            logger.error(f"Error in Sarvam OCR: {e}")
+            return "[OCR Error]"
 
 
 class OCRService:
@@ -31,7 +46,7 @@ class OCRService:
     Detects scanned image-only pages and triggers the configured OCR provider.
     """
     def __init__(self, provider: BaseOCRProvider = None) -> None:
-        self.provider = provider or MockOCRProvider()
+        self.provider = provider or SarvamOCRProvider()
 
     async def ocr_page(self, image_bytes: bytes) -> str:
         return await self.provider.perform_ocr(image_bytes)
