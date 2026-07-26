@@ -30,9 +30,7 @@ import {
   FileSpreadsheet,
   Activity,
   ArrowUpRight,
-  ListChecks,
-  Mic,
-  MicOff
+  ListChecks
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,35 +68,6 @@ const Search = () => {
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const isVoiceSearchRef = useRef(false);
-
-  const [voiceModeActive, setVoiceModeActive] = useState(false);
-  const [voicePhase, setVoicePhase] = useState<"idle" | "listening" | "thinking" | "searching" | "speaking">("idle");
-  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
-  const recognitionRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (voiceAudioRef.current) {
-        voiceAudioRef.current.pause();
-      }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-        mediaRecorderRef.current.onstop = null;
-        mediaRecorderRef.current.stop();
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.onend = null;
-        recognitionRef.current.onerror = null;
-        recognitionRef.current.stop();
-      }
-      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
-        audioCtxRef.current.close();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -250,244 +219,6 @@ const Search = () => {
       }
     }
   }, [results, activeIndex]);
-
-  // Start Hands-free Voice Mode
-  const startVoiceMode = async () => {
-    setVoiceModeActive(true);
-    setVoicePhase("listening");
-    
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      startListening(stream);
-    } catch (err) {
-      console.error("Mic access denied:", err);
-      toast({
-        title: "Microphone Access Denied",
-        description: "Please grant microphone permissions in browser settings.",
-        variant: "destructive"
-      });
-      setVoiceModeActive(false);
-      setVoicePhase("idle");
-    }
-  };
-
-  // Exit Hands-free Voice Mode
-  const exitVoiceMode = () => {
-    setVoiceModeActive(false);
-    setVoicePhase("idle");
-    
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-      mediaRecorderRef.current.onstop = null;
-      mediaRecorderRef.current.stop();
-    }
-    if (recognitionRef.current) {
-      recognitionRef.current.onend = null;
-      recognitionRef.current.onerror = null;
-      recognitionRef.current.stop();
-    }
-    if (voiceAudioRef.current) {
-      voiceAudioRef.current.pause();
-      voiceAudioRef.current = null;
-    }
-    if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
-      audioCtxRef.current.close();
-    }
-  };
-
-  // Interrupt Speech (if speaking)
-  const interruptVoice = () => {
-    if (voiceAudioRef.current) {
-      voiceAudioRef.current.pause();
-      voiceAudioRef.current = null;
-    }
-    setVoicePhase("listening");
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      startListening(stream);
-    });
-  };
-
-  // The actual listening turn
-  const startListening = (stream: MediaStream) => {
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-      try { mediaRecorderRef.current.stop(); } catch {}
-    }
-
-    setVoicePhase("listening");
-    chunksRef.current = [];
-
-    // 1. Initialize MediaRecorder for backend audio payload
-    const recorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = recorder;
-    
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
-
-    recorder.onstop = async () => {
-      const audioBlob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-      stream.getTracks().forEach((track) => track.stop());
-      
-      if (audioBlob.size > 0) {
-        submitVoiceQuery(audioBlob);
-      } else {
-        setVoicePhase("idle");
-        setVoiceModeActive(false);
-      }
-    };
-
-    recorder.start();
-
-    // 2. Initialize browser SpeechRecognition for live character streaming in input box
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      
-      const chosenLang = language === "en" ? "en-IN" : `${language}-IN`;
-      recognition.lang = chosenLang;
-
-      recognition.onresult = (event: any) => {
-        let interimTranscript = "";
-        let finalTranscript = "";
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-        
-        setQuery(finalTranscript || interimTranscript);
-      };
-
-      recognition.onerror = (err: any) => {
-        console.warn("Speech recognition error:", err);
-      };
-
-      recognition.start();
-    }
-
-    // 3. Web Audio VAD silence detection (> 1.5 seconds)
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioCtxRef.current = audioContext;
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      let lastSpeechTime = Date.now();
-
-      const checkSilence = () => {
-        if (!voiceModeActive || recorder.state !== "recording") {
-          if (audioContext && audioContext.state !== "closed") audioContext.close();
-          return;
-        }
-
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-        }
-        const average = sum / bufferLength;
-
-        if (average > 8) {
-          lastSpeechTime = Date.now();
-        } else {
-          if (Date.now() - lastSpeechTime > 1500) {
-            console.log("Silence > 1.5s. Stopping recording to process request...");
-            if (recorder.state === "recording") {
-              recorder.stop();
-            }
-            if (recognitionRef.current) {
-              recognitionRef.current.stop();
-            }
-            if (audioContext && audioContext.state !== "closed") {
-              audioContext.close();
-            }
-            return;
-          }
-        }
-
-        requestAnimationFrame(checkSilence);
-      };
-
-      setTimeout(() => {
-        if (recorder.state === "recording") {
-          checkSilence();
-        }
-      }, 1000);
-
-    } catch (audioErr) {
-      console.error("VAD setup error in hands-free mode:", audioErr);
-    }
-  };
-
-  // Submit voice query to backend
-  const submitVoiceQuery = async (audioBlob: Blob) => {
-    setVoicePhase("thinking");
-    try {
-      const { voiceChat } = await import("@/services/voice");
-      
-      const chosenLang = language === "en" ? "en-IN" : `${language}-IN`;
-      const result = await voiceChat(audioBlob, "hands_free_session", chosenLang);
-      
-      const newResult = {
-        id: crypto.randomUUID(),
-        queryText: result.transcript || query,
-        direct_answer: result.response_text,
-        citations: result.citations || [],
-        is_context_grounded: result.citations && result.citations.length > 0,
-        confidence: "95%",
-        source: result.citations && result.citations.length > 0 ? result.citations[0].source_name : undefined
-      };
-      
-      setResults(prev => [...prev, newResult]);
-      setActiveIndex(results.length);
-      loadSidePanels();
-
-      if (result.response_audio) {
-        setVoicePhase("speaking");
-        const audio = new Audio(`data:audio/wav;base64,${result.response_audio}`);
-        voiceAudioRef.current = audio;
-
-        audio.onended = () => {
-          voiceAudioRef.current = null;
-          if (voiceModeActive) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-              startListening(stream);
-            });
-          }
-        };
-
-        audio.onerror = () => {
-          voiceAudioRef.current = null;
-          exitVoiceMode();
-        };
-
-        await audio.play();
-      } else {
-        exitVoiceMode();
-      }
-    } catch (err: any) {
-      console.error("Hands-free turn failed:", err);
-      setVoicePhase("idle");
-      setVoiceModeActive(false);
-      toast({
-        title: "Voice Assistant Error",
-        description: err.message || "Failed to complete voice turn.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -981,36 +712,6 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
 
       {/* STICKY BOTTOM INPUT COMPOSER */}
       <div className="flex-shrink-0 bg-white border-t border-slate-100 p-4 md:p-6 z-10">
-        {voicePhase !== "idle" && (
-          <div className="max-w-3xl mx-auto mb-3.5 flex items-center justify-between bg-slate-50 border border-slate-200/60 px-4 py-2.5 rounded-2xl animate-fade-in shadow-2xs">
-            <div className="flex items-center gap-2.5">
-              <span className={cn(
-                "h-2 w-2 rounded-full",
-                voicePhase === "listening" && "bg-emerald-500 animate-pulse",
-                voicePhase === "thinking" && "bg-amber-500 animate-pulse",
-                voicePhase === "searching" && "bg-blue-500 animate-pulse",
-                voicePhase === "speaking" && "bg-violet-500 animate-pulse"
-              )} />
-              <span className="text-xs font-semibold text-slate-700 font-sans">
-                {voicePhase === "listening" && "Listening..."}
-                {voicePhase === "thinking" && "Thinking..."}
-                {voicePhase === "searching" && "Searching Laws..."}
-                {voicePhase === "speaking" && "Speaking..."}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {voicePhase === "speaking" && (
-                <Button onClick={interruptVoice} variant="ghost" size="sm" className="h-6.5 text-[10px] uppercase font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg">
-                  Interrupt
-                </Button>
-              )}
-              <Button onClick={exitVoiceMode} variant="ghost" size="sm" className="h-6.5 text-[10px] uppercase font-bold text-slate-500 hover:bg-slate-150 rounded-lg">
-                Exit Voice Mode
-              </Button>
-            </div>
-          </div>
-        )}
-
         <div className="max-w-3xl mx-auto">
           <VercelV0Chat
             value={query}
@@ -1020,28 +721,20 @@ ${activeResult.recommendations?.map((r: string) => `- ${r}`).join('\n') || ''}
             language={language}
             setLanguage={setLanguage}
             voiceComponent={
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={voiceModeActive ? exitVoiceMode : startVoiceMode}
-                className={cn(
-                  "h-8 w-8 rounded-xl border border-neutral-700/60 transition-all flex items-center justify-center cursor-pointer shrink-0 text-neutral-300 bg-neutral-800 hover:bg-neutral-700 hover:text-white"
-                )}
-                title={voiceModeActive ? "Stop Voice Mode" : "Start Voice Mode"}
-              >
-                {voiceModeActive ? (
-                  <MicOff className="h-4 w-4 text-red-500 animate-pulse" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </Button>
+              <VoiceButton
+                showLanguageSelect={false}
+                onTranscribe={(t) => {
+                  isVoiceSearchRef.current = true;
+                  setQuery(t);
+                  executeSearch(t);
+                }}
+              />
             }
           />
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Search;

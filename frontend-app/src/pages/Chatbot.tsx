@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { 
-  Bot, 
-  Send, 
-  Paperclip, 
-  Sparkles, 
-  Loader2, 
-  X, 
-  BookOpen, 
-  Download, 
+import {
+  Bot,
+  Send,
+  Paperclip,
+  Sparkles,
+  Loader2,
+  X,
+  BookOpen,
+  Download,
   Trash2,
   Volume2,
   FileText,
@@ -27,7 +27,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  
+
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -81,25 +81,34 @@ const Chatbot = () => {
           source: cit.text || "Authority source reference"
         }));
 
+        const botReply = response.response || response.message || "Request processed successfully.";
+
         setMessages((prev) => [
           ...prev,
           {
             id: botId,
-            content: response.response || response.message || "Request processed successfully.",
+            content: botReply,
             sender: "bot",
             timestamp: new Date(),
             citations
           }
         ]);
+
+        if (isVoiceSearchRef.current) {
+          isVoiceSearchRef.current = false;
+          setTimeout(() => {
+            speakText(botReply);
+          }, 600);
+        }
       } else {
         throw new Error("Local backend returned error status");
       }
     } catch (error) {
       console.error("FastAPI Orchestrator Chat failed:", error);
-      toast({ 
-        title: "Error", 
-        description: "Failed to generate a response. Please verify FastAPI backend connections.", 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: "Failed to generate a response. Please verify FastAPI backend connections.",
+        variant: "destructive"
       });
     } finally {
       setIsStreaming(false);
@@ -147,7 +156,7 @@ const Chatbot = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-6 h-[calc(100vh-140px)] flex flex-col">
-      
+
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-neutral-100 shrink-0">
         <div>
@@ -178,10 +187,10 @@ const Chatbot = () => {
 
       {/* Main Grid: Chat Thread on left, Context panel on right */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_320px] gap-8 flex-1 min-h-0 items-stretch">
-        
+
         {/* LEFT PANEL: Chat thread container */}
         <div className="flex flex-col bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden min-h-0 relative">
-          
+
           {/* Messages Scroll viewport */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {messages.length === 0 ? (
@@ -223,13 +232,12 @@ const Chatbot = () => {
                           <Bot className="h-4.5 w-4.5 text-emerald-650" />
                         </div>
                       )}
-                      
+
                       <div className="space-y-2 max-w-[80%]">
-                        <div className={`p-4 rounded-2xl text-xs leading-relaxed font-serif border ${
-                          isBot 
-                            ? "bg-white border-neutral-200 text-slate-800" 
+                        <div className={`p-4 rounded-2xl text-xs leading-relaxed font-serif border ${isBot
+                            ? "bg-white border-neutral-200 text-slate-800"
                             : "bg-[#050505] border-neutral-900 text-white"
-                        }`}>
+                          }`}>
                           <p className="whitespace-pre-line">{msg.content}</p>
                         </div>
 
@@ -237,9 +245,9 @@ const Chatbot = () => {
                         {isBot && msg.citations && msg.citations.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 pt-1.5 font-sans">
                             {msg.citations.map((c: any) => (
-                              <Badge 
-                                key={c.id} 
-                                variant="outline" 
+                              <Badge
+                                key={c.id}
+                                variant="outline"
                                 className="bg-neutral-50 text-slate-600 border-neutral-200 hover:bg-neutral-100 text-[9px] font-semibold py-0.5 rounded cursor-help"
                                 title={c.source}
                               >
@@ -271,7 +279,7 @@ const Chatbot = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={chatEndRef} />
               </div>
             )}
@@ -294,7 +302,7 @@ const Chatbot = () => {
                   }
                 }}
               />
-              
+
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
                 <button
                   type="button"
@@ -317,10 +325,16 @@ const Chatbot = () => {
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                 <VoiceButton
                   onTranscribe={(t) => {
-                    setMessage(t);
+                    if (!t.trim()) return;
+                    isVoiceSearchRef.current = true;
+                    setMessages((prev) => [
+                      ...prev,
+                      { id: crypto.randomUUID(), content: t, sender: "user", timestamp: new Date() },
+                    ]);
+                    runStream(t);
                   }}
                 />
-                
+
                 <Button
                   type="submit"
                   size="icon"
