@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Volume2
+  Volume2,
+  Mic
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -44,7 +45,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { icon: FolderOpen, label: 'Documents', path: '/documents' },
     { icon: FileEdit, label: 'Document Drafting', path: '/drafting' },
     { icon: Shield, label: 'Compliance Checker', path: '/compliance' },
-    { icon: Bot, label: 'Legal Assistant', path: '/chat' },
+    { icon: Mic, label: 'Voice Assistant', path: '/chat' },
     { icon: Cpu, label: 'AI Agents', path: '/agents' },
   ];
 
@@ -112,7 +113,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
         <nav className="mt-4 flex flex-col h-[calc(100%-6rem)] overflow-y-auto px-3">
           <div className="flex-1 space-y-1">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/');
+              const isActive = location.pathname === item.path;
 
               return (
                 <Link
