@@ -64,9 +64,11 @@ const AgentDashboard = () => {
       setPlanTopology(plan);
       setSteps((plan.tasks || []).map((t: any, index: number) => ({
         id: t.task_id || `step-${index}`,
-        label: t.agent_id || "Sub-agent",
         agentKey: t.agent_id || "orchestrator",
-        detail: `Depends on: ${t.depends_on?.join(", ") || "None"}`
+        agentName: t.agent_id || "Sub-agent",
+        status: "idle" as AgentStatus,
+        detail: `Depends on: ${t.depends_on?.join(", ") || "None"}`,
+        durationMs: 0
       })));
       toast({ title: "Workflow Graph Formulated", description: `Plan includes ${plan.tasks?.length || 0} tasks.` });
     } catch (e) {
@@ -85,10 +87,11 @@ const AgentDashboard = () => {
       setPlanTopology(plan);
       const executionSteps: ExecutionStep[] = (plan.tasks || []).map((t: any, index: number) => ({
         id: t.task_id || `step-${index}`,
-        label: t.agent_id || "Sub-agent",
         agentKey: t.agent_id || "orchestrator",
+        agentName: t.agent_id || "Sub-agent",
+        status: "idle" as AgentStatus,
         detail: `Depends on: ${t.depends_on?.join(", ") || "None"}`,
-        status: "idle" as AgentStatus
+        durationMs: 0
       }));
       setSteps(executionSteps);
       setAgents((prev) => prev.map((a) => ({ ...a, status: "idle" })));
@@ -230,7 +233,7 @@ const AgentDashboard = () => {
                         {step.status === "done" && <CheckCircle className="h-4.5 w-4.5 text-emerald-600 shrink-0" />}
                         {step.status === "running" && <Loader2 className="h-4.5 w-4.5 text-emerald-600 animate-spin shrink-0" />}
                         {step.status === "idle" && <Clock className="h-4.5 w-4.5 text-slate-400 shrink-0" />}
-                        <span className="font-bold text-slate-800">{step.label}</span>
+                        <span className="font-bold text-slate-800">{step.agentName}</span>
                       </div>
                       <span className="font-mono text-[10px] text-slate-400 uppercase font-bold">{step.detail}</span>
                     </div>
