@@ -189,12 +189,12 @@ const Chatbot = () => {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-9 h-9 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <Bot className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
+              <Mic className="h-4.5 w-4.5 text-emerald-600 animate-pulse" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Legal AI Assistant</h1>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">Voice Assistant</h1>
           </div>
           <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
-            Consult our autonomous legal orchestrator and examine context attachments
+            Consult our autonomous legal orchestrator using voice or text
           </p>
         </div>
 
@@ -223,12 +223,12 @@ const Chatbot = () => {
             {messages.length === 0 ? (
               <div className="h-full flex flex-col justify-center items-center text-center space-y-6 max-w-md mx-auto">
                 <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-full">
-                  <Bot className="h-10 w-10 text-emerald-600" />
+                  <Mic className="h-10 w-10 text-emerald-600" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-sans font-extrabold text-lg text-slate-900 tracking-tight">Consult Legal AI Counsel</h3>
+                  <h3 className="font-sans font-extrabold text-lg text-slate-900 tracking-tight">Consult Voice Assistant</h3>
                   <p className="text-xs text-slate-450 leading-relaxed font-serif">
-                    Attach reference agreements or choose a quick prompt to analyze liability clauses, verify section bounds, or draft clauses with live RAG citations.
+                    Start a conversation using voice commands. Attach reference agreements or ask questions to analyze liability clauses, verify section bounds, or draft clauses.
                   </p>
                 </div>
 
@@ -256,7 +256,7 @@ const Chatbot = () => {
                     >
                       {isBot && (
                         <div className="w-8 h-8 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                          <Bot className="h-4.5 w-4.5 text-emerald-650" />
+                          <Mic className="h-4.5 w-4.5 text-emerald-650" />
                         </div>
                       )}
 
@@ -297,7 +297,7 @@ const Chatbot = () => {
                 {isStreaming && (
                   <div className="flex gap-4 justify-start">
                     <div className="w-8 h-8 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                      <Bot className="h-4.5 w-4.5 text-emerald-650 animate-pulse" />
+                      <Mic className="h-4.5 w-4.5 text-emerald-650 animate-pulse" />
                     </div>
                     <div className="p-4 bg-white border border-neutral-200 rounded-2xl flex items-center gap-1.5 shadow-3xs">
                       <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" />
@@ -316,7 +316,7 @@ const Chatbot = () => {
           <div className="p-4 border-t border-neutral-150 bg-neutral-50/50 shrink-0">
             <form onSubmit={handleSend} className="relative">
               <textarea
-                placeholder="Message Legal AI Assistant..."
+                placeholder="Message Voice Assistant..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 disabled={isStreaming}
@@ -420,7 +420,7 @@ const Chatbot = () => {
       {handsFreeVoice.isActive && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-6">
           <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center">
-            <Bot className={cn("h-10 w-10 text-emerald-400", handsFreeVoice.phase !== "idle" && "animate-pulse")} />
+            <Mic className={cn("h-10 w-10 text-emerald-400", handsFreeVoice.phase !== "idle" && "animate-pulse")} />
           </div>
           <span className="text-white/90 text-sm font-mono uppercase tracking-widest">
             {VOICE_PHASE_LABEL[handsFreeVoice.phase] || "Listening"}
