@@ -11,7 +11,8 @@ import {
   Bot, 
   Cpu, 
   Sparkles,
-  Volume2
+  Volume2,
+  Mic
 } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -117,8 +118,8 @@ export const CommandPalette = () => {
               onSelect={() => runCommand(() => navigate("/chat"))}
               className="flex items-center gap-3 px-3 py-2 text-xs text-neutral-700 hover:text-primary rounded hover:bg-neutral-50 cursor-pointer transition-colors duration-150"
             >
-              <Bot className="h-4 w-4" />
-              <span>Go to Legal Assistant (Chat)</span>
+              <Mic className="h-4 w-4" />
+              <span>Go to Voice Assistant (Chat)</span>
             </Command.Item>
             <Command.Item
               onSelect={() => runCommand(() => navigate("/agents"))}
@@ -135,7 +136,7 @@ export const CommandPalette = () => {
               className="flex items-center gap-3 px-3 py-2 text-xs text-primary rounded hover:bg-primary/5 cursor-pointer transition-colors duration-150 font-medium"
             >
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              <span>Ask Legal AI Assistant</span>
+              <span>Ask Voice Assistant</span>
             </Command.Item>
           </Command.Group>
         </Command.List>
