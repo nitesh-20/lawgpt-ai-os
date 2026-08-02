@@ -48,8 +48,16 @@
     @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "cv11", "ss01", "ss03";
     scroll-behavior: smooth;
+  }
+
+  body:not(.landing-dark) {
     background-color: #f8fafc !important;
     color: #0f172a !important;
+  }
+
+  body.landing-dark {
+    background-color: #050506 !important;
+    color: #f8f8f6 !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -71,104 +79,104 @@
    ======================================================== */
 
 /* General background wrappers override */
-.min-h-screen, 
-.bg-background,
-.bg-slate-900\/50,
-.bg-neutral-950,
-.bg-\[\#050505\],
-.bg-\[\#0d0d0d\],
-.bg-\[\#090909\] {
+body:not(.landing-dark) .min-h-screen, 
+body:not(.landing-dark) .bg-background,
+body:not(.landing-dark) .bg-slate-900\/50,
+body:not(.landing-dark) .bg-neutral-950,
+body:not(.landing-dark) .bg-\[\#050505\],
+body:not(.landing-dark) .bg-\[\#0d0d0d\],
+body:not(.landing-dark) .bg-\[\#090909\] {
   background-color: #f8fafc !important;
   color: #0f172a !important;
 }
 
 /* White elements & cards override */
-.bg-white,
-.bg-slate-900,
-.bg-\[\#101010\],
-.bg-\[\#151515\] {
+body:not(.landing-dark) .bg-white,
+body:not(.landing-dark) .bg-slate-900,
+body:not(.landing-dark) .bg-\[\#101010\],
+body:not(.landing-dark) .bg-\[\#151515\] {
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
-.bg-neutral-50,
-.bg-slate-50,
-.bg-slate-100,
-.bg-neutral-100 {
+body:not(.landing-dark) .bg-neutral-50,
+body:not(.landing-dark) .bg-slate-50,
+body:not(.landing-dark) .bg-slate-100,
+body:not(.landing-dark) .bg-neutral-100 {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
 /* Soft card shadow overrides */
-.glass-card,
-.card,
-.bg-white.border,
-.bg-\[\#101010\].border,
-[class*="rounded-xl"],
-[class*="rounded-2xl"] {
+body:not(.landing-dark) .glass-card,
+body:not(.landing-dark) .card,
+body:not(.landing-dark) .bg-white.border,
+body:not(.landing-dark) .bg-\[\#101010\].border,
+body:not(.landing-dark) [class*="rounded-xl"],
+body:not(.landing-dark) [class*="rounded-2xl"] {
   border-radius: 0.75rem !important; /* 12px rounded */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.025) !important;
   border: 1px solid #e2e8f0 !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
-.glass-card-hover:hover,
-.hover\:scale-\[1\.01\]:hover,
-[class*="rounded-xl"]:hover,
-[class*="rounded-2xl"]:hover {
+body:not(.landing-dark) .glass-card-hover:hover,
+body:not(.landing-dark) .hover\:scale-\[1\.01\]:hover,
+body:not(.landing-dark) [class*="rounded-xl"]:hover,
+body:not(.landing-dark) [class*="rounded-2xl"]:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025) !important;
   border-color: #cbd5e1 !important;
 }
 
 /* Clean border line overrides */
-.border,
-.border-border,
-.border-neutral-900,
-.border-neutral-800,
-.border-slate-800,
-.border-slate-100,
-.border-slate-200,
-.border-neutral-100,
-.border-neutral-200,
-.border-neutral-900\/60 {
+body:not(.landing-dark) .border,
+body:not(.landing-dark) .border-border,
+body:not(.landing-dark) .border-neutral-900,
+body:not(.landing-dark) .border-neutral-800,
+body:not(.landing-dark) .border-slate-800,
+body:not(.landing-dark) .border-slate-100,
+body:not(.landing-dark) .border-slate-200,
+body:not(.landing-dark) .border-neutral-100,
+body:not(.landing-dark) .border-neutral-200,
+body:not(.landing-dark) .border-neutral-900\/60 {
   border-color: #e2e8f0 !important;
 }
 
 /* Typography color overrides */
-.text-white,
-.text-slate-100,
-.text-slate-200,
-.text-slate-300,
-.text-neutral-900,
-.text-slate-900,
-.text-slate-905,
-.text-neutral-800,
-.text-slate-800,
-.text-slate-805,
-.text-slate-700,
-.text-slate-705,
-.text-\[\#ffffff\] {
+body:not(.landing-dark) .text-white,
+body:not(.landing-dark) .text-slate-100,
+body:not(.landing-dark) .text-slate-200,
+body:not(.landing-dark) .text-slate-300,
+body:not(.landing-dark) .text-neutral-900,
+body:not(.landing-dark) .text-slate-900,
+body:not(.landing-dark) .text-slate-905,
+body:not(.landing-dark) .text-neutral-800,
+body:not(.landing-dark) .text-slate-800,
+body:not(.landing-dark) .text-slate-805,
+body:not(.landing-dark) .text-slate-700,
+body:not(.landing-dark) .text-slate-705,
+body:not(.landing-dark) .text-\[\#ffffff\] {
   color: #0f172a !important;
 }
 
-.text-slate-400,
-.text-slate-450,
-.text-slate-500,
-.text-neutral-400,
-.text-neutral-450,
-.text-neutral-500,
-.text-slate-600,
-.text-slate-650 {
+body:not(.landing-dark) .text-slate-400,
+body:not(.landing-dark) .text-slate-450,
+body:not(.landing-dark) .text-slate-500,
+body:not(.landing-dark) .text-neutral-400,
+body:not(.landing-dark) .text-neutral-450,
+body:not(.landing-dark) .text-neutral-500,
+body:not(.landing-dark) .text-slate-600,
+body:not(.landing-dark) .text-slate-650 {
   color: #475569 !important;
 }
 
 /* Primary buttons & emerald button overrides */
-.bg-emerald-600,
-.bg-emerald-650,
-.bg-emerald-700,
-.bg-primary,
-.btn-primary {
+body:not(.landing-dark) .bg-emerald-600,
+body:not(.landing-dark) .bg-emerald-650,
+body:not(.landing-dark) .bg-emerald-700,
+body:not(.landing-dark) .bg-primary,
+body:not(.landing-dark) .btn-primary {
   background-color: #2563eb !important;
   color: #ffffff !important;
   border-color: rgba(37, 99, 235, 0.15) !important;
@@ -177,43 +185,43 @@
   border-radius: 0.5rem !important;
 }
 
-.bg-emerald-600:hover,
-.bg-emerald-650:hover,
-.bg-emerald-700:hover,
-.bg-primary:hover,
-.btn-primary:hover,
-.hover\:bg-emerald-700:hover,
-.hover\:bg-emerald-800:hover {
+body:not(.landing-dark) .bg-emerald-600:hover,
+body:not(.landing-dark) .bg-emerald-650:hover,
+body:not(.landing-dark) .bg-emerald-700:hover,
+body:not(.landing-dark) .bg-primary:hover,
+body:not(.landing-dark) .btn-primary:hover,
+body:not(.landing-dark) .hover\:bg-emerald-700:hover,
+body:not(.landing-dark) .hover\:bg-emerald-800:hover {
   background-color: #1d4ed8 !important;
   color: #ffffff !important;
 }
 
 /* Soft light blue backgrounds for indicators */
-.bg-emerald-50,
-.bg-emerald-50\/10,
-.bg-emerald-500\/10,
-.bg-primary\/10 {
+body:not(.landing-dark) .bg-emerald-50,
+body:not(.landing-dark) .bg-emerald-50\/10,
+body:not(.landing-dark) .bg-emerald-500\/10,
+body:not(.landing-dark) .bg-primary\/10 {
   background-color: #dbeafe !important;
   color: #2563eb !important;
   border-color: rgba(37, 99, 235, 0.15) !important;
 }
 
-.text-emerald-400,
-.text-emerald-500,
-.text-emerald-600,
-.text-emerald-700,
-.text-emerald-800 {
+body:not(.landing-dark) .text-emerald-400,
+body:not(.landing-dark) .text-emerald-500,
+body:not(.landing-dark) .text-emerald-600,
+body:not(.landing-dark) .text-emerald-700,
+body:not(.landing-dark) .text-emerald-800 {
   color: #2563eb !important;
 }
 
 /* Modern clean inputs overrides */
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="password"],
-textarea,
-select,
-.input-premium {
+body:not(.landing-dark) input[type="text"],
+body:not(.landing-dark) input[type="search"],
+body:not(.landing-dark) input[type="email"],
+body:not(.landing-dark) input[type="password"],
+body:not(.landing-dark) textarea,
+body:not(.landing-dark) select,
+body:not(.landing-dark) .input-premium {
   background-color: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   color: #0f172a !important;
@@ -222,17 +230,17 @@ select,
   transition: all 0.2s ease-in-out !important;
 }
 
-input:focus,
-textarea:focus,
-select:focus,
-.input-premium:focus {
+body:not(.landing-dark) input:focus,
+body:not(.landing-dark) textarea:focus,
+body:not(.landing-dark) select:focus,
+body:not(.landing-dark) .input-premium:focus {
   border-color: #2563eb !important;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
   outline: none !important;
 }
 
 /* Sidebar Custom Rebranding Override */
-aside.bg-\[\#050505\] {
+body:not(.landing-dark) aside.bg-\[\#050505\] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   color: #0f172a !important;

@@ -8,7 +8,7 @@ services:
     image: lawgpt-backend:latest
     container_name: lawgpt_backend_container
     ports:
-      - "8000:8000"
+      - "8002:8002"
     volumes:
       - ./backend/logs:/app/logs
       - ./backend/uploads:/app/uploads

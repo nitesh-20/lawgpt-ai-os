@@ -77,7 +77,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
         <div className="flex h-20 items-center justify-between px-6 border-b border-neutral-900/60">
           {!collapsed && (
             <div
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/landing')}
               className="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition-opacity"
             >
               <div className="w-7 h-7 bg-primary rounded flex items-center justify-center shadow-md">
