@@ -196,7 +196,13 @@ const AgentDashboard = () => {
                     </div>
                     <div>
                       <span className="text-[9px] font-mono text-slate-400 uppercase block font-bold">Detected Intents:</span>
-                      <span className="font-semibold text-slate-700">{planTopology.intents_detected?.join(", ") || "General Inquiry"}</span>
+                      <span className="font-semibold text-slate-700 capitalize">
+                        {planTopology.intents_detected
+                          ? (Array.isArray(planTopology.intents_detected)
+                              ? planTopology.intents_detected.map((i: string) => i.replace(/_/g, " ")).join(", ")
+                              : Object.keys(planTopology.intents_detected).map((i: string) => i.replace(/_/g, " ")).join(", "))
+                          : "General Inquiry"}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -250,7 +256,15 @@ const AgentDashboard = () => {
                 </div>
                 <div>
                   <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Connected Sub-Agents:</span>
-                  <span className="font-semibold text-slate-800 mt-1 block">{healthStatus.connected_agents?.join(", ") || "All active specialists linked"}</span>
+                  <span className="font-semibold text-slate-800 mt-1 block capitalize">
+                    {healthStatus.connected_agents
+                      ? (Array.isArray(healthStatus.connected_agents)
+                          ? healthStatus.connected_agents.join(", ")
+                          : String(healthStatus.connected_agents))
+                      : (healthStatus.sub_agents_health
+                          ? Object.keys(healthStatus.sub_agents_health).map((k) => k.replace(/_/g, " ")).join(", ")
+                          : "All active specialists linked")}
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block font-mono text-[9px] uppercase font-bold">Orchestrator Confidence Index:</span>
