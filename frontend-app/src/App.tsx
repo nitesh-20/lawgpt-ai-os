@@ -29,7 +29,6 @@ const App = () => (
         <Routes>
           {/* Main App Layout and standard routes */}
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/cases/:id" element={<CaseDetails />} />
@@ -43,7 +42,8 @@ const App = () => (
             <Route path="/agents" element={<AgentDashboard />} />
           </Route>
 
-          {/* Legacy landing page route preserved but moved off the root */}
+          {/* Landing page route mapped to the root and /landing */}
+          <Route path="/" element={<Landing />} />
           <Route path="/landing" element={<Landing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
