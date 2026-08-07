@@ -110,11 +110,15 @@ flowchart TD
    ```bash
    npm install   # or: bun install
    ```
-3. Start the Vite development server:
+3. Copy the environment configuration file:
+   ```bash
+   cp .env.example .env
+   ```
+4. Start the Vite development server:
    ```bash
    npm run dev   # or: bun dev
    ```
-   *The client web portal will run on [http://localhost:5173](http://localhost:5173) or [http://localhost:8080](http://localhost:8080).*
+   *The client web portal will run on [http://localhost:5173](http://localhost:5173), [http://localhost:8080](http://localhost:8080), or [http://localhost:8083](http://localhost:8083).*
 
 ---
 
